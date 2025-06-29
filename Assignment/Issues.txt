@@ -1,0 +1,5 @@
+Issues:
+
+
+- Before committing on the Assignment GitHub, ensure that content and comment make sense
+- Why can't we use caching, and we instead need to use useEffect() on the TV Series and Movie pages template to be able to render the actor page?
