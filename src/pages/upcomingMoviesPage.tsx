@@ -1,8 +1,5 @@
-// Import React core functionality
 import React, { useContext, useEffect } from "react";
-// Import page template component that wraps movie lists
 import PageTemplate from "../components/templateMovieListPage";
-// Function to fetch upcoming movies from the TMDB API
 import { getUpcomingMovies } from "../api/tmdb-api";
 import { BaseMovieProps } from "../types/interfaces";
 import Spinner from "../components/spinner";
@@ -23,7 +20,6 @@ const UpcomingMoviesPage: React.FC = () => {
    * - `isError`: a boolean indicating if an error occurred
    * - `error`: the actual error object if isError is true
    */
-
   // Fetch upcoming movies using React Query
   const {
     data: movies, // Rename the returned data as `movies`
@@ -62,26 +58,51 @@ const UpcomingMoviesPage: React.FC = () => {
        * (i.e., still undefined or null during loading),
        * then it will pass an empty array [] instead.
        */
-      movies={movies || []} // Movies to display; fallback to empty array
+      movies={movies || []}
       // Action button to render beside each movie
       action={(movie: BaseMovieProps) => {
-        // Click handler to add movie to mustWatchList
+        const isInMustWatch = mustWatchList.some((m) => m.id === movie.id);
+
         const handleClick = () => {
-          addToMustWatchList(movie); // Update global mustWatchList
+          if (!isInMustWatch) {
+            addToMustWatchList(movie);
+          }
         };
 
-        // Return the PlaylistAdd icon with click behavior
         return (
-          <PlaylistAddIcon
-            style={{
-              marginLeft: "4%", // Adds left spacing
-              marginRight: "4%", // Adds right spacing
-              verticalAlign: "middle", // Aligns icon with text
-              fontSize: "30px", // Makes icon larger
-              cursor: "pointer", // Shows pointer on hover
-            }}
-            onClick={handleClick} // Calls the handler on click
-          />
+          <>
+            {/* Icon at the top, only if movie is in must-watch list */}
+            {isInMustWatch && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  zIndex: 10,
+                }}
+              >
+                <PlaylistAddIcon
+                  style={{
+                    fontSize: 28,
+                    color: "green",
+                  }}
+                />
+              </div>
+            )}
+
+            {/* The original clickable icon stays in place */}
+            <PlaylistAddIcon
+              style={{
+                marginLeft: "4%",
+                marginRight: "4%",
+                verticalAlign: "middle",
+                fontSize: "30px",
+                cursor: isInMustWatch ? "default" : "pointer",
+                opacity: isInMustWatch ? 0.5 : 1, // visually show disabled after click
+              }}
+              onClick={handleClick}
+            />
+          </>
         );
       }}
     />

@@ -1,13 +1,12 @@
-// Import necessary modules and hooks from React
 import React, { useState, useCallback } from "react";
-// Import custom TypeScript interfaces for type safety
 import { BaseMovieProps, Review } from "../types/interfaces";
 
 // Define the structure of the context's value using an interface
 // This describes what data and functions are available in the context
 interface MovieContextInterface {
   favourites: number[]; // List of favourite movie IDs
-  mustWatchList: number[]; // List of must-watch movie IDs
+  // mustWatchList: number[]; // This line was used when storing only IDs, now replaced below
+  mustWatchList: BaseMovieProps[]; // List of full movie objects for must-watch list page
   addToFavourites: (movie: BaseMovieProps) => void; // Function to add a movie to favourites
   addToMustWatchList: (movie: BaseMovieProps) => void; // Function to add a movie to must-watch list
   removeFromFavourites: (movie: BaseMovieProps) => void; // Function to remove a movie from favourites
@@ -42,8 +41,12 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   const [favourites, setFavourites] = useState<number[]>([]);
   // State to store the user's reviews for movies
   const [myReviews, setMyReviews] = useState<Review[]>([]); // NOTE: Incorrect type if reviews are meant to be mapped by movie ID
-  // State to store the list of must-watch movie IDs
-  const [mustWatchList, setMustWatchList] = useState<number[]>([]);
+
+  // const [mustWatchList, setMustWatchList] = useState<number[]>([]);
+  // This line was used when storing only movie IDs — commented out in favor of full objects
+
+  // This ensures that we are storing full movie objects in mustWatchList, not just IDs.
+  const [mustWatchList, setMustWatchList] = useState<BaseMovieProps[]>([]);
 
   // Function to add a movie to the favourites list, ensuring no duplicates
   const addToFavourites = useCallback((movie: BaseMovieProps) => {
@@ -58,8 +61,6 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
 
   // Function to add a review for a movie
   const addReview = (movie: BaseMovieProps, review: Review) => {
-    // This logic is likely incorrect — using object spread syntax on an array
-    // It assumes myReviews is an object mapping movie ID to review, but it's typed as an array
     setMyReviews({ ...myReviews, [movie.id]: review });
   };
 
@@ -74,9 +75,16 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   // Function to add a movie to the must-watch list, ensuring no duplicates
   const addToMustWatchList = useCallback((movie: BaseMovieProps) => {
     setMustWatchList((prevMustWatchList) => {
-      if (!prevMustWatchList.includes(movie.id)) {
-        console.log("Adding to MustWatchList:", movie.id);
-        return [...prevMustWatchList, movie.id];
+      // The old version checked against an array of IDs:
+      // if (!prevMustWatchList.includes(movie.id)) {
+      //   console.log("Adding to MustWatchList:", movie.id);
+      //   return [...prevMustWatchList, movie.id];
+      // }
+
+      // The new version checks for the movie object by ID
+      if (!prevMustWatchList.find((m) => m.id === movie.id)) {
+        console.log("Adding to MustWatchList:", movie);
+        return [...prevMustWatchList, movie];
       }
       return prevMustWatchList;
     });
