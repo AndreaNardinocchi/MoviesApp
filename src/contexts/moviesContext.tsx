@@ -10,6 +10,7 @@ interface MovieContextInterface {
   addToFavourites: (movie: BaseMovieProps) => void; // Function to add a movie to favourites
   addToMustWatchList: (movie: BaseMovieProps) => void; // Function to add a movie to must-watch list
   removeFromFavourites: (movie: BaseMovieProps) => void; // Function to remove a movie from favourites
+  removeFromMustWatchList: (movie: BaseMovieProps) => void; // Function to remove a must watch movie
   addReview: (movie: BaseMovieProps, review: Review) => void; // Function to add a review to a movie
 }
 
@@ -18,11 +19,11 @@ interface MovieContextInterface {
 const initialContextState: MovieContextInterface = {
   favourites: [],
   mustWatchList: [],
-  addToFavourites: () => {}, // Placeholder function
-  addToMustWatchList: () => {}, // Placeholder function
-  removeFromFavourites: () => {}, // Placeholder function
+  addToFavourites: () => {},
+  addToMustWatchList: () => {},
+  removeFromFavourites: () => {},
+  removeFromMustWatchList: () => {},
   addReview: (movie, review) => {
-    // Placeholder function for review addition
     movie.id;
     review;
   },
@@ -90,6 +91,14 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     });
   }, []);
 
+  // Function to remove amust watch movie from the must watch list
+  const removeFromMustWatchList = useCallback((movie: BaseMovieProps) => {
+    setMustWatchList((prevMustWatchList) =>
+      prevMustWatchList.filter((m) => m.id !== movie.id)
+    );
+    console.log("Removing from must watch list:", movie.id);
+  }, []);
+
   // Provide context values and render children
   return (
     <MoviesContext.Provider
@@ -100,6 +109,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
         addReview,
         mustWatchList,
         addToMustWatchList,
+        removeFromMustWatchList,
       }}
     >
       {children}

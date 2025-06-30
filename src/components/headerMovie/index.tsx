@@ -10,6 +10,8 @@ import { Avatar } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import { useContext } from "react";
 import { MoviesContext } from "../../contexts/moviesContext";
+// https://materialui.co/icon/playlist-add-check
+import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 
 const styles = {
   root: {
@@ -25,56 +27,6 @@ const styles = {
 };
 
 const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
-  // console.log("MovieHeader props:", movie);
-
-  // // Retrieve favourites from localStorage
-  // const favouritesJSON = localStorage.getItem("favourites");
-
-  // /** Tell TypeScript this is an array of movie objects
-  //  * 'favourites'
-  //  * It is an array' of movie objects from localStorage
-  //  * favouritesJSON ? ... : []
-  //  * This is a ternary operator: it checks if favouritesJSON has a truthy value.
-  //  * If it does, it runs the expression before the :, otherwise returns an empty array.
-  //  * JSON.parse(favouritesJSON)
-  //  * Converts the string from localStorage back into a JavaScript object or array.
-  //  * This is necessary because localStorage only stores strings.
-  //  * as BaseMovieProps[]
-  //  * This is a TypeScript type assertion. It tells TypeScript to treat the result of
-  //  * JSON.parse as an array of BaseMovieProps objects.
-  //  */
-  // const favourites = favouritesJSON
-  //   ? (JSON.parse(favouritesJSON) as BaseMovieProps[])
-  //   : [];
-
-  // /**
-  //  * .some(...)
-  //  * This is a JavaScript array method.
-  //  * It returns true if at least one item in the array satisfies the given condition.
-  //  * In this case, it returns true if fav.id is equal to a movie.id in the ocalStorage array 'favourites'
-  //  * .some(...) is more efficient — it stops on the first match.
-  //  * */
-  // // const isFavourite = favourites.some((fav) => fav.id === movie.id);
-
-  // // OR
-
-  // /**
-  //  * Or we can use map() and includes()
-  //  * In this case, it returns true if fav.id is equal to a movie.id in the ocalStorage array 'favourites'
-  //  * */
-  // const isFavourite = favourites
-  //   .map((favourite) => favourite.id)
-  //   .includes(movie.id);
-
-  // console.log(
-  //   "isFavourite:",
-  //   isFavourite,
-  //   "movie.id:",
-  //   movie.id,
-  //   "favourites:",
-  //   favourites
-  // );
-
   const context = useContext(MoviesContext);
 
   if (!context) {
@@ -83,35 +35,53 @@ const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
     );
   }
 
-  const { favourites } = context;
+  // Destructure favourites and mustWatchList arrays from the context
+  const { favourites, mustWatchList } = context;
 
+  // Check if the current movie is in the mustWatchList
+  // `.some()` checks if any movie in the list has the same id as the current one
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+  const isMustWatch = mustWatchList.some((m) => m.id === movie.id);
+
+  // Check if the current movie is in the favourites list (by id)
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
   const isFavourite = favourites.includes(movie.id);
 
   return (
+    // Root Paper component providing structure and styling for the movie header
     <Paper component="div" sx={styles.root}>
+      {/* Back arrow icon button (could be used for navigation) */}
       <IconButton aria-label="go back">
         <ArrowBackIcon color="primary" fontSize="large" />
       </IconButton>
-      {isFavourite ? (
+
+      {/* Show a red avatar with a heart icon if the movie is a favourite */}
+      {isFavourite && (
         <Avatar sx={styles.avatar}>
           <FavoriteIcon />
         </Avatar>
-      ) : null}
-      {/* OR */}
-      {/* {favourite && (
-        <Avatar sx={styles.avatar}>
-          <FavoriteIcon />
+      )}
+
+      {/* Show a green avatar with a checklist icon if the movie is in must-watch list */}
+      {isMustWatch && (
+        <Avatar sx={{ backgroundColor: "rgb(0, 128, 0)" }}>
+          <PlaylistAddCheckIcon />
         </Avatar>
-      )} */}
+      )}
+
+      {/* Main movie title and homepage link */}
       <Typography variant="h4" component="h3">
-        {movie.title}
-        {"   "}
+        {movie.title}{" "}
+        {/* Link to the movie's official homepage, if available */}
         <a href={movie.homepage}>
           <HomeIcon color="primary" fontSize="large" />
         </a>
         <br />
+        {/* Display the movie's tagline below the title */}
         <span>{`${movie.tagline}`} </span>
       </Typography>
+
+      {/* Forward arrow icon button (could be used for navigation) */}
       <IconButton aria-label="go forward">
         <ArrowForwardIcon color="primary" fontSize="large" />
       </IconButton>
