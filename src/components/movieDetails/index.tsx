@@ -10,6 +10,7 @@ import NavigationIcon from "@mui/icons-material/Navigation";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
 import MovieReviews from "../movieReviews";
+import { Link } from "react-router-dom";
 
 const styles = {
   chipSet: {
@@ -36,6 +37,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
 
   return (
     <>
+      {/* Overview Section */}
       <Typography variant="h5" component="h3">
         Overview
       </Typography>
@@ -43,17 +45,19 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       <Typography variant="h6" component="p">
         {movie.overview}
       </Typography>
-
+      {/* Genres Section */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
           <Chip label="Genres" sx={styles.chipLabel} color="primary" />
         </li>
-        {movie.genres.map((g) => (
+        {movie.genres?.map((g) => (
           <li key={g.name}>
             <Chip label={g.name} />
           </li>
         ))}
       </Paper>
+
+      {/* Runtime, Revenue, Rating, Release Date */}
       <Paper component="ul" sx={styles.chipSet}>
         <Chip icon={<AccessTimeIcon />} label={`${movie.runtime} min.`} />
         <Chip
@@ -66,6 +70,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
         />
         <Chip label={`Released: ${movie.release_date}`} />
       </Paper>
+
       {/* Production Countries */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
@@ -81,6 +86,48 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
           </li>
         ))}
       </Paper>
+
+      {/* Cast Section */}
+      <Typography variant="h5" component="h3">
+        Cast
+      </Typography>
+
+      {/*
+      To safely handle the movie.cast potentially being undefined or empty, we are using
+      Array.isArray to avoid '.length' checks on possibly undefined values.
+      It ensures it’s a valid array before accessing .length or using .map()
+      Only render cast list if it's a valid non-empty array.
+      https://www.geeksforgeeks.org/typescript-array-isarray-method/?utm_source=chatgpt.com
+      */}
+      {Array.isArray(movie.cast) && movie.cast.length > 0 ? (
+        <Paper component="ul" sx={styles.chipSet}>
+          {movie.cast.map((actor) => (
+            <li key={actor.id}>
+              <Link
+                to={`/actor/${actor.id}`} // URL path for the actor page
+                state={{ actor: actor, movie: movie }} // Pass actor and movie data as navigation state
+                style={{ textDecoration: "none" }} // Optional styling to remove underline from link
+              >
+                <Chip
+                  clickable
+                  label={`${actor.name} (${actor.character})`}
+                  sx={styles.chipLabel}
+                />
+              </Link>
+            </li>
+          ))}
+        </Paper>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: "center", mt: 1 }}
+        >
+          No cast information available.Add commentMore actions
+        </Typography>
+      )}
+
+      {/* Reviews Drawer */}
       <Fab
         color="secondary"
         variant="extended"
@@ -100,4 +147,5 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
     </>
   );
 };
+
 export default MovieDetails;

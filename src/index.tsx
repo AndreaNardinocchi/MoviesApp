@@ -11,6 +11,7 @@ import { QueryClientProvider, QueryClient } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import MoviesContextProvider from "./contexts/moviesContext";
 import AddMovieReviewPage from "./pages/addMovieReviewPage";
+import ActorBioPage from "./pages/actorBioPage";
 import MustWatchListPage from "./pages/mustWatchList";
 
 // declare the query client (it will manage the cache in the browser):
@@ -32,16 +33,17 @@ const App = () => {
         <SiteHeader /> {/* New Header  */}
         <MoviesContextProvider>
           <Routes>
+            <Route path="/actor/:id" element={<ActorBioPage />} />
             <Route path="/reviews/form" element={<AddMovieReviewPage />} />
             <Route path="/reviews/:id" element={<MovieReviewPage />} />
             <Route path="/movies/upcoming" element={<UpcomingMoviesPage />} />
             <Route
-              path="/movies/favourites"
-              element={<FavouriteMoviesPage />}
-            />
-            <Route
               path="/movies/mustwatchlist"
               element={<MustWatchListPage />}
+            />
+            <Route
+              path="/movies/favourites"
+              element={<FavouriteMoviesPage />}
             />
             <Route path="/movies/:id" element={<MoviePage />} />
             <Route path="/" element={<HomePage />} />

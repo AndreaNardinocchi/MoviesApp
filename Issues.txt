@@ -1,4 +1,0 @@
-Issues:
-
-- Why am I using useEffect() to render the AutorPage images?
-- Fix the movie header favourite and must watch icons when both are selected

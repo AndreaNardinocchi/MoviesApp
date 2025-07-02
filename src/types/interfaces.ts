@@ -18,6 +18,17 @@ export interface BaseMovieProps {
   genre_ids?: number[];
 }
 
+/**
+ * This is a data extract representing a single cast member in a movie or TV show's credits.
+ * Reference: https://developer.themoviedb.org/reference/movie-credits
+ */
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+}
+
 // export interface BaseMovieListProps {
 //   movies: BaseMovieProps[];
 //   selectFavourite: (movieId: number) => void; //add this
@@ -38,10 +49,21 @@ export interface MovieDetailsProps extends BaseMovieProps {
     iso_3166_1: string;
     name: string;
   }[];
+  /**
+   * List of cast members associated with the movie.
+   * We want to make the cast data available wherever we use the MovieDetailsProps —
+   * especially in components like TemplateMoviePage or detail views
+   * */
+  cast: CastMember[];
 }
 
 export type FilterOption = "title" | "genre";
 
+/**
+ * To avoid code duplication between the home page and favourites page,
+ * we can define a template page for displaying a list of movies.
+ * Props will allow us to reuse the template in different scenarios.
+ * */
 export interface MovieListPageTemplateProps extends BaseMovieListProps {
   title: string;
 }
@@ -52,6 +74,10 @@ export interface Review {
   author: string;
 }
 
+/**
+ * Interfaces for the movies and genres data that
+ * describe the “shape” of the data returned from the API
+ * */
 export interface GenreData {
   genres: {
     id: string;
