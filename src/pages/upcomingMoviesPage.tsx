@@ -1,3 +1,4 @@
+// Import React and core hooks
 import React, { useContext, useEffect } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { getUpcomingMovies } from "../api/tmdb-api";
@@ -6,8 +7,37 @@ import Spinner from "../components/spinner";
 import { useQuery } from "react-query";
 import PlaylistAddIcon from "@mui/icons-material/PlaylistAdd";
 import { MoviesContext } from "../contexts/moviesContext";
+// Import filtering logic and UI componentAdd commentMore actions
+import useFiltering from "../hooks/useFiltering";
+import MovieFilterUI, {
+  titleFilter,
+  genreFilter,
+} from "../components/movieFilterUI";
+
+// Define the default filter state for title filtering
+const titleFiltering = {
+  name: "title",
+  value: "", // Start with no filter applied
+  condition: titleFilter, // The actual filter function
+};
+
+// Define the default filter state for genre filtering
+const genreFiltering = {
+  name: "genre",
+  value: "0", // "0" typically means "All genres"
+  condition: genreFilter, // The actual filter function
+};
 
 const UpcomingMoviesPage: React.FC = () => {
+  // Access the mustWatchList and addToMustWatchList function from context
+  const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
+
+  // Set up filtering state and logic using the custom `useFiltering` hook
+  const { filterValues, setFilterValues, filterFunction } = useFiltering([
+    titleFiltering,
+    genreFiltering,
+  ]);
+
   /**
    * useQuery is a React Query hook used to fetch data and manage its state (loading, error, success).
    * It takes two main arguments:
@@ -32,7 +62,7 @@ const UpcomingMoviesPage: React.FC = () => {
   );
 
   // Use movie context to access mustWatchList and the function to update it
-  const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
+  // const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 
   // useEffect ensures we log the updated mustWatchList after state changes.
   // Without it, console.log would show the old state due to React's async updates.
@@ -47,65 +77,88 @@ const UpcomingMoviesPage: React.FC = () => {
   if (isError)
     return <p>Error fetching upcoming movies: {(error as Error).message}</p>;
 
+  // Apply filters to the movie listAdd commentMore actions
+  const displayedMovies = movies ? filterFunction(movies) : [];
+
+  // Called when the user changes title or genre filter
+  const changeFilterValues = (type: string, value: string) => {
+    const changedFilter = { name: type, value };
+    const updatedFilterSet =
+      type === "title"
+        ? [changedFilter, filterValues[1]] // update titleAdd commentMore actions
+        : [filterValues[0], changedFilter]; // update genre
+    setFilterValues(updatedFilterSet);
+  };
+
   // Render the page using the template, passing in the list of movies
   return (
-    <PageTemplate
-      title="Upcoming Movies" // Title displayed on the page
-      /**
-       * It passes the list of movies to display.
-       * If movies is truthy (i.e., data has been loaded and is available),
-       * it will be passed as-is. If movies is falsy
-       * (i.e., still undefined or null during loading),
-       * then it will pass an empty array [] instead.
-       */
-      movies={movies || []}
-      // Action button to render beside each movie
-      action={(movie: BaseMovieProps) => {
-        const isInMustWatch = mustWatchList.some((m) => m.id === movie.id);
+    <>
+      <PageTemplate
+        title="Upcoming Movies"
+        /**
+         * It passes the list of movies to display.
+         * If movies is truthy (i.e., data has been loaded and is available),
+         * it will be passed as-is. If movies is falsy
+         * (i.e., still undefined or null during loading),
+         * then it will pass an empty array [] instead.
+         */
+        movies={displayedMovies} // Show filtered list
+        action={(movie: BaseMovieProps) => {
+          // Check if the movie is already in the must-watch list
+          const isInMustWatch = mustWatchList.some((m) => m.id === movie.id);
 
-        const handleClick = () => {
-          if (!isInMustWatch) {
-            addToMustWatchList(movie);
-          }
-        };
+          // Add the movie to the must-watch list if not already there
+          const handleClick = () => {
+            if (!isInMustWatch) {
+              addToMustWatchList(movie);
+            }
+          };
 
-        return (
-          <>
-            {/* Icon at the top, only if movie is in must-watch list */}
-            {isInMustWatch && (
-              <div
-                style={{
-                  position: "absolute",
-                  top: 8,
-                  right: 8,
-                  zIndex: 10,
-                }}
-              >
-                <PlaylistAddIcon
+          return (
+            <>
+              {/* Overlay green icon if movie is already in must-watch list */}
+              {isInMustWatch && (
+                <div
                   style={{
-                    fontSize: 28,
-                    color: "green",
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    zIndex: 10,
                   }}
-                />
-              </div>
-            )}
+                >
+                  <PlaylistAddIcon
+                    style={{
+                      fontSize: 28,
+                      color: "green",
+                    }}
+                  />
+                </div>
+              )}
 
-            {/* The original clickable icon stays in place */}
-            <PlaylistAddIcon
-              style={{
-                marginLeft: "4%",
-                marginRight: "4%",
-                verticalAlign: "middle",
-                fontSize: "30px",
-                cursor: isInMustWatch ? "default" : "pointer",
-                opacity: isInMustWatch ? 0.5 : 1, // visually show disabled after click
-              }}
-              onClick={handleClick}
-            />
-          </>
-        );
-      }}
-    />
+              {/* Add-to-must-watch icon (greyed out if already added) */}
+              <PlaylistAddIcon
+                style={{
+                  marginLeft: "4%",
+                  marginRight: "4%",
+                  verticalAlign: "middle",
+                  fontSize: "30px",
+                  cursor: isInMustWatch ? "default" : "pointer",
+                  opacity: isInMustWatch ? 0.5 : 1,
+                }}
+                onClick={handleClick}
+              />
+            </>
+          );
+        }}
+      />
+
+      {/* Render the title/genre filtering UI BELOW the movie list */}
+      <MovieFilterUI
+        onFilterValuesChange={changeFilterValues}
+        titleFilter={filterValues[0].value}
+        genreFilter={filterValues[1].value}
+      />
+    </>
   );
 };
 

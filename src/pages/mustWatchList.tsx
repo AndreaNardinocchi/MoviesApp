@@ -7,51 +7,99 @@ import { BaseMovieProps } from "../types/interfaces";
 // https://materialui.co/icon/highlight-off
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import { Box, IconButton } from "@mui/material";
+// Import filter logic and UI
+import useFiltering from "../hooks/useFiltering";
+import MovieFilterUI, {
+  titleFilter,
+  genreFilter,
+} from "../components/movieFilterUI";
+
+// Initial filter configuration for title
+const titleFiltering = {
+  name: "title",
+  value: "",
+  condition: titleFilter,
+};
+
+// Initial filter configuration for genre
+const genreFiltering = {
+  name: "genre",
+  value: "0",
+  condition: genreFilter,
+};
 
 const MustWatchListPage: React.FC = () => {
-  // Access the mustWatchList array from global context
+  // Access global must-watch list and remove function from context
   const { mustWatchList, removeFromMustWatchList } = useContext(MoviesContext);
 
-  // Log the list to console whenever it updates (useful for debugging)
+  // Log list to console on update (for development/debugging)
   useEffect(() => {
     console.log("Rendering mustWatchList:", mustWatchList);
   }, [mustWatchList]);
 
+  // Initialize filtering state and logicAdd commentMore actions
+  const { filterValues, setFilterValues, filterFunction } = useFiltering([
+    titleFiltering,
+    genreFiltering,
+  ]);
+
+  // Apply active filters to the must-watch list
+  const displayedMovies = mustWatchList ? filterFunction(mustWatchList) : [];
+
+  // Update filter values when user changes the filter inputs
+  const changeFilterValues = (type: string, value: string) => {
+    const changedFilter = { name: type, value };
+    const updatedFilterSet =
+      type === "title"
+        ? [changedFilter, filterValues[1]]
+        : [filterValues[0], changedFilter];
+    setFilterValues(updatedFilterSet);
+  };
+
   return (
     // Render a reusable PageTemplate component to display the list of must-watch movies
-    <PageTemplate
-      // Title to be shown at the top of the page
-      title="Must Watch Movies List"
-      // Pass the list of must-watch movies to be displayed by the template
-      movies={mustWatchList}
-      // Define a custom action to show next to each movie card
-      action={(movie: BaseMovieProps) => (
-        // Use a flex container to horizontally align the icons with a small gap
-        <Box display="flex" alignItems="center" gap={0.2}>
-          {/* Icon to indicate this movie is part of the Must Watch list */}
-          <PlaylistAddCheckIcon
-            style={{
-              fontSize: "30px", // Set icon size
-              color: "green", // Set icon color to green
-            }}
-          />
-
-          {/* Icon button to remove the movie from the Must Watch list */}
-          <IconButton
-            size="small" // Smaller button size for compact display
-            onClick={() => removeFromMustWatchList(movie)} // Handle click to remove the movie
-            style={{ paddingRight: 8 }} // Adding a bit of right padding for spacing
-          >
-            <HighlightOffIcon
+    <>
+      <PageTemplate
+        // Title to be shown at the top of the page
+        title="Must Watch Movies List"
+        // Pass the list of must-watch movies to be displayed by the template
+        movies={displayedMovies}
+        // Define a custom action to show next to each movie card
+        action={(movie: BaseMovieProps) => (
+          // Use a flex container to horizontally align the icons with a small gap
+          <Box display="flex" alignItems="center" gap={0.2}>
+            {/* Icon to indicate this movie is part of the Must Watch list */}
+            <PlaylistAddCheckIcon
               style={{
-                fontSize: "28px", // Slightly smaller than the check icon
-                color: "red", // Use red color to indicate deletion
+                fontSize: "30px", // Set icon size
+                color: "green", // Set icon color to green
               }}
             />
-          </IconButton>
-        </Box>
-      )}
-    />
+
+            {/* Button to remove the movie from the must-watch list */}
+            <IconButton
+              size="small"
+              onClick={() => removeFromMustWatchList(movie)}
+              style={{ paddingRight: 8 }}
+            >
+              <HighlightOffIcon
+                style={{
+                  fontSize: "28px",
+                  color: "red",
+                }}
+              />
+            </IconButton>
+          </Box>
+        )}
+      />
+
+      {/* Filter UI to allow user to filter by title and genre */}
+      <MovieFilterUI
+        onFilterValuesChange={changeFilterValues}
+        titleFilter={filterValues[0].value}
+        genreFilter={filterValues[1].value}
+      />
+    </>
   );
 };
 
