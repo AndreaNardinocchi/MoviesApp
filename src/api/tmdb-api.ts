@@ -149,7 +149,7 @@ export const getPersonImages = async (personId: number) => {
 /**
  * Fetches movies released in a specific year, sorted by release date.
  * https://developer.themoviedb.org/reference/discover-movie
- * 'year' is The year to filter movies by.
+ * 'year' is the year to filter movies by.
  */
 export const getMoviesPerReleaseYear = async (year: number) => {
   return fetch(
@@ -168,4 +168,18 @@ export const getMoviesPerReleaseYear = async (year: number) => {
     .catch((error) => {
       throw error;
     });
+};
+
+/**
+ * Fetches the list of movies that are now playing in theaters.
+ * https://developer.themoviedb.org/reference/movie-now-playing-list
+ */
+export const getNowPlayingMovies = () => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/now_playing?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=en-US&page=1`
+  )
+    .then((res) => res.json())
+    .then((json) => json.results); // Only return the movie list
 };

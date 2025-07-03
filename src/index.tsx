@@ -13,6 +13,7 @@ import MoviesContextProvider from "./contexts/moviesContext";
 import AddMovieReviewPage from "./pages/addMovieReviewPage";
 import ActorBioPage from "./pages/actorBioPage";
 import MustWatchListPage from "./pages/mustWatchList";
+import NowPlayingMoviesPage from "./pages/nowPlayingMoviesPage";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -40,6 +41,10 @@ const App = () => {
             <Route
               path="/movies/mustwatchlist"
               element={<MustWatchListPage />}
+            />
+            <Route
+              path="/movies/nowplaying"
+              element={<NowPlayingMoviesPage />}
             />
             <Route
               path="/movies/favourites"

@@ -8,6 +8,7 @@ import useFiltering from "../hooks/useFiltering";
 import MovieFilterUI, {
   titleFilter,
   genreFilter,
+  releaseFilter,
 } from "../components/movieFilterUI";
 import RemoveFromFavourites from "../components/cardIcons/removeFromFavourites";
 import WriteReview from "../components/cardIcons/writeReview";
@@ -21,10 +22,18 @@ const titleFiltering = {
   value: "",
   condition: titleFilter,
 };
+
 const genreFiltering = {
   name: "genre",
   value: "0",
   condition: genreFilter,
+};
+
+// Define the default filter state for release filtering
+const releaseFiltering = {
+  name: "release",
+  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any movies
+  condition: releaseFilter,
 };
 
 const FavouriteMoviesPage: React.FC = () => {
@@ -32,6 +41,7 @@ const FavouriteMoviesPage: React.FC = () => {
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,
+    releaseFiltering,
   ]);
 
   // Create an array of queries and run them in parallel.
@@ -55,12 +65,20 @@ const FavouriteMoviesPage: React.FC = () => {
   const allFavourites = favouriteMovieQueries.map((q) => q.data);
   const displayedMovies = allFavourites ? filterFunction(allFavourites) : [];
 
+  // Called when the user changes title, genre filter, or release year
   const changeFilterValues = (type: string, value: string) => {
-    const changedFilter = { name: type, value: value };
+    const changedFilter = { name: type, value };
     const updatedFilterSet =
+      /**
+       * If type === "title", update the first filter.
+       * Otherwise, if type === "genre", update the second filter.
+       * Otherwise, type === "release", update the third filter.
+       */
       type === "title"
-        ? [changedFilter, filterValues[1]]
-        : [filterValues[0], changedFilter];
+        ? [changedFilter, filterValues[1], filterValues[2]]
+        : type === "genre"
+        ? [filterValues[0], changedFilter, filterValues[2]]
+        : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
     setFilterValues(updatedFilterSet);
   };
 
@@ -83,6 +101,8 @@ const FavouriteMoviesPage: React.FC = () => {
         onFilterValuesChange={changeFilterValues}
         titleFilter={filterValues[0].value}
         genreFilter={filterValues[1].value}
+        // This is NOT a string, so we wrap it with a Number()
+        releaseFilter={Number(filterValues[2].value)}
       />
     </>
   );

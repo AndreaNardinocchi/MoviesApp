@@ -341,6 +341,9 @@ const SiteHeader: React.FC = () => {
                 >
                   MustWatch Movies
                 </MenuItem>
+                <MenuItem onClick={() => handleNavigate("/movies/nowplaying")}>
+                  Now Playing Movies
+                </MenuItem>
               </Menu>
 
               {/* Desktop "Favorites" button */}

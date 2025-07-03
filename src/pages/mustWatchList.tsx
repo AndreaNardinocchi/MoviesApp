@@ -12,6 +12,7 @@ import useFiltering from "../hooks/useFiltering";
 import MovieFilterUI, {
   titleFilter,
   genreFilter,
+  releaseFilter,
 } from "../components/movieFilterUI";
 
 // Initial filter configuration for title
@@ -28,6 +29,13 @@ const genreFiltering = {
   condition: genreFilter,
 };
 
+// Define the default filter state for release filtering
+const releaseFiltering = {
+  name: "release",
+  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any movies
+  condition: releaseFilter,
+};
+
 const MustWatchListPage: React.FC = () => {
   // Access global must-watch list and remove function from context
   const { mustWatchList, removeFromMustWatchList } = useContext(MoviesContext);
@@ -41,18 +49,26 @@ const MustWatchListPage: React.FC = () => {
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,
+    releaseFiltering,
   ]);
 
   // Apply active filters to the must-watch list
   const displayedMovies = mustWatchList ? filterFunction(mustWatchList) : [];
 
-  // Update filter values when user changes the filter inputs
+  // Called when the user changes title, genre filter, or release year
   const changeFilterValues = (type: string, value: string) => {
     const changedFilter = { name: type, value };
     const updatedFilterSet =
+      /**
+       * If type === "title", update the first filter.
+       * Otherwise, if type === "genre", update the second filter.
+       * Otherwise, type === "release", update the third filter.
+       */
       type === "title"
-        ? [changedFilter, filterValues[1]]
-        : [filterValues[0], changedFilter];
+        ? [changedFilter, filterValues[1], filterValues[2]]
+        : type === "genre"
+        ? [filterValues[0], changedFilter, filterValues[2]]
+        : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
     setFilterValues(updatedFilterSet);
   };
 
@@ -98,6 +114,8 @@ const MustWatchListPage: React.FC = () => {
         onFilterValuesChange={changeFilterValues}
         titleFilter={filterValues[0].value}
         genreFilter={filterValues[1].value}
+        // This is NOT a string, so we wrap it with a Number()
+        releaseFilter={Number(filterValues[2].value)}
       />
     </>
   );
