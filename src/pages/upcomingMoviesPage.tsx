@@ -12,6 +12,7 @@ import useFiltering from "../hooks/useFiltering";
 import MovieFilterUI, {
   titleFilter,
   genreFilter,
+  releaseFilter,
 } from "../components/movieFilterUI";
 
 // Define the default filter state for title filtering
@@ -28,6 +29,13 @@ const genreFiltering = {
   condition: genreFilter, // The actual filter function
 };
 
+// Define the default filter state for release filtering
+const releaseFiltering = {
+  name: "release",
+  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any movies
+  condition: releaseFilter,
+};
+
 const UpcomingMoviesPage: React.FC = () => {
   // Access the mustWatchList and addToMustWatchList function from context
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
@@ -36,6 +44,7 @@ const UpcomingMoviesPage: React.FC = () => {
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,
+    releaseFiltering,
   ]);
 
   /**
@@ -84,9 +93,16 @@ const UpcomingMoviesPage: React.FC = () => {
   const changeFilterValues = (type: string, value: string) => {
     const changedFilter = { name: type, value };
     const updatedFilterSet =
+      /**
+       * If type === "title", update the first filter.
+       * Otherwise, if type === "genre", update the second filter.
+       * Otherwise, type === "release", update the third filter.
+       */
       type === "title"
-        ? [changedFilter, filterValues[1]] // update titleAdd commentMore actions
-        : [filterValues[0], changedFilter]; // update genre
+        ? [changedFilter, filterValues[1], filterValues[2]]
+        : type === "genre"
+        ? [filterValues[0], changedFilter, filterValues[2]]
+        : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
     setFilterValues(updatedFilterSet);
   };
 
@@ -157,6 +173,8 @@ const UpcomingMoviesPage: React.FC = () => {
         onFilterValuesChange={changeFilterValues}
         titleFilter={filterValues[0].value}
         genreFilter={filterValues[1].value}
+        // This is NOT a string, so we wrap it with a Number()
+        releaseFilter={Number(filterValues[2].value)}
       />
     </>
   );

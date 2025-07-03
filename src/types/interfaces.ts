@@ -55,9 +55,16 @@ export interface MovieDetailsProps extends BaseMovieProps {
    * especially in components like TemplateMoviePage or detail views
    * */
   cast: CastMember[];
+  /**
+   * List of movie release years.
+   * https://developers.themoviedb.org/3/movies/get-movie-details
+   */
+  release: {
+    year: number;
+  }[];
 }
 
-export type FilterOption = "title" | "genre";
+export type FilterOption = "title" | "genre" | "release";
 
 /**
  * To avoid code duplication between the home page and favourites page,
@@ -72,6 +79,16 @@ export interface Review {
   id: string;
   content: string;
   author: string;
+}
+
+/**
+ * List of movie release years.
+ * https://developers.themoviedb.org/3/movies/get-movie-details
+ */
+export interface ReleaseYear {
+  release: {
+    year: number;
+  }[];
 }
 
 /**

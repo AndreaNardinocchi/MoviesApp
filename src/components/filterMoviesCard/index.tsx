@@ -21,6 +21,7 @@ interface FilterMoviesCardProps {
   onUserInput: (f: FilterOption, s: string) => void; // Add this line
   titleFilter: string;
   genreFilter: string;
+  releaseFilter: number;
 }
 
 const styles = {
@@ -39,11 +40,40 @@ const styles = {
 const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
   titleFilter,
   genreFilter,
+  releaseFilter,
   onUserInput,
 }) => {
   const { data, error, isLoading, isError } = useQuery<GenreData, Error>(
     "genres",
     getGenres
+  );
+
+  /**
+   * Get the current year using the Date object
+   * `new Date()` creates a Date instance representing the current date and time.
+   * getFullYear()` extracts the full year as a 4-digit number .
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+   */
+  const currentYear = new Date().getFullYear();
+
+  /**
+   * Create an array of years from currentYear down to 1950 (random year).
+   * The Array.from() static method creates a new, shallow-copied Array instance
+   * from an iterable or array-like object.
+   * The array will contain (currentYear - 1949) elements to include 1950.
+   * Example: if currentYear = 2025, then length = 2025 - 1949 = 76.
+   * The map function takes two arguments:
+   * `_` is the current value
+   * `i` is the current index in the array.
+   * For each index `i`, we subtract `i` from `currentYear` to get descending years.
+   * Example: i = 0 → 2025, i = 1 → 2024, ..., i = 75 → 1950
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#using_arrow_functions_and_array.from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#sequence_generator_range
+   */
+  const years: number[] = Array.from(
+    { length: currentYear - 1949 },
+    (_, i) => currentYear - i
   );
 
   if (isLoading) {
@@ -72,6 +102,10 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
 
   const handleGenreChange = (e: SelectChangeEvent) => {
     handleChange(e, "genre", e.target.value);
+  };
+
+  const handleReleaseYearChange = (e: SelectChangeEvent) => {
+    handleChange(e, "release", e.target.value);
   };
 
   return (
@@ -107,6 +141,25 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
                   </MenuItem>
                 );
               })}
+            </Select>
+          </FormControl>
+          <FormControl sx={styles.formControl}>
+            <InputLabel id="release-year-label">Release Year</InputLabel>
+            <Select
+              labelId="release-year-label"
+              id="release-year-select"
+              // Ensure releaseFilter is defined before calling .toString(). Here's how you can safely handle it:
+              value={releaseFilter ? releaseFilter.toString() : "0"}
+              onChange={handleReleaseYearChange}
+            >
+              {/* value={0} was needed to ensure that the number "0" was correctly read and 
+              all movies would show when "All' is selected" */}
+              <MenuItem value={0}>All</MenuItem>
+              {years.map((year) => (
+                <MenuItem key={year} value={year.toString()}>
+                  {year}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </CardContent>

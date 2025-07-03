@@ -145,3 +145,27 @@ export const getPersonImages = async (personId: number) => {
   if (!response.ok) throw new Error("failed to fetch person images");
   return response.json();
 };
+
+/**
+ * Fetches movies released in a specific year, sorted by release date.
+ * https://developer.themoviedb.org/reference/discover-movie
+ * 'year' is The year to filter movies by.
+ */
+export const getMoviesPerReleaseYear = async (year: number) => {
+  return fetch(
+    `https://api.themoviedb.org/3/discover/movie?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=en-US&sort_by=release_date.asc&primary_release_year=${year}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get movie data. Response status: ${response.status}`
+        );
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
