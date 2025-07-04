@@ -50,10 +50,18 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
    */
   const { favourites, mustWatchList } = useContext(MoviesContext);
 
-  // Check if the movie ID exists in the favorites array
+  /**
+   * Checks whether the current movie id exists in the favourite list,
+   * which is an array of movies IDs
+   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+   */
   const isFavourite = favourites.includes(movie.id);
 
-  // Check if the movie ID exists in the must-watch list
+  /**
+   * Checks whether the current movie exists in the must-watch list, which is
+   * an array of movie objects, hence we iterate through that list and use some()
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+   */
   const isInMustWatchList = mustWatchList.some((m) => m.id === movie.id);
 
   return (

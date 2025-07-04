@@ -183,3 +183,17 @@ export const getNowPlayingMovies = () => {
     .then((res) => res.json())
     .then((json) => json.results); // Only return the movie list
 };
+
+/**
+ * Fetches a list of currently airing TV series from TMDb.
+ * https://developer.themoviedb.org/reference/tv-on-the-air-list
+ */
+export const getCurrentlyAiringTV = () => {
+  return fetch(
+    `https://api.themoviedb.org/3/tv/on_the_air?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=en-US&page=1`
+  )
+    .then((res) => res.json())
+    .then((json) => json.results); // Only return the TV show list
+};

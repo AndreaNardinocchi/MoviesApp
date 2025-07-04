@@ -126,3 +126,58 @@ export interface MovieImage {
   vote_count?: number;
   width?: number;
 }
+
+/**
+ * Represents the basic structure of a TV series item returned by the TMDb API.
+ * This interface defines only the core fields needed to display a TV series in a grid.
+ * Source: https://developer.themoviedb.org/reference/tv-series-details
+ */
+export interface BaseTVSeriesProps {
+  id: number;
+  name: string;
+  // Short summary or description of the TV series storyline
+  overview: string;
+  poster_path: string;
+  first_air_date: string;
+  vote_average: number;
+  genre_ids: number[];
+}
+
+export interface TVSeriesListProps {
+  series: BaseTVSeriesProps[];
+  action: (series: BaseTVSeriesProps) => React.ReactNode;
+}
+
+/**
+ * Props will allow us to reuse the template in different scenarios.
+ * */
+export interface TVSeriesListPageTemplateProps extends TVSeriesListProps {
+  title: string;
+}
+
+/**
+ * Represents detailed properties of a TV series.
+ * Source: https://developer.themoviedb.org/reference/tv-series-details
+ */
+export interface TVSeriesDetailsProps extends BaseTVSeriesProps {
+  genres: {
+    id: number;
+    name: string;
+  }[];
+  production_countries: {
+    iso_3166_1: string;
+    name: string;
+  }[];
+
+  // The below data shows on the TV Series page and extends the BaseTVSeriesProps
+  // which is being used on the TVSeriesCard and TVSeriesList too
+  // https://developer.themoviedb.org/reference/tv-series-details
+  // The official homepage URL of the series, and it can be null or an external link
+  homepage: string;
+  // A brief phrase or slogan associated with the series
+  tagline: string;
+  number_of_seasons: number;
+  number_of_episodes: number;
+  cast?: CastMember[];
+  favourite?: boolean;
+}

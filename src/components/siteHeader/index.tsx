@@ -314,7 +314,7 @@ const SiteHeader: React.FC = () => {
                 aria-haspopup="true"
                 aria-expanded={submenuOpen ? "true" : undefined}
               >
-                Movie List
+                Movie Lists
               </Button>
 
               {/* Dropdown submenu anchored to "Movie List" button */}
@@ -353,8 +353,11 @@ const SiteHeader: React.FC = () => {
               >
                 Favorites
               </Button>
-              <Button color="inherit" onClick={() => handleNavigate("/")}>
-                Option 4
+              <Button
+                color="inherit"
+                onClick={() => handleNavigate("/tvseries")}
+              >
+                TV Series
               </Button>
             </>
           )}
