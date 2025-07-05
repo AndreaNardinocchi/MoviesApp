@@ -182,3 +182,9 @@ export interface TVSeriesDetailsProps extends BaseTVSeriesProps {
   cast?: CastMember[];
   favourite?: boolean;
 }
+
+export interface AuthContextInterface {
+  token: string | null;
+  authenticate: (username: string, password: string) => void;
+  signout: () => void;
+}
