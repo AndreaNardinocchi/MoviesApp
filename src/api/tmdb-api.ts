@@ -197,3 +197,73 @@ export const getCurrentlyAiringTV = () => {
     .then((res) => res.json())
     .then((json) => json.results); // Only return the TV show list
 };
+
+/**
+ * Fetches poster images for a TV series from TMDb.
+ * https://developer.themoviedb.org/reference/tv-series-images
+ * Image usage: Combine `file_path` with https://image.tmdb.org/t/p/{size}/{file_path}
+ * 'id' is the TMDb ID of the TV series (can be a string or number)
+ */
+export const getTVSeriesImages = (id: string | number) => {
+  return fetch(
+    `https://api.themoviedb.org/3/tv/${id}/images?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("failed to fetch images");
+      }
+      return response.json();
+    })
+    .then((json) => json.posters)
+    .catch((error) => {
+      throw error;
+    });
+};
+
+/**
+ * This is cloned from getMovie function, modified to fetch TV series details instead of movies.
+ * https://developers.themoviedb.org/3/tv/get-tv-details
+ */
+export const getTVSeries = (id: string) => {
+  return fetch(
+    `https://api.themoviedb.org/3/tv/${id}?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get TV series data. Response status: ${response.status}`
+        );
+      }
+      console.log("TV Series Details:", response);
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
+/**
+ * Fetches the cast (actors) for a given TV series ID from The Movie Database (TMDb) API.
+ * https://developers.themoviedb.org/3/tv/get-tv-credits
+ * 'id' is the ID of the TV series (can be a string or number)
+ */
+export const getTVSeriesCredits = (id: string | number) => {
+  return fetch(
+    `https://api.themoviedb.org/3/tv/${id}/credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  )
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to fetch TV series credits");
+      console.log("TV Series Details:", res);
+      return res.json();
+    })
+    .then((json) => json.cast) // Only return the cast (actors)
+    .catch((error) => {
+      throw error;
+    });
+};

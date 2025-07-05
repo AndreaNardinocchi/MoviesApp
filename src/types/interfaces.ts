@@ -133,6 +133,7 @@ export interface MovieImage {
  * Source: https://developer.themoviedb.org/reference/tv-series-details
  */
 export interface BaseTVSeriesProps {
+  title: string;
   id: number;
   name: string;
   // Short summary or description of the TV series storyline
