@@ -16,6 +16,7 @@ import MustWatchListPage from "./pages/mustWatchList";
 import NowPlayingMoviesPage from "./pages/nowPlayingMoviesPage";
 import TVSeriesPage from "./pages/tvSeriesPage";
 import TVSeriesDetailsPage from "./pages/TVSeriesDetailsPage";
+import ActorMoviesPage from "./pages/actorMoviesPage";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -55,6 +56,7 @@ const App = () => {
               element={<FavouriteMoviesPage />}
             />
             <Route path="/movies/:id" element={<MoviePage />} />
+            <Route path="/actor/:id/movies" element={<ActorMoviesPage />} />
             <Route path="/" element={<HomePage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

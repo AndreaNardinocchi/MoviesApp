@@ -46,10 +46,7 @@ const ActorBioPage: React.FC = () => {
     isError,
   } = useQuery(
     ["actorDetails", id], // Unique key used by React Query to cache the response
-    () => fetchActorDetails(id || ""), // API function to get actor info from '/api/tmdb-api'
-    {
-      enabled: !!id, // Only run the query if ID is available
-    }
+    () => fetchActorDetails(id || "") // API function to get actor info from '/api/tmdb-api'
   );
 
   // Fetch images associated with the actor
@@ -139,6 +136,7 @@ const ActorBioPage: React.FC = () => {
     genres: [],
     production_countries: [],
     cast: [],
+    release: [],
   };
 
   // Opens the image modal and displays the selected image
@@ -240,6 +238,15 @@ const ActorBioPage: React.FC = () => {
           style={{ marginBottom: 16, marginRight: 8 }}
         >
           Back to Movie Page
+        </Button>
+
+        {/* Button to land the user to the actor movies page */}
+        <Button
+          variant="outlined"
+          onClick={() => navigate(`/actor/${id}/movies`)}
+          style={{ marginBottom: 16 }}
+        >
+          Actor Movies page
         </Button>
 
         {/**

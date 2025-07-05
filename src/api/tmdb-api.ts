@@ -267,3 +267,21 @@ export const getTVSeriesCredits = (id: string | number) => {
       throw error;
     });
 };
+
+/**
+ * Fetches the movies an actor played.
+ * https://tmdbapis.metamanager.wiki/en/latest/_modules/tmdbapis/api3.html
+ * 'id' is the ID of the actor (can be a string or number)
+ */
+export const getActorMovies = (id: string | number) => {
+  return fetch(
+    `https://api.themoviedb.org/3/person/${id}/movie_credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      console.log(json.cast);
+      return json.cast;
+    });
+};
