@@ -1,8 +1,18 @@
-export const getMovies = () => {
+export const getMovies = (page = 1) => {
   return fetch(
+    // `
+    // https://api.themoviedb.org/3/discover/movie?api_key=${
+    //   import.meta.env.VITE_TMDB_KEY
+    // }&language=en-US&include_adult=false&include_video=false&page=1
+
+    /**  To retrieve page by page for pagination, we added the 'page' parameter, so that,
+     * whenever a page is selecetd, the API will show movies belonging to that
+     * specific page
+     */
+    // https://www.themoviedb.org/talk/5e23977c8f26bc0011777a02?
     `https://api.themoviedb.org/3/discover/movie?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&include_adult=false&include_video=false&page=1`
+    }&page=${page}`
   )
     .then((response) => {
       if (!response.ok)

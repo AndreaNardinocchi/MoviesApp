@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { getMovies } from "../api/tmdb-api";
 import useFiltering from "../hooks/useFiltering";
@@ -11,6 +11,8 @@ import { BaseMovieProps, DiscoverMovies } from "../types/interfaces";
 import { useQuery } from "react-query";
 import Spinner from "../components/spinner";
 import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
+// https://mui.com/material-ui/react-pagination/
+import { Pagination } from "@mui/material";
 
 const titleFiltering = {
   name: "title",
@@ -31,10 +33,19 @@ const releaseFiltering = {
 };
 
 const HomePage: React.FC = () => {
+  /**
+   * We are setting the state for page as '1' as we want to show the first page first
+   * https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+   */
+  const [page, setPage] = useState(1);
+  // The below code has bee slighly adjusted as per
+  // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
   const { data, error, isLoading, isError } = useQuery<DiscoverMovies, Error>(
-    "discover",
-    getMovies
+    ["discover", page],
+    () => getMovies(page),
+    { keepPreviousData: true }
   );
+
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,
@@ -79,6 +90,7 @@ const HomePage: React.FC = () => {
       <PageTemplate
         title="Discover Movies"
         movies={displayedMovies}
+        // movies={paginatedMovies}
         action={(movie: BaseMovieProps) => {
           return <AddToFavouritesIcon {...movie} />;
         }}
@@ -89,6 +101,23 @@ const HomePage: React.FC = () => {
         genreFilter={filterValues[1].value}
         // This is NOT a string, so we wrap it with a Number()
         releaseFilter={Number(filterValues[2].value)}
+      />
+      <Pagination
+        color="primary"
+        size="large"
+        count={data?.total_pages || 1}
+        page={page}
+        onChange={(_, value) => setPage(value)}
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          backgroundColor: "white", // or match your theme
+          py: 1,
+          zIndex: 10,
+          display: "flex",
+          justifyContent: "center",
+          borderTop: "1px solid #ccc",
+        }}
       />
     </>
   );

@@ -9,7 +9,7 @@ import MenuItem from "@mui/material/MenuItem";
 import Menu from "@mui/material/Menu";
 import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/authContext";
 // https://mui.com/material-ui/material-icons/?selected=Skateboarding
 import SkateboardingIcon from "@mui/icons-material/Skateboarding";
@@ -20,6 +20,7 @@ import SkateboardingIcon from "@mui/icons-material/Skateboarding";
 // https://mui.com/material-ui/material-icons/?selected=Login
 import LoginIcon from "@mui/icons-material/Login";
 import UserProfileDrawer from "../UserProfileDrawer";
+import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 
 // The userName here wouldn't get updated whenever a new sign up occurred
 // hence, we resolved by using useState() and useEffect() below
@@ -194,10 +195,24 @@ const SiteHeader: React.FC = () => {
       {/* Fixed header bar at the top */}
       <AppBar position="fixed" elevation={0} color="primary">
         <Toolbar>
+          <Link onClick={() => navigate("/")} to={""} rel="noopener">
+            {/* // rel="noopener" */}
+            <VideoCameraFrontIcon
+              sx={{
+                marginTop: 0.03,
+                verticalAlign: "middle",
+                mr: 0.5,
+                fontSize: 60,
+                color: "white",
+              }}
+            />
+          </Link>
+
           {/* Main title, flexGrow pushes remaining content right */}
-          <Typography variant="h4" sx={{ flexGrow: 1 }}>
+          <Typography variant="h4" sx={{ flexGrow: 1, color: "white" }}>
             TMDB Client
           </Typography>
+
           {/* Subtitle, also pushes remaining content right */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
             All you ever wanted to know about Movies!
