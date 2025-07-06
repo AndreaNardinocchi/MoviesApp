@@ -1,4 +1,4 @@
-import React, { useState, MouseEvent, useContext } from "react";
+import React, { useState, MouseEvent, useContext, useEffect } from "react";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
@@ -13,12 +13,17 @@ import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/authContext";
 // https://mui.com/material-ui/material-icons/?selected=Skateboarding
 import SkateboardingIcon from "@mui/icons-material/Skateboarding";
+// The Logout Icon is no longer needed as we are using the UserProfileDrawer
+// which embeds the signout function and icon
 // https://mui.com/material-ui/material-icons/?selected=Logout
-import LogoutIcon from "@mui/icons-material/Logout";
+// import LogoutIcon from "@mui/icons-material/Logout";
 // https://mui.com/material-ui/material-icons/?selected=Login
 import LoginIcon from "@mui/icons-material/Login";
+import UserProfileDrawer from "../UserProfileDrawer";
 
-const userName = localStorage.getItem("userFirstName");
+// The userName here wouldn't get updated whenever a new sign up occurred
+// hence, we resolved by using useState() and useEffect() below
+// const userName = localStorage.getItem("userFirstName");
 
 // Creates a div that acts as spacing offset to push content below the fixed AppBar
 // https://mui.com/system/styled/
@@ -31,7 +36,30 @@ const Offset = styled("div")(({ theme }) => theme.mixins.toolbar);
  */
 
 const SiteHeader: React.FC = () => {
-  const { token, signout } = useContext(AuthContext) || {};
+  const { token } = useContext(AuthContext) || {};
+
+  // , signout
+  // The signout is no longer needed as we are using the UserProfileDrawer
+  // which embeds the signout function and icon
+
+  /**
+   * Declare a state variable `userName` with a default value "User"
+   * `setUserName` is the function used to update this state
+   * */
+  const [userName, setUserName] = useState("User");
+
+  // This useEffect runs when the component mounts or whenever `token` changes
+  useEffect(
+    () => {
+      // Get the 'userFirstName' or 'Usaer' fall back if not found
+      const name = localStorage.getItem("userFirstName") || "User";
+      // Update the userName state with the value from localStorage
+      setUserName(name);
+    },
+    // Run this effect every time `token` changes ensuring the 'userFirstName' is up-to-date
+    [token]
+  );
+
   console.log("SiteHeader token:", token);
 
   /**
@@ -81,10 +109,10 @@ const SiteHeader: React.FC = () => {
    * When null, it means the menu is closed.
    */
   // State to track the anchor element of the desktop "Movie List" submenu (null if closed)
-  const [welcomeMenuAnchorEl, setWelcomeMenuAnchorEl] =
-    useState<null | HTMLElement>(null);
+  //  const [welcomeMenuAnchorEl, setWelcomeMenuAnchorEl] =
+  // useState<null | HTMLElement>(null);
   // Boolean to check if submenu is open
-  const isWelcomeMenuOpen = Boolean(welcomeMenuAnchorEl);
+  // const isWelcomeMenuOpen = Boolean(welcomeMenuAnchorEl);
 
   /**
    * Similar to anchorEl, but specifically for the submenu that drops down under
@@ -111,9 +139,9 @@ const SiteHeader: React.FC = () => {
    * button in welcomeMenuAnchorEl, which anchors the Log Out menu to that element.
    * This ensures the menu opens directly below the button.
    */
-  const handleWelcomeMenu = (event: MouseEvent<HTMLElement>) => {
-    setWelcomeMenuAnchorEl(event.currentTarget);
-  };
+  // const handleWelcomeMenu = (event: MouseEvent<HTMLElement>) => {
+  //   setWelcomeMenuAnchorEl(event.currentTarget);
+  // };
 
   /**
    * This function is called when the hamburger icon is clicked.
@@ -124,7 +152,7 @@ const SiteHeader: React.FC = () => {
   const handleMenuClose = () => {
     setMobileAnchorEl(null);
     setMovieMenuAnchorEl(null);
-    setWelcomeMenuAnchorEl(null);
+    // setWelcomeMenuAnchorEl(null);
   };
 
   /**
@@ -158,6 +186,8 @@ const SiteHeader: React.FC = () => {
    * No submenus are used here to keep the UI clean and usable on smaller screens.
    */
   // https://mui.com/material-ui/react-menu/
+
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
@@ -202,16 +232,21 @@ const SiteHeader: React.FC = () => {
                     {opt.label}
                   </MenuItem>
                 ))}
-                {token && (
-                  <MenuItem onClick={() => signout && signout()}>
-                    Log out <LogoutIcon sx={{ ml: 1 }} />
+                {token ? (
+                  <MenuItem onClick={() => setDrawerOpen(true)}>
+                    Hi {userName}! <SkateboardingIcon sx={{ ml: 1 }} />
                   </MenuItem>
-                )}
-                {!token && (
-                  <MenuItem onClick={() => navigate("login")}>
+                ) : (
+                  <MenuItem onClick={() => navigate("/login")}>
                     Login <LoginIcon sx={{ ml: 1 }} />
                   </MenuItem>
                 )}
+                {/* This was a duplicate in the mobile view */}
+                {/* {!token && (
+                  <MenuItem onClick={() => navigate("/login")}>
+                    Login <LoginIcon sx={{ ml: 1 }} />
+                  </MenuItem>
+                )} */}
               </Menu>
             </>
           ) : (
@@ -275,16 +310,21 @@ const SiteHeader: React.FC = () => {
                     color="inherit"
                     // The onClick won't navigate to anywhere. Instead, it will
                     // handle the onClick={handleWelcomeMenu}
-                    onClick={handleWelcomeMenu}
-                    aria-controls={
-                      isWelcomeMenuOpen ? "welcome-menu" : undefined
-                    }
-                    aria-haspopup="true"
-                    aria-expanded={isWelcomeMenuOpen ? "true" : undefined}
+                    // onClick={handleWelcomeMenu}
+                    // aria-controls={
+                    //   isWelcomeMenuOpen ? "welcome-menu" : undefined
+                    // }
+                    // aria-haspopup="true"
+                    // aria-expanded={isWelcomeMenuOpen ? "true" : undefined}
+
+                    // We are now handling the onClick with setDrawer
+                    onClick={() => setDrawerOpen(true)}
+                    endIcon={<SkateboardingIcon />}
                   >
-                    Hi {userName} <SkateboardingIcon />!
+                    Hi {userName} !
                   </Button>
-                  <Menu
+
+                  {/* <Menu
                     id="welcome-menu"
                     anchorEl={welcomeMenuAnchorEl}
                     open={isWelcomeMenuOpen}
@@ -295,7 +335,7 @@ const SiteHeader: React.FC = () => {
                     <MenuItem onClick={() => signout && signout()}>
                       Log out <LogoutIcon sx={{ ml: 1 }} />
                     </MenuItem>
-                  </Menu>
+                  </Menu> */}
                 </>
               ) : (
                 <Button color="inherit" onClick={() => navigate("login")}>
@@ -305,6 +345,11 @@ const SiteHeader: React.FC = () => {
             </>
           )}
         </Toolbar>
+        {/* This has been placed out side <Toolbar> to ensure it opens for all views */}
+        <UserProfileDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        />
       </AppBar>
 
       {/* Push page content down so it is not hidden behind fixed AppBar */}

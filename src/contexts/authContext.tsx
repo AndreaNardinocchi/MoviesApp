@@ -1,13 +1,22 @@
 import React, { useState, createContext } from "react";
 import fakeAuth from "../util";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AuthContextInterface } from "../types/interfaces";
+import { AuthContextInterface, User } from "../types/interfaces";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextInterface | null>(null);
 
 const AuthContextProvider: React.FC<React.PropsWithChildren> = (props) => {
   const [token, setToken] = useState<string | null>(null);
+
+  // Pull user data from localStorage
+  const user: User = {
+    firstName: localStorage.getItem("userFirstName") || "User",
+    lastName: localStorage.getItem("userLastName") || "User",
+    email: localStorage.getItem("userEmail") || "user@example.com",
+    role: localStorage.getItem("userRole") || "Viewer",
+  };
+
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -20,13 +29,6 @@ const AuthContextProvider: React.FC<React.PropsWithChildren> = (props) => {
 
   const signout = () => {
     setToken(null);
-
-    // localStorage.removeItem("userName");
-    // localStorage.removeItem("userEmail");
-    // localStorage.removeItem("userPassword");
-
-    // localStorage.removeItem("User email");
-    // localStorage.removeItem("password");
     navigate("/");
   };
 
@@ -34,6 +36,7 @@ const AuthContextProvider: React.FC<React.PropsWithChildren> = (props) => {
     <AuthContext.Provider
       value={{
         token,
+        user,
         authenticate,
         signout,
       }}
