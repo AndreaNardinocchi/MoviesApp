@@ -97,7 +97,8 @@ import TVSeriesDetailsPage from "./pages/TVSeriesDetailsPage";
 import ActorMoviesPage from "./pages/actorMoviesPage";
 import LoginPage from "./pages/loginPage";
 import ProtectedRoute from "./components/routes/protectedRoutes";
-import AuthContextProvider from "./contexts/authContext"; // import your provider
+import AuthContextProvider from "./contexts/authContext";
+import SignUpPage from "./pages/signUpPage";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -168,6 +169,7 @@ const App = () => {
               <Route path="/" element={<HomePage />} />
               <Route path="*" element={<Navigate to="/" />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignUpPage />} />
             </Routes>
           </MoviesContextProvider>
         </AuthContextProvider>

@@ -11,6 +11,14 @@ import { styled, useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/authContext";
+// https://mui.com/material-ui/material-icons/?selected=Skateboarding
+import SkateboardingIcon from "@mui/icons-material/Skateboarding";
+// https://mui.com/material-ui/material-icons/?selected=Logout
+import LogoutIcon from "@mui/icons-material/Logout";
+// https://mui.com/material-ui/material-icons/?selected=Login
+import LoginIcon from "@mui/icons-material/Login";
+
+const userName = localStorage.getItem("userFirstName");
 
 // Creates a div that acts as spacing offset to push content below the fixed AppBar
 // https://mui.com/system/styled/
@@ -196,11 +204,13 @@ const SiteHeader: React.FC = () => {
                 ))}
                 {token && (
                   <MenuItem onClick={() => signout && signout()}>
-                    Log out
+                    Log out <LogoutIcon sx={{ ml: 1 }} />
                   </MenuItem>
                 )}
                 {!token && (
-                  <MenuItem onClick={() => navigate("login")}>Login</MenuItem>
+                  <MenuItem onClick={() => navigate("login")}>
+                    Login <LoginIcon sx={{ ml: 1 }} />
+                  </MenuItem>
                 )}
               </Menu>
             </>
@@ -272,7 +282,7 @@ const SiteHeader: React.FC = () => {
                     aria-haspopup="true"
                     aria-expanded={isWelcomeMenuOpen ? "true" : undefined}
                   >
-                    Welcome!
+                    Hi {userName} <SkateboardingIcon />!
                   </Button>
                   <Menu
                     id="welcome-menu"
@@ -283,13 +293,13 @@ const SiteHeader: React.FC = () => {
                     transformOrigin={{ vertical: "top", horizontal: "left" }}
                   >
                     <MenuItem onClick={() => signout && signout()}>
-                      Log out
+                      Log out <LogoutIcon sx={{ ml: 1 }} />
                     </MenuItem>
                   </Menu>
                 </>
               ) : (
                 <Button color="inherit" onClick={() => navigate("login")}>
-                  Login
+                  Login <LoginIcon sx={{ ml: 1 }} />
                 </Button>
               )}
             </>

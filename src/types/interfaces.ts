@@ -183,6 +183,7 @@ export interface TVSeriesDetailsProps extends BaseTVSeriesProps {
   favourite?: boolean;
 }
 
+// AuthContext Interface
 export interface AuthContextInterface {
   token: string | null;
   authenticate: (username: string, password: string) => void;

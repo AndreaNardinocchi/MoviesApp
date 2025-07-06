@@ -20,6 +20,13 @@ const AuthContextProvider: React.FC<React.PropsWithChildren> = (props) => {
 
   const signout = () => {
     setToken(null);
+
+    // localStorage.removeItem("userName");
+    // localStorage.removeItem("userEmail");
+    // localStorage.removeItem("userPassword");
+
+    // localStorage.removeItem("User email");
+    // localStorage.removeItem("password");
     navigate("/");
   };
 
