@@ -77,6 +77,7 @@ const HomePage: React.FC = () => {
     setFilterValues(updatedFilterSet);
   };
 
+  // This is the ternary operator, which works like an inline if...else.
   const movies = data ? data.results : [];
   const displayedMovies = filterFunction(movies);
 

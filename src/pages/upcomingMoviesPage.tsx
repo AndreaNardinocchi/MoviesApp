@@ -1,5 +1,5 @@
 // Import React and core hooks
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { getUpcomingMovies } from "../api/tmdb-api";
 import { BaseMovieProps } from "../types/interfaces";
@@ -14,6 +14,9 @@ import MovieFilterUI, {
   genreFilter,
   releaseFilter,
 } from "../components/movieFilterUI";
+// https://mui.com/material-ui/react-pagination/
+import { Pagination } from "@mui/material";
+import { UpcomingMoviesResponse } from "../types/interfaces";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -40,6 +43,10 @@ const UpcomingMoviesPage: React.FC = () => {
   // Access the mustWatchList and addToMustWatchList function from context
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 
+  const [page, setPage] = useState(1);
+  // The below code has bee slighly adjusted as per
+  // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+
   // Set up filtering state and logic using the custom `useFiltering` hook
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
@@ -65,9 +72,10 @@ const UpcomingMoviesPage: React.FC = () => {
     isLoading, // Indicates whether the query is still loading
     isError, // Indicates if an error occurred during fetch
     error, // Contains the error object if isError is true
-  } = useQuery<BaseMovieProps[]>(
-    ["upcomingMovies"], // Unique query key for caching
-    getUpcomingMovies // Function that fetches the data
+  } = useQuery<UpcomingMoviesResponse>(
+    ["upcomingMovies", page], // Unique query key for caching
+    () => getUpcomingMovies(page), // Function that fetches the data
+    { keepPreviousData: true }
   );
 
   // Use movie context to access mustWatchList and the function to update it
@@ -79,6 +87,10 @@ const UpcomingMoviesPage: React.FC = () => {
     console.log("Updated mustWatchList:", mustWatchList);
   }, [mustWatchList]);
 
+  useEffect(() => {
+    console.log("API response:", movies);
+  }, [movies]);
+
   // Show a loading spinner while the movies are being fetched
   if (isLoading) return <Spinner />;
 
@@ -86,8 +98,18 @@ const UpcomingMoviesPage: React.FC = () => {
   if (isError)
     return <p>Error fetching upcoming movies: {(error as Error).message}</p>;
 
-  // Apply filters to the movie listAdd commentMore actions
-  const displayedMovies = movies ? filterFunction(movies) : [];
+  // Apply filters to the movie list
+  // const displayedMovies = movies ? filterFunction(movies) : [];
+
+  /**
+   * We use `movies.results` here because the API response `movies`
+   * is an object containing metadata like `page` and `total_pages`,
+   * and the actual array of movie objects is inside the `results` property.
+   * The API function has been updated to return response.json();, otherwise
+   * the pagination would not work
+   */
+
+  const displayedMovies = movies?.results ? filterFunction(movies.results) : [];
 
   // Called when the user changes title, genre filter, or release year
   const changeFilterValues = (type: string, value: string) => {
@@ -175,6 +197,23 @@ const UpcomingMoviesPage: React.FC = () => {
         genreFilter={filterValues[1].value}
         // This is NOT a string, so we wrap it with a Number()
         releaseFilter={Number(filterValues[2].value)}
+      />
+      <Pagination
+        color="primary"
+        size="large"
+        count={movies?.total_pages || 1}
+        page={page}
+        onChange={(_, value) => setPage(value)}
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          backgroundColor: "white", // or match your theme
+          py: 1,
+          zIndex: 10,
+          display: "flex",
+          justifyContent: "center",
+          borderTop: "1px solid #ccc",
+        }}
       />
     </>
   );

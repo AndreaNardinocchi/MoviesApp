@@ -1,10 +1,5 @@
-export const getMovies = (page = 1) => {
+export const getMovies = (page: number) => {
   return fetch(
-    // `
-    // https://api.themoviedb.org/3/discover/movie?api_key=${
-    //   import.meta.env.VITE_TMDB_KEY
-    // }&language=en-US&include_adult=false&include_video=false&page=1
-
     /**  To retrieve page by page for pagination, we added the 'page' parameter, so that,
      * whenever a page is selecetd, the API will show movies belonging to that
      * specific page
@@ -95,14 +90,32 @@ export const getMovieReviews = (id: string | number) => {
     });
 };
 
-export const getUpcomingMovies = () => {
+/**
+ * This function returns now the full JSON response from TMDB,
+ * which includes additional metadata like `total_pages`, `page`, and `results`, as
+ * in the 'UpcomingMoviesResponse' interface .
+ * We return the full response instead of just `json.results`
+ * so that pagination can work correctly (using `total_pages`).
+ * If we only return `json.results`, we lose access to pagination info,
+ * such as `total_pages`, `page`, and `results`.
+ * https://developer.themoviedb.org/reference/movie-upcoming-list
+ */
+export const getUpcomingMovies = (page: number) => {
   return fetch(
     `https://api.themoviedb.org/3/movie/upcoming?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&page=1`
+    }&language=en-US&page=${page}`
   )
-    .then((res) => res.json())
-    .then((json) => json.results);
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch movies. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 /**
