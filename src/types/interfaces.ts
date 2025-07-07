@@ -212,3 +212,16 @@ export interface UpcomingMoviesResponse {
   total_pages: number;
   results: BaseMovieProps[];
 }
+
+/**
+ * Represents the response structure from
+ * https://developer.themoviedb.org/reference/movie-now-playing-list API endpoint.
+ * 'page' is the current page number
+ * 'total_pages' is the total number of pages available.
+ * 'results' is an array of movie objects 'BaseMovieProps' of the current page.
+ */
+export interface NowPlayingMoviesResponse {
+  page: number;
+  total_pages: number;
+  results: BaseMovieProps[];
+}

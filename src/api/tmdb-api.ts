@@ -197,15 +197,26 @@ export const getMoviesPerReleaseYear = async (year: number) => {
  * Fetches the list of movies that are now playing in theaters.
  * https://developer.themoviedb.org/reference/movie-now-playing-list
  */
-export const getNowPlayingMovies = () => {
+export const getNowPlayingMovies = (page: number) => {
   return fetch(
     `https://api.themoviedb.org/3/movie/now_playing?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&page=1`
+    }&language=en-US&page=${page}`
   )
-    .then((res) => res.json())
-    .then((json) => json.results); // Only return the movie list
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch movies. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
+//     .then((res) => res.json())
+//     .then((json) => json.results); // Only return the movie list
+// };
 
 /**
  * Fetches a list of currently airing TV series from TMDb.

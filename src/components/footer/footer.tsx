@@ -2,6 +2,15 @@ import React from "react";
 import { Box, Grid, Typography, Link, Container, Divider } from "@mui/material";
 // https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
+// Needed for MUI Link to use React Router navigation
+// https://mui.com/material-ui/integrations/routing/#link
+import { Link as RouterLink } from "react-router-dom";
+
+/**
+ * This hook gives us access to a function that can change the current URL programmatically,
+ * without needing <Link> components. Useful for menu navigation handlers.
+ */
+// const navigate = useNavigate();
 
 const Footer: React.FC = () => {
   return (
@@ -127,9 +136,7 @@ const Footer: React.FC = () => {
           </Grid>
         </Grid>
       </Container>
-
       <Divider sx={{ my: 0.01, borderColor: "grey.700" }} />
-
       <Box
         sx={{
           textAlign: "center",
@@ -138,7 +145,21 @@ const Footer: React.FC = () => {
         }}
       >
         <Box sx={{ height: 24, verticalAlign: "middle", mr: 1 }} />
-        <Link href="/" rel="noopener" sx={{ color: "inherit" }}>
+        {/* <Link href="/" rel="noopener" sx={{ color: "inherit" }}> */}
+        {/* <Link onClick={() => navigate("/")} to={""} rel="noopener"> */}
+
+        {/* * We use MUI's <Link> component combined with React Router's <Link>
+         * via the `component` prop to enable client-side navigation using the `to` prop.
+         * This was used as a solution to the issue with the link to Homepage also
+         * logging out the user
+         * https://mui.com/material-ui/guides/routing/#link
+         */}
+        <Link
+          component={RouterLink}
+          to="/"
+          rel="noopener"
+          sx={{ color: "inherit" }}
+        >
           <VideoCameraFrontIcon
             fontSize="small"
             color="inherit"
@@ -168,6 +189,7 @@ const Footer: React.FC = () => {
           </Typography>
         </Link>
       </Box>
+      //{" "}
     </Box>
   );
 };
