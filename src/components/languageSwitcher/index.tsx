@@ -40,6 +40,8 @@ export default function LanguageSwitcher() {
         >
           <MenuItem value={"en-US"}>English</MenuItem>
           <MenuItem value={"es"}>Spanish</MenuItem>
+          <MenuItem value="pt">Portuguese</MenuItem>
+          <MenuItem value="it">Italian</MenuItem>
         </Select>
       </FormControl>
     </Box>

@@ -5,6 +5,8 @@ import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 // Needed for MUI Link to use React Router navigation
 // https://mui.com/material-ui/integrations/routing/#link
 import { Link as RouterLink } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
 
 /**
  * This hook gives us access to a function that can change the current URL programmatically,
@@ -13,6 +15,14 @@ import { Link as RouterLink } from "react-router-dom";
 // const navigate = useNavigate();
 
 const Footer: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   return (
     <Box
       component="footer"
@@ -23,7 +33,7 @@ const Footer: React.FC = () => {
           <Grid item xs={12} md={6}>
             <Box sx={{ paddingLeft: "3rem" }}>
               <Typography variant="h4" gutterBottom>
-                Address
+                {t("address")}
               </Typography>
               <Typography sx={{ fontSize: "1.3rem" }}>
                 2 Church Gate,
@@ -32,14 +42,14 @@ const Footer: React.FC = () => {
                 <br />
                 Cork
                 <br />
-                Republic of Ireland
+                {t("republic_of_ireland")}
               </Typography>
             </Box>
           </Grid>
           <Grid item xs={12} md={6}>
             <Box sx={{ paddingLeft: "3rem" }}>
               <Typography variant="h4" gutterBottom>
-                Projects
+                {t("projects")}
               </Typography>
               <Link
                 href="https://github.com/AndreaNardinocchi/MoviesApp"
@@ -188,8 +198,7 @@ const Footer: React.FC = () => {
             Andrea Nardinocchi
           </Typography>
         </Link>
-      </Box>
-      //{" "}
+      </Box>{" "}
     </Box>
   );
 };
