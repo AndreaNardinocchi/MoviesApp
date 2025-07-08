@@ -22,6 +22,8 @@ import ProtectedRoute from "./components/routes/protectedRoutes";
 import AuthContextProvider from "./contexts/authContext";
 import SignUpPage from "./pages/signUpPage";
 import Footer from "./components/footer/footer";
+import i18n from "./i18n/i18n";
+import { I18nextProvider } from "react-i18next";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -105,6 +107,8 @@ const App = () => {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <App />
+    <I18nextProvider i18n={i18n}>
+      <App />
+    </I18nextProvider>
   </React.StrictMode>
 );

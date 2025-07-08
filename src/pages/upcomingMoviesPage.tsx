@@ -44,7 +44,7 @@ const UpcomingMoviesPage: React.FC = () => {
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 
   const [page, setPage] = useState(1);
-  // The below code has bee slighly adjusted as per
+  // The below code has been slighly adjusted as per
   // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
 
   // Set up filtering state and logic using the custom `useFiltering` hook

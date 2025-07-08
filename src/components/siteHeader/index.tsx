@@ -21,6 +21,9 @@ import SkateboardingIcon from "@mui/icons-material/Skateboarding";
 import LoginIcon from "@mui/icons-material/Login";
 import UserProfileDrawer from "../UserProfileDrawer";
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
+import LanguageSwitcher from "../languageSwitcher";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
 
 // The userName here wouldn't get updated whenever a new sign up occurred
 // hence, we resolved by using useState() and useEffect() below
@@ -37,6 +40,14 @@ const Offset = styled("div")(({ theme }) => theme.mixins.toolbar);
  */
 
 const SiteHeader: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const { token } = useContext(AuthContext) || {};
 
   // , signout
@@ -215,7 +226,9 @@ const SiteHeader: React.FC = () => {
 
           {/* Subtitle, also pushes remaining content right */}
           <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            All you ever wanted to know about Movies!
+            {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
+            we leverage content in i18n.ts, which is translated */}
+            {t("all_you_ever_wanted")}
           </Typography>
 
           {/* Conditional rendering based on screen size */}
@@ -249,11 +262,12 @@ const SiteHeader: React.FC = () => {
                 ))}
                 {token ? (
                   <MenuItem onClick={() => setDrawerOpen(true)}>
-                    Hi {userName}! <SkateboardingIcon sx={{ ml: 1 }} />
+                    {t("welcome")} {userName}!{" "}
+                    <SkateboardingIcon sx={{ ml: 1 }} />
                   </MenuItem>
                 ) : (
                   <MenuItem onClick={() => navigate("/login")}>
-                    Login <LoginIcon sx={{ ml: 1 }} />
+                    {t("login")} <LoginIcon sx={{ ml: 1 }} />
                   </MenuItem>
                 )}
                 {/* This was a duplicate in the mobile view */}
@@ -268,7 +282,7 @@ const SiteHeader: React.FC = () => {
             <>
               {/* Desktop "Home" button */}
               <Button color="inherit" onClick={() => handleNavigate("/")}>
-                Home
+                {t("home")}
               </Button>
 
               <Button
@@ -280,7 +294,7 @@ const SiteHeader: React.FC = () => {
                 aria-haspopup="true"
                 aria-expanded={isMovieMenuOpen ? "true" : undefined}
               >
-                Movie Lists
+                {t("movie_lists")}
               </Button>
               <Menu
                 id="movie-menu"
@@ -292,15 +306,15 @@ const SiteHeader: React.FC = () => {
               >
                 {/* Dropdown options under "Movie List" */}
                 <MenuItem onClick={() => handleNavigate("/movies/upcoming")}>
-                  Upcoming Movies
+                  {t("upcoming_movies")}
                 </MenuItem>
                 <MenuItem
                   onClick={() => handleNavigate("/movies/mustwatchlist")}
                 >
-                  MustWatch Movies
+                  {t("mustwatch_movies")}
                 </MenuItem>
                 <MenuItem onClick={() => handleNavigate("/movies/nowplaying")}>
-                  Now Playing Movies
+                  {t("now_playing")}
                 </MenuItem>
               </Menu>
 
@@ -309,14 +323,14 @@ const SiteHeader: React.FC = () => {
                 color="inherit"
                 onClick={() => handleNavigate("/movies/favourites")}
               >
-                Favorites
+                {t("favorites_movies")}
               </Button>
 
               <Button
                 color="inherit"
                 onClick={() => handleNavigate("/tvseries")}
               >
-                TV Series
+                {t("tv_series")}
               </Button>
 
               {token ? (
@@ -336,7 +350,7 @@ const SiteHeader: React.FC = () => {
                     onClick={() => setDrawerOpen(true)}
                     endIcon={<SkateboardingIcon />}
                   >
-                    Hi {userName} !
+                    {t("welcome")} {userName} !
                   </Button>
 
                   {/* <Menu
@@ -354,9 +368,10 @@ const SiteHeader: React.FC = () => {
                 </>
               ) : (
                 <Button color="inherit" onClick={() => navigate("login")}>
-                  Login <LoginIcon sx={{ ml: 1 }} />
+                  {t("login")} <LoginIcon sx={{ ml: 1 }} />
                 </Button>
               )}
+              <LanguageSwitcher />
             </>
           )}
         </Toolbar>
