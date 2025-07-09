@@ -13,6 +13,8 @@ import Spinner from "../components/spinner";
 import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
 // https://mui.com/material-ui/react-pagination/
 import { Pagination } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 const titleFiltering = {
   name: "title",
@@ -33,6 +35,14 @@ const releaseFiltering = {
 };
 
 const HomePage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   /**
    * We are setting the state for page as '1' as we want to show the first page first
    * https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
@@ -89,7 +99,8 @@ const HomePage: React.FC = () => {
   return (
     <>
       <PageTemplate
-        title="Discover Movies"
+        // title="Discover Movies"
+        title={t("discover_movies")}
         movies={displayedMovies}
         // movies={paginatedMovies}
         action={(movie: BaseMovieProps) => {

@@ -17,6 +17,8 @@ import MovieFilterUI, {
 // https://mui.com/material-ui/react-pagination/
 import { Pagination } from "@mui/material";
 import { UpcomingMoviesResponse } from "../types/interfaces";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -40,6 +42,14 @@ const releaseFiltering = {
 };
 
 const UpcomingMoviesPage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   // Access the mustWatchList and addToMustWatchList function from context
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 
@@ -132,7 +142,8 @@ const UpcomingMoviesPage: React.FC = () => {
   return (
     <>
       <PageTemplate
-        title="Upcoming Movies"
+        // title="Upcoming Movies"
+        title={t("upcoming_movies")}
         /**
          * It passes the list of movies to display.
          * If movies is truthy (i.e., data has been loaded and is available),

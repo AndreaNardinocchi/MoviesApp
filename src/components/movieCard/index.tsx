@@ -16,6 +16,9 @@ import { BaseMovieProps } from "../../types/interfaces";
 import { Link } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import { MoviesContext } from "../../contexts/moviesContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
+import React from "react";
 
 interface MovieCardProps {
   movie: BaseMovieProps; // Movie object to render
@@ -44,6 +47,13 @@ const styles = {
 };
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
   /**
    * The useContext hook allows a component to consume the values exposed
    * by a context provider, e.g. the addToFavorites function and favourites array.
@@ -132,7 +142,10 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
         {/* Button linking to the full movie details page */}
         <Link to={`/movies/${movie.id}`}>
           <Button variant="outlined" size="medium" color="primary">
-            More Info ...
+            {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
+            we leverage content in i18n.ts, which is translated */}
+            {t("more_info")}
+            {/* More Info ... */}
           </Button>
         </Link>
       </CardActions>

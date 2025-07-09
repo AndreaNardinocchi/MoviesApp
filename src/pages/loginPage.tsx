@@ -1,27 +1,3 @@
-// import { useContext } from "react";
-// import { AuthContext } from "../contexts/authContext";
-
-// const LoginPage = () => {
-//   const authContext = useContext(AuthContext);
-//   const { authenticate } = authContext || {};
-
-//   const login = () => {
-//     const password = Math.random().toString(36).substring(7);
-//     authenticate && authenticate("user1", password);
-//   };
-
-//   return (
-//     <>
-//       <h2>Login page</h2>
-//       <p>You must log in to view the protected pages </p>
-//       {/* Login web form  */}
-//       <button onClick={login}>Submit</button>
-//     </>
-//   );
-// };
-
-// export default LoginPage;
-
 import React, { useState, useContext } from "react";
 import { AuthContext } from "../contexts/authContext";
 // https://v5-0-6.mui.com/components/text-fields/?
@@ -40,13 +16,21 @@ import {
    * */
   InputAdornment,
 } from "@mui/material";
-
-// import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
 import EmailIcon from "@mui/icons-material/Email";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 const LoginPage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const { authenticate } = useContext(AuthContext) || {};
 
   // useSate() hooks for storing user input from the login form.
@@ -105,9 +89,9 @@ const LoginPage: React.FC = () => {
 
     // Check the inputted value against what stored in the local storage
     if (savedEmail !== email) {
-      setLoginError("No account found with this email.");
+      setLoginError(t("no_account_login"));
     } else if (savedPassword !== password) {
-      setLoginError("The password you entered is incorrect.");
+      setLoginError(t("incorrect_password"));
     } else {
       // if no error, then, authenticate
       setLoginError("");
@@ -120,7 +104,8 @@ const LoginPage: React.FC = () => {
   return (
     <Container maxWidth="sm" sx={{ mt: 8 }}>
       <Typography variant="h4" gutterBottom>
-        Let's go to the cinema tonight!
+        {t("login_header")}
+        {/* Let's go to the cinema tonight! */}
       </Typography>
 
       <Box component="form" noValidate autoComplete="off">
@@ -130,13 +115,13 @@ const LoginPage: React.FC = () => {
           fullWidth
           required
           id="outlined-required"
-          label="Email"
+          label={t("email")}
           type="email"
           margin="normal"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           error={emailError}
-          helperText={emailError ? "Please enter your email" : ""}
+          helperText={emailError ? t("email_text") : ""}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -152,13 +137,13 @@ const LoginPage: React.FC = () => {
           fullWidth
           required
           id="outlined-required"
-          label="Password"
+          label={t("password")}
           type="password"
           margin="normal"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           error={passwordError}
-          helperText={passwordError ? "Please enter your email" : ""}
+          helperText={passwordError ? t("password_text") : ""}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -176,11 +161,9 @@ const LoginPage: React.FC = () => {
           sx={{ mt: 3 }}
           onClick={login}
         >
-          Submit
+          {t("login_cta")}
         </Button>
-        <Button onClick={() => navigate("/signup")}>
-          Don't have an account? Sign Up
-        </Button>
+        <Button onClick={() => navigate("/signup")}>{t("login_text")}</Button>
         {loginError && (
           <Typography color="error" sx={{ mt: 2 }}>
             {loginError}

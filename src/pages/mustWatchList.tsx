@@ -14,6 +14,8 @@ import MovieFilterUI, {
   genreFilter,
   releaseFilter,
 } from "../components/movieFilterUI";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 // Initial filter configuration for title
 const titleFiltering = {
@@ -37,6 +39,14 @@ const releaseFiltering = {
 };
 
 const MustWatchListPage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   // Access global must-watch list and remove function from context
   const { mustWatchList, removeFromMustWatchList } = useContext(MoviesContext);
 
@@ -77,7 +87,8 @@ const MustWatchListPage: React.FC = () => {
     <>
       <PageTemplate
         // Title to be shown at the top of the page
-        title="Must Watch Movies List"
+        // title="Must Watch Movies List"
+        title={t("must_watch_movies_list")}
         // Pass the list of must-watch movies to be displayed by the template
         movies={displayedMovies}
         // Define a custom action to show next to each movie card

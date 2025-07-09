@@ -17,6 +17,8 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 // API methods to fetch actor details and their images
 import { fetchActorDetails, getPersonImages } from "../api/tmdb-api";
 import { MovieDetailsProps } from "../types/interfaces";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 /**
  * Even though React Query handles the data fetching (useQuery), we're building an
@@ -25,6 +27,14 @@ import { MovieDetailsProps } from "../types/interfaces";
  * */
 
 const ActorBioPage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   // Get the actor ID from the URL params
   const { id } = useParams<{ id: string }>();
 
@@ -56,10 +66,10 @@ const ActorBioPage: React.FC = () => {
     isError: imagesError, // Likewise, rename isError to imagesError
   } = useQuery(
     ["actorImages", id], // Unique key by React Query to track and cache this response
-    () => getPersonImages(Number(id)), // The API function here needs a number
-    {
-      enabled: !!id,
-    }
+    () => getPersonImages(Number(id)) // The API function here needs a number
+    // {
+    //   enabled: !!id,
+    // }
   );
 
   /**
@@ -90,7 +100,7 @@ const ActorBioPage: React.FC = () => {
   if (imagesError)
     return (
       <Typography variant="h6" color="error">
-        Failed to load images
+        {t("failed_image_loading")}
       </Typography>
     );
 
@@ -181,21 +191,21 @@ const ActorBioPage: React.FC = () => {
       <>
         {/* Actor name */}
         <Typography variant="h4" component="h1" gutterBottom>
-          {actor?.name || "Unknown Actor"}
+          {actor?.name || t("unknown_actor")}
         </Typography>
 
         {/* Actor birth details */}
         <Typography variant="subtitle1" gutterBottom>
-          Birthday: {actor?.birthday || "Unknown"}
+          {t("actor_birthday")} {actor?.birthday || t("unknown_actor")}
         </Typography>
 
         <Typography variant="subtitle1" gutterBottom>
-          Place of Birth: {actor?.place_of_birth || "Unknown"}
+          {t("birthplace")} {actor?.place_of_birth || t("unknown_actor")}
         </Typography>
 
         {/* Biography */}
         <Typography variant="body1" paragraph>
-          Biography
+          {t("biography")}
         </Typography>
 
         <Typography variant="body2" paragraph>
@@ -206,7 +216,7 @@ const ActorBioPage: React.FC = () => {
         {galleryImages.length > 0 && (
           <>
             <Typography variant="h6" gutterBottom>
-              Photo Gallery
+              {t("photogallery")}
             </Typography>
 
             {/* Responsive image grid */}
@@ -237,7 +247,7 @@ const ActorBioPage: React.FC = () => {
           onClick={() => navigate(-1)} // Go back one page in browser history
           style={{ marginBottom: 16, marginRight: 8 }}
         >
-          Back to Movie Page
+          {t("back_to_movie_page")}
         </Button>
 
         {/* Button to land the user to the actor movies page */}
@@ -246,7 +256,7 @@ const ActorBioPage: React.FC = () => {
           onClick={() => navigate(`/actor/${id}/movies`)}
           style={{ marginBottom: 16 }}
         >
-          Actor Movies page
+          {t("actor_movie_page_cta")}
         </Button>
 
         {/**

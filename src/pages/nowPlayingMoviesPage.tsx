@@ -19,6 +19,8 @@ import MovieFilterUI, {
 } from "../components/movieFilterUI";
 // https://mui.com/material-ui/react-pagination/
 import { Pagination } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n/i18n";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -42,6 +44,14 @@ const releaseFiltering = {
 };
 
 const NowPlayingMoviesPage: React.FC = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   // Access the mustWatchList and addToMustWatchList function from context
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 
@@ -113,7 +123,8 @@ const NowPlayingMoviesPage: React.FC = () => {
     <>
       {/*Render the movie list using the template */}
       <PageTemplate
-        title="Now Playing Movies"
+        // title="Now Playing Movies"
+        title={t("now_playing_movies")}
         movies={displayedMovies} // Show filtered list
         action={(movie: BaseMovieProps) => {
           // Check if the movie is already in the must-watch list
