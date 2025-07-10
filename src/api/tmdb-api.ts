@@ -21,11 +21,35 @@ export const getMovies = (page: number) => {
     });
 };
 
-export const getMovie = (id: string) => {
+// export const getMovie = (id: string) => {
+//   return fetch(
+//     `https://api.themoviedb.org/3/movie/${id}?api_key=${
+//       import.meta.env.VITE_TMDB_KEY
+//     }`
+//   )
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error(
+//           `Failed to get movie data. Response status: ${response.status}`
+//         );
+//       }
+//       return response.json();
+//     })
+//     .catch((error) => {
+//       throw error;
+//     });
+// };
+
+/**
+ * Fetches detailed information about a specific movie from TMDb.
+ * The 'Language' string is used for localized results and its default is "en-US".
+ * https://developer.themoviedb.org/reference/movie-details
+ */
+export const getMovie = (id: string, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
+    }&language=${language}`
   )
     .then((response) => {
       if (!response.ok) {

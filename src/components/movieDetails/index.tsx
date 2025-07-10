@@ -11,6 +11,8 @@ import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
 import MovieReviews from "../movieReviews";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
 
 const styles = {
   chipSet: {
@@ -33,13 +35,21 @@ const styles = {
 };
 
 const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const [drawerOpen, setDrawerOpen] = useState(false); // New
 
   return (
     <>
       {/* Overview Section */}
       <Typography variant="h5" component="h3">
-        Overview
+        {t("overview")}
       </Typography>
 
       <Typography variant="h6" component="p">
@@ -48,12 +58,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       {/* Genres Section */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
-          {/* <Chip
-            label="Genres"
-            sx={styles.chipLabel}
-            color="transparent"
-            sx={{ color: "#8E4585" }}
-          /> */}
           <Chip
             label="Genres"
             sx={{
@@ -88,11 +92,6 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       {/* Production Countries */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
-          {/* <Chip
-            label="Production Countries"
-            sx={styles.chipLabel}
-            color="primary"
-          /> */}
           <Chip
             label="Production Countries"
             sx={{
@@ -112,7 +111,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
 
       {/* Cast Section */}
       <Typography variant="h5" component="h3">
-        Cast
+        {t("cast")}
       </Typography>
 
       {/*

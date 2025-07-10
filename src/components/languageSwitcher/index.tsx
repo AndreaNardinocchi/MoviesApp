@@ -80,10 +80,16 @@ export default function LanguageSwitcher() {
             },
           }}
         >
+          {/* 
+           The language codes have been adjusted to reflect thos used by the TMDB database
+           https://www.themoviedb.org/talk/5a5c4e709251413232005f25
+           https://developer.themoviedb.org/docs/languages?
+           https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+           */}
           <MenuItem value={"en-US"}>English</MenuItem>
-          <MenuItem value={"es"}>Spanish</MenuItem>
-          <MenuItem value="pt">Portuguese</MenuItem>
-          <MenuItem value="it">Italian</MenuItem>
+          <MenuItem value={"es-ES"}>Spanish</MenuItem>
+          <MenuItem value={"pt-BR"}>Portuguese</MenuItem>
+          <MenuItem value={"it-IT"}>Italian</MenuItem>
         </Select>
       </FormControl>
     </Box>

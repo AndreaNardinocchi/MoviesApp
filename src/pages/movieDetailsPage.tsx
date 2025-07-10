@@ -7,6 +7,12 @@ import { getMovie, getMovieCredits } from "../api/tmdb-api";
 import { useQuery } from "react-query";
 import Spinner from "../components/spinner";
 import { MovieDetailsProps } from "../types/interfaces";
+/**
+ * This imports the `useTranslation` hook from the `react-i18next` library,
+ * which provides languages support. It basically enables us to access translations functions,
+ * and the curent language context in the component/page
+ */
+import { useTranslation } from "react-i18next";
 
 /**
  * ====== Fetch movie details + cast info ==========
@@ -15,11 +21,16 @@ import { MovieDetailsProps } from "../types/interfaces";
  * getMovieCredits - fetches the cast/actor list
  * The returned object for the function 'fetchMovieWithCast' merges the cast into the movie details object
  * to be passed as a single prop to components that need both sets of info.
- *
- *
  */
-const fetchMovieWithCast = async (id: string): Promise<MovieDetailsProps> => {
-  const movie = await getMovie(id);
+const fetchMovieWithCast = async (
+  id: string,
+  /**
+   * We pass the parameter language into this function, and it will define
+   * the language of the movie data
+   */
+  language: string
+): Promise<MovieDetailsProps> => {
+  const movie = await getMovie(id, language);
   const cast = await getMovieCredits(id); // Fetch actors
 
   return {
@@ -45,6 +56,18 @@ const fetchMovieWithCast = async (id: string): Promise<MovieDetailsProps> => {
 const MovieDetailsPage: React.FC = () => {
   // Extract the 'id' parameter from the URL using React Router's useParams hook
   const { id } = useParams();
+
+  /** 
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   If undefined or empty, fallback to 'en-US'
+   */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
+  // Log the current languag
+  console.log("Current i18n language:", i18n.language);
+
   // Fetch movie data (including cast details) using React Query's useQuery hook
   const {
     data: movie, // The fetched movie data will be stored in 'movie'
@@ -52,10 +75,10 @@ const MovieDetailsPage: React.FC = () => {
     isLoading, // Boolean flag indicating if the query is currently loading
     isError, // Boolean flag indicating if there was an error during the query
   } = useQuery<MovieDetailsProps, Error>(
-    ["movie", id], // Unique query key for caching and refetching
+    ["movie", id, lang], // Unique query key for caching and refetching
     () =>
       // Fetch the movie with cast information using the provided function
-      fetchMovieWithCast(id || "")
+      fetchMovieWithCast(id || "", lang)
   );
 
   if (isLoading) {
