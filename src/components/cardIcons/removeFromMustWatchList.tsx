@@ -18,7 +18,7 @@ const RemoveFromMustWatchListIcon: React.FC<BaseMovieProps> = (movie) => {
       aria-label="remove from Must Watch List"
       onClick={onUserRequest}
     >
-      <DeleteIcon color="primary" fontSize="large" />
+      <DeleteIcon sx={{ color: "#8E4585" }} fontSize="large" />
     </IconButton>
   );
 };

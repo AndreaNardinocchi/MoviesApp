@@ -148,14 +148,25 @@ const SignUpPage: React.FC = () => {
 
         <Button
           variant="contained"
-          color="primary"
+          // color="primary"
           fullWidth
-          sx={{ mt: 3 }}
+          sx={{
+            mt: 3,
+            bgcolor: "#8E4585",
+            color: "#ffffff",
+          }}
           onClick={handleSignUp}
         >
           {t("sign_up")}
         </Button>
-        <Button onClick={() => navigate("/login")}>{t("account_exist")}</Button>
+        <Button
+          onClick={() => navigate("/login")}
+          sx={{
+            color: "#8E4585",
+          }}
+        >
+          {t("account_exist")}
+        </Button>
       </Box>
     </Container>
   );

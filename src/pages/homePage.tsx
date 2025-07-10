@@ -115,7 +115,7 @@ const HomePage: React.FC = () => {
         releaseFilter={Number(filterValues[2].value)}
       />
       <Pagination
-        color="primary"
+        // color="primary"
         size="large"
         count={data?.total_pages || 1}
         page={page}
@@ -123,7 +123,7 @@ const HomePage: React.FC = () => {
         sx={{
           position: "sticky",
           bottom: 0,
-          backgroundColor: "white", // or match your theme
+          backgroundColor: "white",
           py: 1,
           zIndex: 10,
           display: "flex",

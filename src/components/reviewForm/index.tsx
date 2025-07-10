@@ -170,8 +170,14 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
           <Button
             type="submit"
             variant="contained"
-            color="primary"
-            sx={styles.submit}
+            // color="primary"
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.submit,
+              bgcolor: "#8E4585",
+              color: "#ffffff",
+            }}
+            // sx={styles.submit}
           >
             Submit
           </Button>

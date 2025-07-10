@@ -28,15 +28,57 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <Box sx={{ minWidth: 120 }}>
+    <Box sx={{ minWidth: 120, color: "#8E4585" }}>
       <FormControl fullWidth>
-        <InputLabel id="demo-simple-select-label">Language</InputLabel>
+        <InputLabel
+          id="demo-simple-select-label"
+          sx={{
+            /**
+             * Sets the base text color to white
+             * The '&.Mui-focused' selector targets the component when it has the 'Mui-focused' class,
+             * which MUI applies automatically when the component is focused.
+             * https://mui.com/customization/how-to-customize/#overriding-styles
+             * https://stackoverflow.com/questions/67139471/how-can-i-change-the-focused-color-of-a-textfield?
+             */
+            color: "#ffffff",
+            "&.Mui-focused": {
+              // Keep the text color white even when the component is focused,
+              color: "#ffffff",
+            },
+          }}
+        >
+          Language
+        </InputLabel>
         <Select
           labelId="demo-simple-select-label"
           id="demo-simple-select"
           value={lang}
           label="Language"
           onChange={handleChange}
+          sx={{
+            // https://mui.com/material-ui/api/outlined-input/#css
+            // Text color
+            color: "#ffffff",
+
+            // Target the outline border of the MUI OutlinedInput component
+            ".MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ffffff",
+            },
+
+            /**
+             * Focused selector border which applies when the Select is focused (clicked)
+             * '&' refers to the root element, and '.Mui-focused' is a MUI-generated class
+             *  https://mui.com/system/the-sx-prop/#nesting-selectors
+             * */
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ffffff",
+            },
+
+            // Hover state selector which applies when the mouse is hovering over the Select
+            "&:hover .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#C06A9A",
+            },
+          }}
         >
           <MenuItem value={"en-US"}>English</MenuItem>
           <MenuItem value={"es"}>Spanish</MenuItem>

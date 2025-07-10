@@ -36,7 +36,15 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
       {/* Genres */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
-          <Chip label="Genres" sx={styles.chipLabel} color="primary" />
+          <Chip
+            label="Genres"
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.chipLabel,
+              bgcolor: "#8E4585",
+              color: "#ffffff",
+            }}
+          />
         </li>
         {series.genres?.map((g) => (
           <li key={g.name}>
@@ -58,8 +66,12 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
         <li>
           <Chip
             label="Production Countries"
-            sx={styles.chipLabel}
-            color="primary"
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.chipLabel,
+              bgcolor: "#8E4585",
+              color: "#ffffff",
+            }}
           />
         </li>
         {series.production_countries?.map((country) => (

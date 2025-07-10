@@ -11,7 +11,7 @@ const WriteReviewIcon: React.FC<BaseMovieProps> = (movie) => {
         movieId: movie.id,
       }}
     >
-      <RateReviewIcon color="primary" fontSize="large" />
+      <RateReviewIcon sx={{ color: "#8E4585" }} fontSize="large" />
     </Link>
   );
 };

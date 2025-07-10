@@ -210,7 +210,7 @@ const UpcomingMoviesPage: React.FC = () => {
         releaseFilter={Number(filterValues[2].value)}
       />
       <Pagination
-        color="primary"
+        // color="primary"
         size="large"
         count={movies?.total_pages || 1}
         page={page}

@@ -156,14 +156,25 @@ const LoginPage: React.FC = () => {
         {/* Submit Button */}
         <Button
           variant="contained"
-          color="primary"
+          // color="primary"
           fullWidth
-          sx={{ mt: 3 }}
           onClick={login}
+          sx={{
+            mt: 3,
+            bgcolor: "#8E4585",
+            color: "#ffffff",
+          }}
         >
           {t("login_cta")}
         </Button>
-        <Button onClick={() => navigate("/signup")}>{t("login_text")}</Button>
+        <Button
+          onClick={() => navigate("/signup")}
+          sx={{
+            color: "#8E4585",
+          }}
+        >
+          {t("login_text")}
+        </Button>
         {loginError && (
           <Typography color="error" sx={{ mt: 2 }}>
             {loginError}

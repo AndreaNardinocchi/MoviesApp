@@ -246,6 +246,9 @@ const ActorBioPage: React.FC = () => {
           variant="outlined"
           onClick={() => navigate(-1)} // Go back one page in browser history
           style={{ marginBottom: 16, marginRight: 8 }}
+          sx={{
+            color: "#8E4585",
+          }}
         >
           {t("back_to_movie_page")}
         </Button>
@@ -255,6 +258,9 @@ const ActorBioPage: React.FC = () => {
           variant="outlined"
           onClick={() => navigate(`/actor/${id}/movies`)}
           style={{ marginBottom: 16 }}
+          sx={{
+            color: "#8E4585",
+          }}
         >
           {t("actor_movie_page_cta")}
         </Button>

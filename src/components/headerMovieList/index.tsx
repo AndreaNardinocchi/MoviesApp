@@ -25,14 +25,14 @@ const Header: React.FC<HeaderProps> = (headerProps) => {
   return (
     <Paper component="div" sx={styles.root}>
       <IconButton aria-label="go back">
-        <ArrowBackIcon color="primary" fontSize="large" />
+        <ArrowBackIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
 
       <Typography variant="h4" component="h3">
         {title}
       </Typography>
       <IconButton aria-label="go forward">
-        <ArrowForwardIcon color="primary" fontSize="large" />
+        <ArrowForwardIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
     </Paper>
   );

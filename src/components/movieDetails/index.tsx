@@ -48,7 +48,21 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       {/* Genres Section */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
-          <Chip label="Genres" sx={styles.chipLabel} color="primary" />
+          {/* <Chip
+            label="Genres"
+            sx={styles.chipLabel}
+            color="transparent"
+            sx={{ color: "#8E4585" }}
+          /> */}
+          <Chip
+            label="Genres"
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.chipLabel,
+              bgcolor: "#8E4585",
+              color: "#ffffff",
+            }}
+          />
         </li>
         {movie.genres?.map((g) => (
           <li key={g.name}>
@@ -74,10 +88,19 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       {/* Production Countries */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
-          <Chip
+          {/* <Chip
             label="Production Countries"
             sx={styles.chipLabel}
             color="primary"
+          /> */}
+          <Chip
+            label="Production Countries"
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.chipLabel,
+              bgcolor: "#8E4585",
+              color: "#ffffff",
+            }}
           />
         </li>
         {movie.production_countries?.map((country) => (

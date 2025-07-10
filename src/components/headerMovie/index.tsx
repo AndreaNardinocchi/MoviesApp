@@ -52,7 +52,7 @@ const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
     <Paper component="div" sx={styles.root}>
       {/* Back arrow icon button (could be used for navigation) */}
       <IconButton aria-label="go back">
-        <ArrowBackIcon color="primary" fontSize="large" />
+        <ArrowBackIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
 
       {/* Show a red avatar with a heart icon if the movie is a favourite */}
@@ -74,7 +74,7 @@ const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
         {movie.title}{" "}
         {/* Link to the movie's official homepage, if available */}
         <a href={movie.homepage}>
-          <HomeIcon color="primary" fontSize="large" />
+          <HomeIcon sx={{ color: "#8E4585" }} fontSize="large" />
         </a>
         <br />
         {/* Display the movie's tagline below the title */}
@@ -83,7 +83,7 @@ const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
 
       {/* Forward arrow icon button (could be used for navigation) */}
       <IconButton aria-label="go forward">
-        <ArrowForwardIcon color="primary" fontSize="large" />
+        <ArrowForwardIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
     </Paper>
   );

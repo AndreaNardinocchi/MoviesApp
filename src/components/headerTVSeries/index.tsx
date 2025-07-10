@@ -44,7 +44,7 @@ const TVSeriesHeader: React.FC<TVSeriesDetailsProps> = (series) => {
   return (
     <Paper component="div" sx={styles.root}>
       <IconButton aria-label="go back">
-        <ArrowBackIcon color="primary" fontSize="large" />
+        <ArrowBackIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
 
       {/* {isFavourite && (
@@ -63,7 +63,7 @@ const TVSeriesHeader: React.FC<TVSeriesDetailsProps> = (series) => {
         {series.title}{" "}
         {series.homepage && (
           <a href={series.homepage}>
-            <HomeIcon color="primary" fontSize="large" />
+            <HomeIcon sx={{ color: "#8E4585" }} fontSize="large" />
           </a>
         )}
         <br />
@@ -71,7 +71,7 @@ const TVSeriesHeader: React.FC<TVSeriesDetailsProps> = (series) => {
       </Typography>
 
       <IconButton aria-label="go forward">
-        <ArrowForwardIcon color="primary" fontSize="large" />
+        <ArrowForwardIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
     </Paper>
   );

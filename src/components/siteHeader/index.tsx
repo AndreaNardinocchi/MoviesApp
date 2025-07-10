@@ -204,8 +204,15 @@ const SiteHeader: React.FC = () => {
   return (
     <>
       {/* Fixed header bar at the top */}
-      <AppBar position="fixed" elevation={0} color="primary">
-        <Toolbar>
+      {/* <AppBar position="fixed" elevation={0} color="secondary"> */}
+      <AppBar
+        position="fixed"
+        elevation={0}
+        color="transparent"
+        // sx={{ bgcolor: "#B76E79" }}
+        sx={{ bgcolor: "#8E4585" }}
+      >
+        <Toolbar sx={{ color: "white" }}>
           <Link onClick={() => navigate("/")} to={""} rel="noopener">
             {/* // rel="noopener" */}
             <VideoCameraFrontIcon
@@ -225,7 +232,7 @@ const SiteHeader: React.FC = () => {
           </Typography>
 
           {/* Subtitle, also pushes remaining content right */}
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
             {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
             we leverage content in i18n.ts, which is translated */}
             {t("all_you_ever_wanted")}
@@ -250,6 +257,7 @@ const SiteHeader: React.FC = () => {
                 anchorEl={mobileAnchorEl}
                 open={mobileMenuOpen}
                 onClose={handleMenuClose}
+                sx={{ color: "white" }}
               >
                 {/* Render flat list of mobile menu options */}
                 {mobileMenuOptions.map((opt) => (

@@ -141,7 +141,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
         {/* Action icon (e.g., "Add to must-watch") passed from parent */}
         {/* Button linking to the full movie details page */}
         <Link to={`/movies/${movie.id}`}>
-          <Button variant="outlined" size="medium" color="primary">
+          <Button variant="outlined" size="medium" sx={{ color: "#8E4585" }}>
             {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
             we leverage content in i18n.ts, which is translated */}
             {t("more_info")}

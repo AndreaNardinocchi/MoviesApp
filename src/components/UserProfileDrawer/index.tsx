@@ -13,6 +13,8 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { AuthContext } from "../../contexts/authContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
 
 // Props expected by the UserProfileDrawer component
 interface UserProfileDrawerProps {
@@ -28,11 +30,19 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 }) => {
   const auth = useContext(AuthContext);
 
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   // Fallback user info from localStorage if context doesn't have it
   const userFirstName = localStorage.getItem("userFirstName") || "User";
   const userLastName = localStorage.getItem("userLastName") || "User";
   const userEmail = localStorage.getItem("userEmail") || "user@example.com";
-  const userRole = localStorage.getItem("userRole") || "Viewer";
+  const userRole = localStorage.getItem("userRole") || t("viewer");
 
   // Destructure signout safely
   const signout = auth?.signout;
@@ -50,7 +60,10 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
         alignItems="center"
         mb={3}
       >
-        <Typography variant="h5">User Profile</Typography>
+        <Typography variant="h5">
+          {/* User Profile */}
+          {t("user_profile")}
+        </Typography>
         <IconButton onClick={onClose} aria-label="Close drawer">
           <CloseIcon />
         </IconButton>
@@ -58,7 +71,8 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 
       <Box mb={2}>
         <Typography variant="subtitle1" fontWeight="bold">
-          Name:
+          {/* Name: */}
+          {t("name_user")}:
         </Typography>
         <Typography variant="body1">
           {/* Display first and last name from context if available. 
@@ -70,7 +84,8 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 
       <Box mb={2}>
         <Typography variant="subtitle1" fontWeight="bold">
-          Email:
+          {/* Email: */}
+          {t("email")}:
         </Typography>
         <Typography variant="body1">
           {/* Display email from context if available. 
@@ -81,7 +96,8 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 
       <Box mb={3}>
         <Typography variant="subtitle1" fontWeight="bold">
-          Role:
+          {/* Role: */}
+          {t("role")}:
         </Typography>
         <Typography variant="body1">
           {/* Display role from context if available. 
@@ -94,7 +110,10 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
 
       <Button
         variant="contained"
-        color="primary"
+        sx={{
+          bgcolor: "#8E4585",
+          color: "#ffffff",
+        }}
         startIcon={<LogoutIcon />}
         fullWidth
         onClick={() => {
@@ -102,7 +121,8 @@ const UserProfileDrawer: React.FC<UserProfileDrawerProps> = ({
           onClose();
         }}
       >
-        Log Out
+        {/* Log Out */}
+        {t("log_out")}
       </Button>
     </Drawer>
   );

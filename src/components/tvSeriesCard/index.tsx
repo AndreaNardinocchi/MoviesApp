@@ -16,6 +16,8 @@ import img from "../../images/film-poster-placeholder.png";
 import { BaseTVSeriesProps } from "../../types/interfaces";
 // import { useContext } from "react";
 // import { MoviesContext } from "../../contexts/moviesContext";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
 
 interface TVSeriesCardProps {
   series: BaseTVSeriesProps;
@@ -32,6 +34,14 @@ const styles = {
 const TVSeriesCard: React.FC<TVSeriesCardProps> = ({ series, action }) => {
   // const { mustWatchList } = useContext(MoviesContext);
   // const isInMustWatchList = mustWatchList.some((m) => m.id === series.id);
+
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
 
   return (
     <Card sx={styles.card}>
@@ -95,8 +105,10 @@ const TVSeriesCard: React.FC<TVSeriesCardProps> = ({ series, action }) => {
       <CardActions disableSpacing>
         {action(series)}
         <Link to={`/tvseries/${series.id}`}>
-          <Button variant="outlined" size="medium" color="primary">
-            More Info ...
+          <Button variant="outlined" size="medium" sx={{ color: "#8E4585" }}>
+            {/* color="primary"  */}
+            {/* More Info ... */}
+            {t("more_info")}
           </Button>
         </Link>
       </CardActions>
