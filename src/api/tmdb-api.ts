@@ -1,4 +1,4 @@
-export const getMovies = (page: number) => {
+export const getMovies = (page: number, language = "en-US") => {
   return fetch(
     /**  To retrieve page by page for pagination, we added the 'page' parameter, so that,
      * whenever a page is selecetd, the API will show movies belonging to that
@@ -7,7 +7,7 @@ export const getMovies = (page: number) => {
     // https://www.themoviedb.org/talk/5e23977c8f26bc0011777a02?
     `https://api.themoviedb.org/3/discover/movie?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&page=${page}`
+    }&language=${language}&page=${page}`
   )
     .then((response) => {
       if (!response.ok)
@@ -44,8 +44,9 @@ export const getMovies = (page: number) => {
  * Fetches detailed information about a specific movie from TMDb.
  * The 'Language' string is used for localized results and its default is "en-US".
  * https://developer.themoviedb.org/reference/movie-details
+ * https://www.themoviedb.org/talk/593fed45c3a36851f8002d83
  */
-export const getMovie = (id: string, language = "en-US") => {
+export const getMovie = (id: string | number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}?api_key=${
       import.meta.env.VITE_TMDB_KEY
@@ -82,11 +83,11 @@ export const getGenres = () => {
     });
 };
 
-export const getMovieImages = (id: string | number) => {
+export const getMovieImages = (id: string | number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}/images?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
+    }&language=${language}`
   )
     .then((response) => {
       if (!response.ok) {
@@ -124,11 +125,11 @@ export const getMovieReviews = (id: string | number) => {
  * such as `total_pages`, `page`, and `results`.
  * https://developer.themoviedb.org/reference/movie-upcoming-list
  */
-export const getUpcomingMovies = (page: number) => {
+export const getUpcomingMovies = (page: number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/movie/upcoming?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&page=${page}`
+    }&language=${language}&page=${page}`
   )
     .then((response) => {
       if (!response.ok)

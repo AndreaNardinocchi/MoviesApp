@@ -18,7 +18,7 @@ import MovieFilterUI, {
 import { Pagination } from "@mui/material";
 import { UpcomingMoviesResponse } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -42,8 +42,15 @@ const releaseFiltering = {
 };
 
 const UpcomingMoviesPage: React.FC = () => {
+  /** 
+       * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+       If undefined or empty, fallback to 'en-US'
+       */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
   /**
-   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */
@@ -83,8 +90,8 @@ const UpcomingMoviesPage: React.FC = () => {
     isError, // Indicates if an error occurred during fetch
     error, // Contains the error object if isError is true
   } = useQuery<UpcomingMoviesResponse>(
-    ["upcomingMovies", page], // Unique query key for caching
-    () => getUpcomingMovies(page), // Function that fetches the data
+    ["upcomingMovies", page, lang], // Unique query key for caching
+    () => getUpcomingMovies(page, lang), // Function that fetches the data
     { keepPreviousData: true }
   );
 

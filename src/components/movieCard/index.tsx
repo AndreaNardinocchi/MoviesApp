@@ -29,6 +29,8 @@ interface MovieCardProps {
 const styles = {
   card: {
     maxWidth: 345, // Card width to keep layout consistent in grid
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
   },
   media: {
     height: 500, // Height of the movie poster image
@@ -48,7 +50,7 @@ const styles = {
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
   /**
-   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */

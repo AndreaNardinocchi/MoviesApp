@@ -2,7 +2,7 @@ export interface BaseMovieProps {
   title: string;
   budget: number;
   homepage: string | undefined;
-  id: number;
+  id: number | string;
   imdb_id: string;
   original_language: string;
   overview: string;

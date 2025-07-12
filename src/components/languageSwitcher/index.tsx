@@ -81,7 +81,7 @@ export default function LanguageSwitcher() {
           }}
         >
           {/* 
-           The language codes have been adjusted to reflect thos used by the TMDB database
+           The language codes have been adjusted to reflect those used by the TMDB database
            https://www.themoviedb.org/talk/5a5c4e709251413232005f25
            https://developer.themoviedb.org/docs/languages?
            https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2

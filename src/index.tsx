@@ -24,6 +24,7 @@ import SignUpPage from "./pages/signUpPage";
 import Footer from "./components/footer/footer";
 import i18n from "./i18n/i18n";
 import { I18nextProvider } from "react-i18next";
+import { Box, CssBaseline } from "@mui/material";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -40,67 +41,81 @@ const queryClient = new QueryClient({
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthContextProvider>
-          <SiteHeader /> {/* New Header  */}
-          <MoviesContextProvider>
-            <Routes>
-              <Route path="/tvseries" element={<TVSeriesPage />} />
-              <Route path="/tvseries/:id" element={<TVSeriesDetailsPage />} />
-              <Route path="/actor/:id" element={<ActorBioPage />} />
-              <Route path="/reviews/form" element={<AddMovieReviewPage />} />
-              <Route path="/reviews/:id" element={<MovieReviewPage />} />
-              <Route
-                path="/movies/upcoming"
-                element={
-                  <ProtectedRoute>
-                    <UpcomingMoviesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/movies/mustwatchlist"
-                element={
-                  <ProtectedRoute>
-                    <MustWatchListPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/movies/nowplaying"
-                element={
-                  <ProtectedRoute>
-                    <NowPlayingMoviesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/movies/favourites"
-                element={
-                  <ProtectedRoute>
-                    <FavouriteMoviesPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/movies/:id"
-                element={
-                  <ProtectedRoute>
-                    <MoviePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/actor/:id/movies" element={<ActorMoviesPage />} />
-              <Route path="/" element={<HomePage />} />
-              <Route path="*" element={<Navigate to="/" />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignUpPage />} />
-            </Routes>
-            <Footer />
-          </MoviesContextProvider>
-        </AuthContextProvider>
-      </BrowserRouter>
-      <ReactQueryDevtools initialIsOpen={false} />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          padding: 0,
+          margin: 0,
+          backgroundColor: "#bfbfbf",
+        }}
+      >
+        {/*  Reset browser styles 
+      The CssBaseline component helps to kickstart an elegant, consistent, and simple baseline to build upon.
+      https://mui.com/material-ui/react-css-baseline/
+      */}
+        <CssBaseline />
+        <BrowserRouter>
+          <AuthContextProvider>
+            <SiteHeader /> {/* New Header  */}
+            <MoviesContextProvider>
+              <Routes>
+                <Route path="/tvseries" element={<TVSeriesPage />} />
+                <Route path="/tvseries/:id" element={<TVSeriesDetailsPage />} />
+                <Route path="/actor/:id" element={<ActorBioPage />} />
+                <Route path="/reviews/form" element={<AddMovieReviewPage />} />
+                <Route path="/reviews/:id" element={<MovieReviewPage />} />
+                <Route
+                  path="/movies/upcoming"
+                  element={
+                    <ProtectedRoute>
+                      <UpcomingMoviesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/movies/mustwatchlist"
+                  element={
+                    <ProtectedRoute>
+                      <MustWatchListPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/movies/nowplaying"
+                  element={
+                    <ProtectedRoute>
+                      <NowPlayingMoviesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/movies/favourites"
+                  element={
+                    <ProtectedRoute>
+                      <FavouriteMoviesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/movies/:id"
+                  element={
+                    <ProtectedRoute>
+                      <MoviePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/actor/:id/movies" element={<ActorMoviesPage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="*" element={<Navigate to="/" />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignUpPage />} />
+              </Routes>
+              <Footer />
+            </MoviesContextProvider>
+          </AuthContextProvider>
+        </BrowserRouter>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </Box>
     </QueryClientProvider>
   );
 };

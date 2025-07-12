@@ -24,7 +24,7 @@ import i18n from "../i18n/i18n";
 
 const LoginPage: React.FC = () => {
   /**
-   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */
@@ -102,86 +102,97 @@ const LoginPage: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 8 }}>
-      <Typography variant="h4" gutterBottom>
-        {t("login_header")}
-        {/* Let's go to the cinema tonight! */}
-      </Typography>
-
-      <Box component="form" noValidate autoComplete="off">
-        {/* Email Field 
-        https://muhimasri.com/blogs/mui-validation/*/}
-        <TextField
-          fullWidth
-          required
-          id="outlined-required"
-          label={t("email")}
-          type="email"
-          margin="normal"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          error={emailError}
-          helperText={emailError ? t("email_text") : ""}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <EmailIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* Password Field 
-        https://muhimasri.com/blogs/mui-validation/*/}
-        <TextField
-          fullWidth
-          required
-          id="outlined-required"
-          label={t("password")}
-          type="password"
-          margin="normal"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          error={passwordError}
-          helperText={passwordError ? t("password_text") : ""}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <KeyIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-
-        {/* Submit Button */}
-        <Button
-          variant="contained"
-          // color="primary"
-          fullWidth
-          onClick={login}
-          sx={{
-            mt: 3,
-            bgcolor: "#8E4585",
-            color: "#ffffff",
-          }}
-        >
-          {t("login_cta")}
-        </Button>
-        <Button
-          onClick={() => navigate("/signup")}
-          sx={{
-            color: "#8E4585",
-          }}
-        >
-          {t("login_text")}
-        </Button>
-        {loginError && (
-          <Typography color="error" sx={{ mt: 2 }}>
-            {loginError}
+    <>
+      <Box
+        sx={{
+          minHeight: "50vh",
+          padding: 10,
+          margin: 0,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        <Container maxWidth="sm">
+          <Typography variant="h4" gutterBottom>
+            {t("login_header")}
+            {/* Let's go to the cinema tonight! */}
           </Typography>
-        )}
+
+          <Box component="form" noValidate autoComplete="off">
+            {/* Email Field 
+        https://muhimasri.com/blogs/mui-validation/*/}
+            <TextField
+              fullWidth
+              required
+              id="outlined-required"
+              label={t("email")}
+              type="email"
+              margin="normal"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              error={emailError}
+              helperText={emailError ? t("email_text") : ""}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <EmailIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Password Field 
+        https://muhimasri.com/blogs/mui-validation/*/}
+            <TextField
+              fullWidth
+              required
+              id="outlined-required"
+              label={t("password")}
+              type="password"
+              margin="normal"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              error={passwordError}
+              helperText={passwordError ? t("password_text") : ""}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <KeyIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+
+            {/* Submit Button */}
+            <Button
+              variant="contained"
+              // color="primary"
+              fullWidth
+              onClick={login}
+              sx={{
+                mt: 3,
+                bgcolor: "#8E4585",
+                color: "#ffffff",
+              }}
+            >
+              {t("login_cta")}
+            </Button>
+            <Button
+              onClick={() => navigate("/signup")}
+              sx={{
+                color: "#8E4585",
+              }}
+            >
+              {t("login_text")}
+            </Button>
+            {loginError && (
+              <Typography color="error" sx={{ mt: 2 }}>
+                {loginError}
+              </Typography>
+            )}
+          </Box>
+        </Container>
       </Box>
-    </Container>
+    </>
   );
 };
 

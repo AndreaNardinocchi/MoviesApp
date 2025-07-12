@@ -7,6 +7,7 @@ import ImageListItem from "@mui/material/ImageListItem";
 import { getMovieImages } from "../../api/tmdb-api";
 import { MovieDetailsProps } from "../../types/interfaces";
 import { MovieImage } from "../../types/interfaces";
+import { Box } from "@mui/material";
 
 // Inline styles for image tiles
 const styles = {
@@ -58,34 +59,43 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
   // TSX layout of the page
   return (
     <>
-      {/* Movie header (title, poster, etc.) */}
-      <MovieHeader {...movie} />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          padding: 0,
+          margin: 0,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        {/* Movie header (title, poster, etc.) */}
+        <MovieHeader {...movie} />
 
-      <Grid container spacing={5} style={{ padding: "15px" }}>
-        {/* Left column: image list */}
-        <Grid item xs={3}>
-          <ImageList cols={1}>
-            {/* Map over the images array and render each image */}
-            {images.map((image: MovieImage) => (
-              <ImageListItem
-                key={image.file_path}
-                sx={styles.gridListTile}
-                cols={1}
-              >
-                <img
-                  src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
-                  alt={"Image alternative"}
-                />
-              </ImageListItem>
-            ))}
-          </ImageList>
-        </Grid>
+        <Grid container spacing={5} style={{ padding: "15px" }}>
+          {/* Left column: image list */}
+          <Grid item xs={3}>
+            <ImageList cols={1}>
+              {/* Map over the images array and render each image */}
+              {images.map((image: MovieImage) => (
+                <ImageListItem
+                  key={image.file_path}
+                  sx={styles.gridListTile}
+                  cols={1}
+                >
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
+                    alt={"Image alternative"}
+                  />
+                </ImageListItem>
+              ))}
+            </ImageList>
+          </Grid>
 
-        {/* Right column: children content (e.g., movie details, reviews) */}
-        <Grid item xs={9}>
-          {children}
+          {/* Right column: children content (e.g., movie details, reviews) */}
+          <Grid item xs={9}>
+            {children}
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </>
   );
 };

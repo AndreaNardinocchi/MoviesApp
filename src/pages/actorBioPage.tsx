@@ -28,7 +28,7 @@ import i18n from "../i18n/i18n";
 
 const ActorBioPage: React.FC = () => {
   /**
-   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */

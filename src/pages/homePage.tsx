@@ -14,7 +14,7 @@ import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
 // https://mui.com/material-ui/react-pagination/
 import { Pagination } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 const titleFiltering = {
   name: "title",
@@ -35,8 +35,18 @@ const releaseFiltering = {
 };
 
 const HomePage: React.FC = () => {
+  /** 
+     * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+     If undefined or empty, fallback to 'en-US'
+     */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
+  // Log the current languag
+  console.log("Current i18n language:", i18n.language);
   /**
-   * We are using the translation hook gets the t function and i18n instance inside your functional component.
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */
@@ -51,8 +61,8 @@ const HomePage: React.FC = () => {
   // The below code has bee slighly adjusted as per
   // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
   const { data, error, isLoading, isError } = useQuery<DiscoverMovies, Error>(
-    ["discover", page],
-    () => getMovies(page),
+    ["discover", page, lang],
+    () => getMovies(page, lang),
     { keepPreviousData: true }
   );
 

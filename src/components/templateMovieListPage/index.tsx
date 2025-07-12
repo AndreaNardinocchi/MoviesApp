@@ -7,6 +7,11 @@ import { MovieListPageTemplateProps } from "../../types/interfaces";
 const styles = {
   root: {
     backgroundColor: "#bfbfbf",
+    paddingRight: "1%",
+    paddingLeft: "1%",
+    paddingBottom: "2%",
+    paddingTop: "1%",
+    minHeight: "50vh",
   },
 };
 
@@ -16,14 +21,17 @@ const MovieListPageTemplate: React.FC<MovieListPageTemplateProps> = ({
   action,
 }) => {
   return (
-    <Grid container sx={styles.root}>
-      <Grid item xs={12}>
-        <Header title={title} />
+    <>
+      <Header title={title} />
+      <Grid container sx={styles.root}>
+        <Grid item xs={12}>
+          {/* <Header title={title} /> */}
+        </Grid>
+        <Grid item container spacing={3}>
+          <MovieList action={action} movies={movies}></MovieList>
+        </Grid>
       </Grid>
-      <Grid item container spacing={5}>
-        <MovieList action={action} movies={movies}></MovieList>
-      </Grid>
-    </Grid>
+    </>
   );
 };
 export default MovieListPageTemplate;
