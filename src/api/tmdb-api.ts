@@ -65,11 +65,11 @@ export const getMovie = (id: string | number, language = "en-US") => {
     });
 };
 
-export const getGenres = () => {
+export const getGenres = (language = "en-US") => {
   return fetch(
     "https://api.themoviedb.org/3/genre/movie/list?api_key=" +
       import.meta.env.VITE_TMDB_KEY +
-      "&language=en-US"
+      `&language=${language}`
   )
     .then((response) => {
       if (!response.ok)

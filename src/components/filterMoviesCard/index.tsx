@@ -16,6 +16,7 @@ import { SelectChangeEvent } from "@mui/material";
 import { getGenres } from "../../api/tmdb-api";
 import { useQuery } from "react-query";
 import Spinner from "../spinner";
+import { useTranslation } from "react-i18next";
 
 interface FilterMoviesCardProps {
   onUserInput: (f: FilterOption, s: string) => void; // Add this line
@@ -43,9 +44,25 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
   releaseFilter,
   onUserInput,
 }) => {
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const { data, error, isLoading, isError } = useQuery<GenreData, Error>(
-    "genres",
-    getGenres
+    ["genres", lang],
+    () => getGenres(lang)
   );
 
   /**
@@ -83,8 +100,8 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
     return <h1>{(error as Error).message}</h1>;
   }
   const genres = data?.genres || [];
-  if (genres[0].name !== "All") {
-    genres.unshift({ id: "0", name: "All" });
+  if (genres[0].name !== `${t("all")}`) {
+    genres.unshift({ id: "0", name: `${t("all")}` });
   }
 
   const handleChange = (
@@ -114,12 +131,12 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
         <CardContent>
           <Typography variant="h5" component="h1">
             <FilterAltIcon fontSize="large" />
-            Filter the movies.
+            {t("filter_movies")}
           </Typography>
           <TextField
             sx={styles.formControl}
             id="filled-search"
-            label="Search field"
+            label={t("search_field")}
             type="search"
             value={titleFilter}
             variant="filled"
@@ -127,7 +144,7 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
           />
 
           <FormControl sx={styles.formControl}>
-            <InputLabel id="genre-label">Genre</InputLabel>
+            <InputLabel id="genre-label">Genre {t("genre")}</InputLabel>
             <Select
               labelId="genre-label"
               id="genre-select"
@@ -144,7 +161,7 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
             </Select>
           </FormControl>
           <FormControl sx={styles.formControl}>
-            <InputLabel id="release-year-label">Release Year</InputLabel>
+            <InputLabel id="release-year-label">{t("release_year")}</InputLabel>
             <Select
               labelId="release-year-label"
               id="release-year-select"
@@ -154,7 +171,7 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
             >
               {/* value={0} was needed to ensure that the number "0" was correctly read and 
               all movies would show when "All' is selected" */}
-              <MenuItem value={0}>All</MenuItem>
+              <MenuItem value={0}>{t("all")}</MenuItem>
               {years.map((year) => (
                 <MenuItem key={year} value={year.toString()}>
                   {year}
@@ -168,7 +185,7 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
         <CardContent>
           <Typography variant="h5" component="h1">
             <SortIcon fontSize="large" />
-            Sort the movies.
+            {t("sort_movies")}
           </Typography>
         </CardContent>
       </Card>

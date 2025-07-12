@@ -3,6 +3,7 @@ import FilterCard from "../filterMoviesCard";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
 import { BaseMovieProps } from "../../types/interfaces";
+import { useTranslation } from "react-i18next";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const titleFilter = (movie: BaseMovieProps, value: string): boolean => {
@@ -47,10 +48,12 @@ const styles = {
     backgroundColor: "#bfbfbf",
   },
   fab: {
-    marginTop: 8,
+    marginTop: "3%",
     position: "fixed",
     top: 20,
     right: 2,
+    bgcolor: "#8E4585",
+    color: "white",
   },
 };
 
@@ -67,17 +70,41 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
   genreFilter,
   releaseFilter,
 }) => {
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
     <>
       <Fab
-        color="secondary"
+        color="default"
         variant="extended"
         onClick={() => setDrawerOpen(true)}
-        sx={styles.fab}
+        sx={{
+          // Spread the base fab styles defined earlier
+          ...styles.fab,
+          // https://mui.com/system/getting-started/the-sx-prop/?
+          "&:hover": {
+            // Text color on hover
+            color: "#000000",
+            // Change background slightly on hover
+            bgcolor: "#ffe6f0",
+          },
+        }}
       >
-        Filter
+        {t("filter")}
       </Fab>
       <Drawer
         anchor="left"
