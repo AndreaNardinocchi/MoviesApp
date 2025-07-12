@@ -28,9 +28,12 @@ const styles = {
     margin: 0.5,
   },
   fab: {
+    marginTop: "2%",
     position: "fixed",
     top: 50,
     right: 2,
+    bgcolor: "#8E4585",
+    color: "white",
   },
 };
 
@@ -54,7 +57,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       <Paper component="ul" sx={styles.chipSet}>
         <li>
           <Chip
-            label="Genres"
+            label={t("genres")}
             sx={{
               // Spread styles.chipLabel keeps the original chip styling
               ...styles.chipLabel,
@@ -149,10 +152,20 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
         color="secondary"
         variant="extended"
         onClick={() => setDrawerOpen(true)}
-        sx={styles.fab}
+        sx={{
+          // Spread the base fab styles defined earlier
+          ...styles.fab,
+          // https://mui.com/system/getting-started/the-sx-prop/?
+          "&:hover": {
+            // Text color on hover
+            color: "#000000",
+            // Change background slightly on hover
+            bgcolor: "#ffe6f0",
+          },
+        }}
       >
         <NavigationIcon />
-        Reviews
+        {t("reviews")}
       </Fab>
       <Drawer
         anchor="top"

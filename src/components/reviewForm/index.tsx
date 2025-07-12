@@ -8,12 +8,47 @@ import { useForm, Controller, SubmitHandler } from "react-hook-form";
 import { MoviesContext } from "../../contexts/moviesContext";
 import { useNavigate } from "react-router-dom";
 import styles from "./styles";
-import ratings from "./ratingCategories";
+// import ratings from "./ratingCategories"; // These ratings are statically loaded and not translatable
 import { BaseMovieProps, Review } from "../../types/interfaces";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { useTranslation } from "react-i18next";
+/**
+ * We pull in ratings from the new useRatings hook, which is a component that
+ * enables the use of the useTranslation() function to translate the ratings
+ */
+import useRatings from "../../hooks/useRatings";
 
 const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
+  /**
+   * We create this variable 'ratings', which calls in the hook useRatings(), 
+   * which is actually going to replace the 'ratings' array we were previously
+   * pulling from ratings.ts.
+   * This change will ensure that the below dropdown menu :
+   * {ratings.map((option) => (
+                <MenuItem key={option.value} value={option.value}>
+                  {option.label}
+                </MenuItem>
+              ))}
+   * will actually pull values from useRatings.ts
+   *  */
+  const ratings = useRatings();
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  // const lang = i18n.language || "en-US";
+
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+
   const defaultValues = {
     defaultValues: {
       author: "",
@@ -68,7 +103,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
   return (
     <Box component="div" sx={styles.root}>
       <Typography component="h2" variant="h3">
-        Write a review
+        {t("write_review")}
       </Typography>
       <Snackbar
         sx={styles.snack}
@@ -76,10 +111,16 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
         open={open}
         onClose={handleSnackClose}
       >
-        <Alert severity="success" variant="filled" onClose={handleSnackClose}>
-          <Typography variant="h4">
-            Thank you for submitting a review
-          </Typography>
+        <Alert
+          severity="success"
+          variant="filled"
+          onClose={handleSnackClose}
+          sx={{
+            bgcolor: "#4CAF50",
+            color: "#ffffff",
+          }}
+        >
+          <Typography variant="h4">{t("thank_you_for_review")}</Typography>
         </Alert>
       </Snackbar>
 
@@ -87,7 +128,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
         <Controller
           name="author"
           control={control}
-          rules={{ required: "Name is required" }}
+          rules={{ required: t("name_required") }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
             <TextField
@@ -98,7 +139,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
               onChange={onChange}
               value={value}
               id="author"
-              label="Author's name"
+              label={t("author_name")}
               autoFocus
             />
           )}
@@ -112,8 +153,8 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
           name="content"
           control={control}
           rules={{
-            required: "Review cannot be empty.",
-            minLength: { value: 10, message: "Review is too short" },
+            required: t("review_empty"),
+            minLength: { value: 10, message: t("review_short") },
           }}
           defaultValue=""
           render={({ field: { onChange, value } }) => (
@@ -124,7 +165,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
               fullWidth
               value={value}
               onChange={onChange}
-              label="Review text"
+              label={t("review_text")}
               id="review"
               multiline
               minRows={10}
@@ -152,10 +193,10 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
               id="select-rating"
               select
               variant="outlined"
-              label="Rating Select"
+              label={t("rating_select")}
               value={rating}
               onChange={handleRatingChange}
-              helperText="Don't forget your rating"
+              helperText={t("not_forget_rating")}
             >
               {ratings.map((option) => (
                 <MenuItem key={option.value} value={option.value}>
@@ -176,16 +217,36 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
               ...styles.submit,
               bgcolor: "#8E4585",
               color: "#ffffff",
+              // https://mui.com/system/getting-started/the-sx-prop/?
+              "&:hover": {
+                // Text color on hover
+                color: "#000000",
+                // Change background slightly on hover
+                bgcolor: "#ffe6f0",
+              },
             }}
             // sx={styles.submit}
           >
-            Submit
+            {t("submit")}
           </Button>
           <Button
             type="reset"
             variant="contained"
-            color="secondary"
-            sx={styles.submit}
+            //  color="secondary"
+            //  sx={styles.submit}
+            sx={{
+              // Spread styles.chipLabel keeps the original chip styling
+              ...styles.submit,
+              bgcolor: "#D86EBF",
+              color: "#ffffff",
+              // https://mui.com/system/getting-started/the-sx-prop/?
+              "&:hover": {
+                // Text color on hover
+                color: "#000000",
+                // Change background slightly on hover
+                bgcolor: "#ffe6f0",
+              },
+            }}
             onClick={() => {
               reset({
                 author: "",
@@ -193,7 +254,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
               });
             }}
           >
-            Reset
+            {t("reset")}
           </Button>
         </Box>
       </form>
