@@ -7,9 +7,16 @@ import Spinner from "../components/spinner";
 import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
 import { BaseMovieProps } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 const ActorMoviesPage: React.FC = () => {
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
   /**
    * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
@@ -27,9 +34,9 @@ const ActorMoviesPage: React.FC = () => {
     isLoading,
     isError,
   } = useQuery<BaseMovieProps[], Error>(
-    ["actorMovies", id],
+    ["actorMovies", id, lang],
     // Fetch the movie with cast information using the provided function
-    () => getActorMovies(id || "")
+    () => getActorMovies(id || "", lang)
   );
 
   if (isLoading) return <Spinner />;

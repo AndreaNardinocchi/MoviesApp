@@ -333,11 +333,11 @@ export const getTVSeriesCredits = (id: string | number) => {
  * https://tmdbapis.metamanager.wiki/en/latest/_modules/tmdbapis/api3.html
  * 'id' is the ID of the actor (can be a string or number)
  */
-export const getActorMovies = (id: string | number) => {
+export const getActorMovies = (id: string | number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/person/${id}/movie_credits?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
+    }&language=${language}`
   )
     .then((res) => res.json())
     .then((json) => {
