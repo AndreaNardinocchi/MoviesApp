@@ -85,6 +85,11 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
     review.movieId = movie.id;
     review.rating = rating;
     context.addReview(movie, review);
+    // On submit, we also add a reviewKey to the localStorage to store our review
+    const reviewKey = `review_movie_${movie.id}`;
+    // Hence, below we set the key and we stringify its value which is the review object
+    // https://stackoverflow.com/questions/23728626/localstorage-and-json-stringify-json-parse#23728844
+    localStorage.setItem(reviewKey, JSON.stringify(review));
     setOpen(true); // NEW
     console.log(review);
   };

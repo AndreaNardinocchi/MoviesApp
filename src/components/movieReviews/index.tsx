@@ -38,9 +38,42 @@ const MovieReviews: React.FC<MovieDetailsProps> = (movie) => {
 
   const [reviews, setReviews] = useState([]);
 
+  // useEffect(() => {
+  //   getMovieReviews(movie.id, lang).then((reviews) => {
+  //     setReviews(reviews);
+  //   });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   useEffect(() => {
-    getMovieReviews(movie.id, lang).then((reviews) => {
-      setReviews(reviews);
+    /**
+     * As in the reviewForm we have set a reviewKey to the local storage,
+     * we are basically creating the const variable again, and passing the
+     * 'movie.id' parameter in, so that we can get the review of the movie details
+     * page
+     *  */
+    const reviewKey = `review_movie_${movie.id}`;
+    const localReview = localStorage.getItem(reviewKey);
+    /**
+     * The JSON.parse converts the stored JSON string into a real JavaScript object
+     * to be used on the page.
+     * We are essentially saying: if there is a localReview, let's 'objectify' it back,
+     * otherwise, if there is no localReview, this const variable is null
+     */
+    const parsedLocalReview = localReview ? JSON.parse(localReview) : null;
+
+    getMovieReviews(movie.id, lang).then((apiReviews) => {
+      /**
+       * Here, instead, we create a new variable all Reviews that includes the our
+       * parsedLocalReview + the apiReviews, which are 'spread' to ensure they are
+       * always in the background and not affected by our review addition.
+       * Of course, if no parsedLocalReview exists, the apiReviews will still show
+       */
+      const allReviews = parsedLocalReview
+        ? [...apiReviews, parsedLocalReview]
+        : apiReviews;
+
+      setReviews(allReviews);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
