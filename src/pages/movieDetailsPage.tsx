@@ -33,6 +33,8 @@ const fetchMovieWithCast = async (
   const movie = await getMovie(id, language);
   const cast = await getMovieCredits(id); // Fetch actors
 
+  console.log("Current language:", cast);
+
   return {
     /**
      * The spread operator '...movie' copies all enumerable properties from the 'movie' object

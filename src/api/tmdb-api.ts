@@ -83,11 +83,11 @@ export const getGenres = () => {
     });
 };
 
-export const getMovieImages = (id: string | number, language = "en-US") => {
+export const getMovieImages = (id: string | number) => {
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}/images?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=${language}`
+    }`
   )
     .then((response) => {
       if (!response.ok) {
@@ -101,12 +101,12 @@ export const getMovieImages = (id: string | number, language = "en-US") => {
     });
 };
 
-export const getMovieReviews = (id: string | number) => {
+export const getMovieReviews = (id: string | number, language = "en-US") => {
   //movie id can be string or number
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}/reviews?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
+    }&language=${language}`
   )
     .then((res) => res.json())
     .then((json) => {
@@ -149,6 +149,7 @@ export const getUpcomingMovies = (page: number, language = "en-US") => {
  * 'id' is the ID of the movie (can be a string or number)
  */
 export const getMovieCredits = (id: string | number) => {
+  // , language = "en-US")
   return fetch(
     `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${
       import.meta.env.VITE_TMDB_KEY
@@ -169,11 +170,11 @@ export const getMovieCredits = (id: string | number) => {
  * https://developer.themoviedb.org/reference/person-details
  * 'id' is the actor's person ID as a string.
  */
-export const fetchActorDetails = async (id: string) => {
+export const fetchActorDetails = async (id: string, language = "en-US") => {
   const res = await fetch(
     `https://api.themoviedb.org/3/person/${id}?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
+    }&language=${language}`
   );
   if (!res.ok) throw new Error("Failed to fetch actor details");
   return res.json();
@@ -222,11 +223,11 @@ export const getMoviesPerReleaseYear = async (year: number) => {
  * Fetches the list of movies that are now playing in theaters.
  * https://developer.themoviedb.org/reference/movie-now-playing-list
  */
-export const getNowPlayingMovies = (page: number) => {
+export const getNowPlayingMovies = (page: number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/movie/now_playing?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&page=${page}`
+    }&language=${language}&page=${page}`
   )
     .then((response) => {
       if (!response.ok)

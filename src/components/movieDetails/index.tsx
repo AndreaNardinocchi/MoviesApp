@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Chip from "@mui/material/Chip";
 import Paper from "@mui/material/Paper";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
@@ -35,11 +35,6 @@ const styles = {
 };
 
 const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
-  /**
-   * We are using the translation hook that gets the t function and i18n instance inside our functional component.
-   * However, i18n is already embedded into the <LanguageSwitcher /> component
-   * https://react.i18next.com/latest/usetranslation-hook
-   */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
@@ -86,14 +81,14 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
           icon={<StarRate />}
           label={`${movie.vote_average} (${movie.vote_count}`}
         />
-        <Chip label={`Released: ${movie.release_date}`} />
+        <Chip label={`${t("release")}: ${movie.release_date}`} />
       </Paper>
 
       {/* Production Countries */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
           <Chip
-            label="Production Countries"
+            label={t("production_countries")}
             sx={{
               // Spread styles.chipLabel keeps the original chip styling
               ...styles.chipLabel,

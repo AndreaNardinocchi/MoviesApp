@@ -20,7 +20,7 @@ import MovieFilterUI, {
 // https://mui.com/material-ui/react-pagination/
 import { Pagination } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -44,6 +44,14 @@ const releaseFiltering = {
 };
 
 const NowPlayingMoviesPage: React.FC = () => {
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
   /**
    * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
@@ -73,8 +81,8 @@ const NowPlayingMoviesPage: React.FC = () => {
     isError, // true if an error occurred
     error, // the error object if any
   } = useQuery<NowPlayingMoviesResponse>(
-    ["nowPlayingMovies", page], // unique cache key
-    () => getNowPlayingMovies(page), // fetch function
+    ["nowPlayingMovies", page, lang], // unique cache key
+    () => getNowPlayingMovies(page, lang), // fetch function
     { keepPreviousData: true }
   );
 

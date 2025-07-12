@@ -18,7 +18,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 import { fetchActorDetails, getPersonImages } from "../api/tmdb-api";
 import { MovieDetailsProps } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 /**
  * Even though React Query handles the data fetching (useQuery), we're building an
@@ -27,6 +27,14 @@ import i18n from "../i18n/i18n";
  * */
 
 const ActorBioPage: React.FC = () => {
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
   /**
    * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
@@ -55,8 +63,8 @@ const ActorBioPage: React.FC = () => {
     isLoading,
     isError,
   } = useQuery(
-    ["actorDetails", id], // Unique key used by React Query to cache the response
-    () => fetchActorDetails(id || "") // API function to get actor info from '/api/tmdb-api'
+    ["actorDetails", id, lang], // Unique key used by React Query to cache the response
+    () => fetchActorDetails(id || "", lang) // API function to get actor info from '/api/tmdb-api'
   );
 
   // Fetch images associated with the actor
@@ -67,9 +75,6 @@ const ActorBioPage: React.FC = () => {
   } = useQuery(
     ["actorImages", id], // Unique key by React Query to track and cache this response
     () => getPersonImages(Number(id)) // The API function here needs a number
-    // {
-    //   enabled: !!id,
-    // }
   );
 
   /**
@@ -209,7 +214,7 @@ const ActorBioPage: React.FC = () => {
         </Typography>
 
         <Typography variant="body2" paragraph>
-          {actor?.biography ? actor.biography : "No biography available."}
+          {actor?.biography ? actor.biography : t("no_biography")}
         </Typography>
 
         {/* Photo gallery section */}
