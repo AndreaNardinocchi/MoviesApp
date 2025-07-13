@@ -225,3 +225,9 @@ export interface NowPlayingMoviesResponse {
   total_pages: number;
   results: BaseMovieProps[];
 }
+
+export interface VideoTrailer {
+  key: string;
+  site: string;
+  type: string;
+}

@@ -188,6 +188,7 @@ const SiteHeader: React.FC = () => {
   const mobileMenuOptions = [
     { label: "Home", path: "/" },
     { label: "Upcoming", path: "/movies/upcoming" },
+    { label: "Discover", path: "/movies/discover" },
     { label: "MustWatch", path: "/movies/mustwatchlist" },
     { label: "Favorites", path: "/movies/favourites" },
     { label: "TV Series", path: "/tvseries" },
@@ -313,6 +314,9 @@ const SiteHeader: React.FC = () => {
                 transformOrigin={{ vertical: "top", horizontal: "left" }}
               >
                 {/* Dropdown options under "Movie List" */}
+                <MenuItem onClick={() => handleNavigate("/movies/discover")}>
+                  {/* {t("upcoming_movies")} */} Discover Movies
+                </MenuItem>
                 <MenuItem onClick={() => handleNavigate("/movies/upcoming")}>
                   {t("upcoming_movies")}
                 </MenuItem>

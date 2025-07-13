@@ -345,3 +345,30 @@ export const getActorMovies = (id: string | number, language = "en-US") => {
       return json.cast;
     });
 };
+
+/**
+ * Fetches the video trailer of a movie.
+ * /**
+ * Fetches the video trailer of a movie.
+ * https://developer.themoviedb.org/reference/movie-videos
+ * 'id' is the ID of the movie and language fetches the language of the video trailer
+ */
+export const getMovieVideos = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get movie videos. Response status: ${response.status}`
+        );
+      }
+      return response.json();
+    })
+    .then((json) => json.results) // extract the "results" array
+    .catch((error) => {
+      throw error;
+    });
+};

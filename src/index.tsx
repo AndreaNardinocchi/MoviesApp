@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Navigate, Routes } from "react-router-dom";
-import HomePage from "./pages/homePage";
+// import HomePage from "./pages/discoverPage";
 import MoviePage from "./pages/movieDetailsPage";
 import FavouriteMoviesPage from "./pages/favouriteMoviesPage"; // NEW
 import MovieReviewPage from "./pages/movieReviewPage";
@@ -25,6 +25,9 @@ import Footer from "./components/footer/footer";
 import i18n from "./i18n/i18n";
 import { I18nextProvider } from "react-i18next";
 import { Box, CssBaseline } from "@mui/material";
+// import Test from "./pages/homePage";
+import DiscoverMovies from "./pages/discoverPage";
+import HomePage from "./pages/homePage";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -59,11 +62,13 @@ const App = () => {
             <SiteHeader /> {/* New Header  */}
             <MoviesContextProvider>
               <Routes>
+                <Route path="/" element={<HomePage />} />
                 <Route path="/tvseries" element={<TVSeriesPage />} />
                 <Route path="/tvseries/:id" element={<TVSeriesDetailsPage />} />
                 <Route path="/actor/:id" element={<ActorBioPage />} />
                 <Route path="/reviews/form" element={<AddMovieReviewPage />} />
                 <Route path="/reviews/:id" element={<MovieReviewPage />} />
+                <Route path="/movies/discover" element={<DiscoverMovies />} />
                 <Route
                   path="/movies/upcoming"
                   element={
@@ -105,7 +110,7 @@ const App = () => {
                   }
                 />
                 <Route path="/actor/:id/movies" element={<ActorMoviesPage />} />
-                <Route path="/" element={<HomePage />} />
+
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignUpPage />} />
