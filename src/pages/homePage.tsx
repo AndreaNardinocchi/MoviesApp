@@ -1,10 +1,18 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useQuery } from "react-query";
 import { getMovieVideos, getMovies } from "../api/tmdb-api";
 import { useTranslation } from "react-i18next";
 import { BaseMovieProps, VideoTrailer } from "../types/interfaces";
 // https://mui.com/material-ui/api/card-media/
-import { Box, Card, CardMedia, Typography } from "@mui/material";
+import {
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+  Typography,
+  Box,
+} from "@mui/material";
+import { Link } from "react-router-dom";
 
 // In the end you will end up with a URL like https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg.
 // https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
@@ -54,10 +62,81 @@ const HeroVideoSection = ({
         width: "20%",
       }}
     >
-      <Typography variant="h3">{movie.title}</Typography>
+      <Typography variant="h4">{movie.title}</Typography>
     </Box>
   </Card>
 );
+
+/**
+ * We are creating a Movie Carousel to display movie cards in a row, and be able to
+ * scroll through and click on them.
+ *
+ */
+const MovieCarousel = ({
+  title,
+  movies,
+  onCardClick,
+}: {
+  title: string;
+  movies: BaseMovieProps[];
+  // We pass the BaseMovieProp to the onCardClick function
+  onCardClick: (movie: BaseMovieProps) => void;
+}) => {
+  return (
+    <Box sx={{ position: "relative", my: 4 }}>
+      <Typography variant="h5" sx={{ mb: 2, pl: 2 }}>
+        {title}
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+          gap: 2,
+          px: 6,
+        }}
+      >
+        {movies.map((movie) => (
+          <Card
+            key={movie.id}
+            sx={{
+              width: "25%",
+              flex: "0 0 auto",
+              borderRadius: "10px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+            }}
+          >
+            <Link
+              to={`/movies/${movie.id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <CardActionArea onClick={() => onCardClick(movie)}>
+                <CardMedia
+                  component="img"
+                  image={
+                    // If the poster_path exists, than we use the full URL ${IMAGE_BASE}${movie.poster_path},
+                    // otherwise, it is undefined
+                    movie.poster_path
+                      ? `${IMAGE_BASE}${movie.poster_path}`
+                      : undefined
+                  }
+                  alt={movie.title}
+                  sx={{ height: 225 }}
+                />
+                <CardContent>
+                  <Typography variant="subtitle2" noWrap>
+                    {movie.title}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Link>
+          </Card>
+        ))}
+      </Box>
+    </Box>
+  );
+};
 
 const HomePage: React.FC = () => {
   /** 
@@ -97,12 +176,18 @@ const HomePage: React.FC = () => {
    * This key is used to construct the URL for embedding the trailer in an iframe tag.
    */
   const [videoKey, setVideoKey] = useState<string>();
+  /**
+   * This useState hook here set the discovery movies array, and  it will be populated after
+   * calling the `getMovies()` API. The `BaseMovieProps[]` type ensures that each movie
+   * object in the array follows the expected movie data.
+   */
+  const [discoverMovies, setDiscoverMovies] = useState<BaseMovieProps[]>([]);
 
   // Fetch movies with React Query
   // The below code has bee slighly adjusted as per
   // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
   const { data, error, isLoading, isError } = useQuery(
-    ["test", page, lang],
+    ["homePage", page, lang],
     () => getMovies(page, lang),
     {
       keepPreviousData: true,
@@ -110,41 +195,44 @@ const HomePage: React.FC = () => {
   );
 
   // When movies are fetched, pick one randomly and fetch its trailer
-
   useEffect(() => {
-    /**
-     * useEffect hook that runs a function as a 'side effect' after the component renders.
-     * Here, it runs when `data` changes, and is used to select a random movie from the fetched data,
-     * which is the corresponding trailer video for that movie.
-     */
-
-    // If `data` or `data.results` exits as per  results: BaseMovieProps[]; in the DiscoverMovies interface
-    if (data?.results?.length) {
+    const fetchData = async () => {
       /**
-       * Select a random movie from the results array.
-       * This ensures variety every time the data changes (e.g. on language/page change).
-       * The Math.floor() static method always rounds down and returns the largest integer less than or equal to a given number.
-       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor
-       * The Math.random() static method returns a floating-point, pseudo-random number that's greater than or equal to 0 and less than 1,
-       * with approximately uniform distribution over that range — which you can then scale to your desired range.
-       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#examples
-       * https://dev.to/kanaga_vimala_66acce9cf6e/understanding-mathrandom-mathfloor-and-arrays-in-javascript-mkl
+       * useEffect hook that runs a function as a 'side effect' after the component renders.
+       * Here, it runs when `data` changes, and is used to select a random movie from the fetched data,
+       * which is the corresponding trailer video for that movie.
        */
 
-      const randomFunction = Math.floor(Math.random() * data.results.length);
-      const randomMovie = data.results[randomFunction];
+      // If `data` or `data.results` exists as per  results: BaseMovieProps[]; in the DiscoverMovies interface
+      if (data?.results?.length) {
+        /**
+         * Select a random movie from the results array.
+         * This ensures variety every time the data changes (e.g. on language/page change).
+         * The Math.floor() static method always rounds down and returns the largest integer less than or equal to a given number.
+         * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor
+         * The Math.random() static method returns a floating-point, pseudo-random number that's greater than or equal to 0 and less than 1,
+         * with approximately uniform distribution over that range — which you can then scale to your desired range.
+         * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#examples
+         * https://dev.to/kanaga_vimala_66acce9cf6e/understanding-mathrandom-mathfloor-and-arrays-in-javascript-mkl
+         */
+        const randomFunction = Math.floor(Math.random() * data.results.length);
+        const randomMovie = data.results[randomFunction];
 
-      // Save the selected random movie to local state.
-      setRandomMovie(randomMovie);
+        // Save the selected random movie to local state.
+        setRandomMovie(randomMovie);
 
-      /**
-       * Fetch the videos associated with the selected movie.".then()" here is used to
-       * access the results array.
-       * https://github.com/grantholle/moviedb-promise/blob/main/README.md?
-       * - Looks specifically for a "Trailer" hosted on "YouTube".
-       * - If found, stores the trailer's `key` in state to be embedded later.
-       */
-      getMovieVideos(randomMovie.id).then((videos) => {
+        // We create a const discover and fetch the movies via the API function
+        const discover = await getMovies(page, lang);
+        setDiscoverMovies(discover.results);
+
+        /**
+         * Fetch the videos associated with the selected movie.
+         * https://github.com/grantholle/moviedb-promise/blob/main/README.md?
+         * - Looks specifically for a "Trailer" hosted on "YouTube".
+         * - If found, stores the trailer's `key` in state to be embedded later.
+         */
+        const videos = await getMovieVideos(randomMovie.id);
+
         /**
          * We then find() the specific video trailer
          * https://developer.themoviedb.org/reference/movie-videos
@@ -153,12 +241,15 @@ const HomePage: React.FC = () => {
         const trailer = videos.find(
           (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"
         );
+
         // We then grab the trailer 'key', as per the 'VideoTrailer' interface.
         // Could be undefined if no trailer is found, hence '?'
         setVideoKey(trailer?.key);
-      });
-    }
-  }, [data]); // Re-run the effect whenever `data` changes.
+      }
+    };
+    // Call the async function
+    fetchData();
+  }, [data, page, lang]); // Re-run the effect whenever `data`, `page`, or `lang` change
 
   if (isLoading) return <p>Loading movies...</p>;
   if (isError) return <p>Error loading movies: {(error as Error).message}</p>;
@@ -168,6 +259,13 @@ const HomePage: React.FC = () => {
       {randomMovie && (
         <HeroVideoSection movie={randomMovie} videoKey={videoKey} />
       )}
+      <MovieCarousel
+        title={t("discover_movies")}
+        movies={discoverMovies}
+        onCardClick={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
     </div>
   );
 };

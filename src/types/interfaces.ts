@@ -226,6 +226,9 @@ export interface NowPlayingMoviesResponse {
   results: BaseMovieProps[];
 }
 
+/**
+ * https://developer.themoviedb.org/reference/movie-videos
+ */
 export interface VideoTrailer {
   key: string;
   site: string;
