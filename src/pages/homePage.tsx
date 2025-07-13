@@ -11,8 +11,11 @@ import {
   CardContent,
   Typography,
   Box,
+  Grid,
 } from "@mui/material";
 import { Link } from "react-router-dom";
+// https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
+import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
 
 // In the end you will end up with a URL like https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg.
 // https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
@@ -94,7 +97,7 @@ const MovieCarousel = ({
           overflowX: "auto",
           scrollbarWidth: "none",
           gap: 2,
-          px: 6,
+          px: 2,
         }}
       >
         {movies.map((movie) => (
@@ -259,6 +262,32 @@ const HomePage: React.FC = () => {
       {randomMovie && (
         <HeroVideoSection movie={randomMovie} videoKey={videoKey} />
       )}
+      <Grid
+        container
+        spacing={2}
+        sx={{ padding: "5% 5% 0 5%", textAlign: "center" }}
+      >
+        <Grid item xs={3}></Grid>
+        <Grid item xs={6}>
+          <Typography variant="h2">
+            <VideoCameraFrontIcon
+              // fontSize="small"
+              color="inherit"
+              sx={{
+                marginTop: 0.03,
+                verticalAlign: "middle",
+                mr: 0.3,
+                fontSize: "150%",
+              }}
+            />{" "}
+            MovieApp{" "}
+          </Typography>
+          <Typography variant="body1" sx={{ fontSize: "180%" }}>
+            Your cinema in the palm of your hand!
+          </Typography>
+        </Grid>
+        <Grid item xs={3}></Grid>
+      </Grid>
       <MovieCarousel
         title={t("discover_movies")}
         movies={discoverMovies}

@@ -228,8 +228,11 @@ const SiteHeader: React.FC = () => {
           </Link>
 
           {/* Main title, flexGrow pushes remaining content right */}
-          <Typography variant="h4" sx={{ flexGrow: 1, color: "white" }}>
-            TMDB Client
+          <Typography
+            variant="h4"
+            sx={{ flexGrow: 1, color: "white", marginRight: "2%" }}
+          >
+            MovieApp
           </Typography>
 
           {/* Subtitle, also pushes remaining content right */}
