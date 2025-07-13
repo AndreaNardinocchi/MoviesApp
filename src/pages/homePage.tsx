@@ -12,6 +12,7 @@ import {
   Typography,
   Box,
   Grid,
+  responsiveFontSizes,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 // https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
@@ -63,7 +64,7 @@ const HeroVideoSection = ({
         backgroundColor: "rgba(0,0,0,0.5)",
         padding: "1rem",
         borderRadius: "8px",
-        width: "20%",
+        minWidth: "20%",
       }}
     >
       <Typography variant="h4">{movie.title}</Typography>
@@ -98,8 +99,8 @@ const MovieCarousel = ({
     }
   };
   return (
-    <Box sx={{ position: "relative", my: 4 }}>
-      <Typography variant="h5" sx={{ mb: 2, pl: 2 }}>
+    <Box sx={{ position: "relative", my: 4, px: "3%" }}>
+      <Typography variant="h5" sx={{ mb: 2, pl: 2, fontSize: "200%" }}>
         {title}
       </Typography>
 
@@ -122,7 +123,15 @@ const MovieCarousel = ({
           <Card
             key={movie.id}
             sx={{
-              width: "25%",
+              // We apply appropriate width based on the device size to make the cards responsive
+              // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
+              width: {
+                xs: "100%", // 1 card per row on mobile
+                sm: "48%", // 2 cards on small tablets
+                md: "32%", // 3 cards on medium screens
+                lg: "20%", // 4 cards on large screens
+              },
+              // minWidth: "2%",
               flex: "0 0 auto",
               borderRadius: "10px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
@@ -143,10 +152,10 @@ const MovieCarousel = ({
                       : undefined
                   }
                   alt={movie.title}
-                  sx={{ height: 225 }}
+                  sx={{ height: "100%" }}
                 />
                 <CardContent>
-                  <Typography variant="subtitle2" noWrap>
+                  <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
                     {movie.title}
                   </Typography>
                 </CardContent>
@@ -286,8 +295,7 @@ const HomePage: React.FC = () => {
         spacing={2}
         sx={{ padding: "5% 5% 0 5%", textAlign: "center" }}
       >
-        <Grid item xs={3}></Grid>
-        <Grid item xs={6}>
+        <Grid item xs={12}>
           <Typography variant="h2">
             <VideoCameraFrontIcon
               // fontSize="small"
@@ -305,8 +313,8 @@ const HomePage: React.FC = () => {
             {t("all_you_ever_wanted")}
           </Typography>
         </Grid>
-        <Grid item xs={3}></Grid>
       </Grid>
+
       <MovieCarousel
         title={t("discover_movies")}
         movies={discoverMovies}
