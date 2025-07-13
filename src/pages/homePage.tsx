@@ -16,6 +16,7 @@ import {
 import { Link } from "react-router-dom";
 // https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
 import VideoCameraFrontIcon from "@mui/icons-material/VideoCameraFront";
+import Arrow from "../components/arrow";
 
 // In the end you will end up with a URL like https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg.
 // https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
@@ -85,17 +86,34 @@ const MovieCarousel = ({
   // We pass the BaseMovieProp to the onCardClick function
   onCardClick: (movie: BaseMovieProps) => void;
 }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    if (scrollRef.current) {
+      const scrollAmount = scrollRef.current.clientWidth * 0.8;
+      scrollRef.current.scrollBy({
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
   return (
     <Box sx={{ position: "relative", my: 4 }}>
       <Typography variant="h5" sx={{ mb: 2, pl: 2 }}>
         {title}
       </Typography>
 
+      {/* Arrows for scrolling */}
+
+      <Arrow direction="left" clickFunction={() => scroll("left")} />
+
       <Box
+        ref={scrollRef}
         sx={{
           display: "flex",
           overflowX: "auto",
           scrollbarWidth: "none",
+          "&::-webkit-scrollbar": { display: "none" },
           gap: 2,
           px: 2,
         }}
@@ -137,6 +155,7 @@ const MovieCarousel = ({
           </Card>
         ))}
       </Box>
+      <Arrow direction="right" clickFunction={() => scroll("right")} />
     </Box>
   );
 };
@@ -279,11 +298,11 @@ const HomePage: React.FC = () => {
                 mr: 0.3,
                 fontSize: "150%",
               }}
-            />{" "}
+            />
             MovieApp{" "}
           </Typography>
           <Typography variant="body1" sx={{ fontSize: "180%" }}>
-            Your cinema in the palm of your hand!
+            {t("all_you_ever_wanted")}
           </Typography>
         </Grid>
         <Grid item xs={3}></Grid>

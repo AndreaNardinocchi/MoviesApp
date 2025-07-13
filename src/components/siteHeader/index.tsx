@@ -230,17 +230,21 @@ const SiteHeader: React.FC = () => {
           {/* Main title, flexGrow pushes remaining content right */}
           <Typography
             variant="h4"
-            sx={{ flexGrow: 1, color: "white", marginRight: "2%" }}
+            sx={{
+              flexGrow: 1,
+              color: "white",
+              marginRight: "2%",
+            }}
           >
             MovieApp
           </Typography>
 
           {/* Subtitle, also pushes remaining content right */}
-          <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
+          {/* <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
             {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
             we leverage content in i18n.ts, which is translated */}
-            {t("all_you_ever_wanted")}
-          </Typography>
+          {/* {t("all_you_ever_wanted")} */}
+          {/* </Typography> */}
 
           {/* Conditional rendering based on screen size */}
           {isMobile ? (
