@@ -386,7 +386,7 @@ const SiteHeader: React.FC = () => {
                   </Menu> */}
                 </>
               ) : (
-                <Button color="inherit" onClick={() => navigate("login")}>
+                <Button color="inherit" onClick={() => navigate("/login")}>
                   {t("login")} <LoginIcon sx={{ ml: 1 }} />
                 </Button>
               )}
