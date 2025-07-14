@@ -13,6 +13,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/i18n";
+import { supabase } from "../supabaseClient"; // adjust path as needed
 
 const SignUpPage: React.FC = () => {
   /**
@@ -36,7 +37,7 @@ const SignUpPage: React.FC = () => {
    */
   const [nameError, setNameError] = useState(false);
 
-  const handleSignUp = () => {
+  const handleSignUp = async () => {
     if (
       firstName.trim() === "" ||
       lastName.trim() === "" ||
@@ -48,6 +49,28 @@ const SignUpPage: React.FC = () => {
     } else {
       setNameError(false);
     }
+
+    // Call Supabase signUp
+    // https://supabase.com/docs/guides/auth/managing-user-data
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Error signing up:", error.message);
+      // Optionally display this error to the user
+      return;
+    }
+
+    console.log("User signed up:", data);
+
     // Store data in the local storage
     localStorage.setItem("userFirstName", firstName);
     localStorage.setItem("userLastName", lastName);
