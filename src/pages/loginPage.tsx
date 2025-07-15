@@ -21,6 +21,7 @@ import EmailIcon from "@mui/icons-material/Email";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/i18n";
+import { supabase } from "../supabaseClient";
 
 const LoginPage: React.FC = () => {
   /**
@@ -59,7 +60,7 @@ const LoginPage: React.FC = () => {
    * it is called with the current email and password values.
    * This triggers authentication logging and checking credentials
    */
-  const login = () => {
+  const login = async () => {
     // Create a boolean variable which indicates whether the error exists or not
     let hasError = false;
     // The email field can't be empty
@@ -80,25 +81,31 @@ const LoginPage: React.FC = () => {
 
     // Error message
     if (hasError) {
-      setLoginError("Fill in all required fields!");
+      setLoginError(t("incorrect_credentials"));
     }
 
-    // Creating variables carrying the values stored in local storage
-    const savedEmail = localStorage.getItem("userEmail");
-    const savedPassword = localStorage.getItem("userPassword");
+    // The below async function sends a request to Supabase using the uesr credentials
+    // https://supabase.com/docs/reference/javascript/auth-signinwithpassword
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    // Check the inputted value against what stored in the local storage
-    if (savedEmail !== email) {
-      setLoginError(t("no_account_login"));
-    } else if (savedPassword !== password) {
-      setLoginError(t("incorrect_password"));
-    } else {
-      // if no error, then, authenticate
-      setLoginError("");
-      if (authenticate) {
-        authenticate(email, password);
-      }
+    // If error, an error message will be shown
+    if (error) {
+      console.error("Login error:", error.message);
+      setLoginError(t("incorrect_credentials"));
+      return setLoginError;
     }
+
+    console.log("Login successful:", data);
+    setLoginError("");
+    if (authenticate) {
+      // 'data. wuill include both `user` and `session`
+      authenticate(data);
+    }
+
+    navigate("/");
   };
 
   return (

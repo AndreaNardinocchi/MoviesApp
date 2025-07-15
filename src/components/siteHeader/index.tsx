@@ -49,6 +49,7 @@ const SiteHeader: React.FC = () => {
   console.log("Current language:", i18n.language);
 
   const { token } = useContext(AuthContext) || {};
+  const { user } = useContext(AuthContext) || {};
 
   // , signout
   // The signout is no longer needed as we are using the UserProfileDrawer
@@ -64,12 +65,13 @@ const SiteHeader: React.FC = () => {
   useEffect(
     () => {
       // Get the 'userFirstName' or 'Usaer' fall back if not found
-      const name = localStorage.getItem("userFirstName") || "User";
+      //  const name = localStorage.getItem("userFirstName") || "User";
+
       // Update the userName state with the value from localStorage
-      setUserName(name);
+      setUserName(user?.firstName ?? "User");
     },
     // Run this effect every time `token` changes ensuring the 'userFirstName' is up-to-date
-    [token]
+    [token, user]
   );
 
   console.log("SiteHeader token:", token);

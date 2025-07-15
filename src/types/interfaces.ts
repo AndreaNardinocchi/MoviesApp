@@ -196,7 +196,8 @@ export interface AuthContextInterface {
   token: string | null;
   // User object added
   user?: User;
-  authenticate: (username: string, password: string) => void;
+  // authenticate: (username: string, password: string) => void;
+  authenticate: (user: any) => void;
   signout: () => void;
 }
 

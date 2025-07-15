@@ -23,7 +23,7 @@ i18n.use(initReactI18next).init({
         upcoming_movies: "Upcoming Movies",
         mustwatch_movies: "MustWatch Movies",
         now_playing: "Now Playing",
-        favorites_movies: "Favorites Movies",
+        favorites_movies: "Favorites",
         tv_series: "TV Series",
         login: "Login",
         address: "Address",
@@ -60,7 +60,8 @@ i18n.use(initReactI18next).init({
         login_text: "Don't have an account? Sign up",
         login_cta: "Submit",
         no_account_login: "No account found with this email.",
-        incorrect_password: "The password you entered is incorrect.",
+        incorrect_credentials:
+          "The email or password you entered are incorrect.",
         actor_movies_header: "Movies Starring This Actor",
         actor_no_movies: "This actor has no known movie credits.",
         failed_image_loading: "Failed to load images",
@@ -152,7 +153,8 @@ i18n.use(initReactI18next).init({
         login_cta: "Enviar",
         no_account_login:
           "No se encontró ninguna cuenta con este correo electrónico.",
-        incorrect_password: "La contraseña que ingresaste es incorrecta.",
+        incorrect_credentials:
+          "El correo electrónico o la contraseña que ingresaste son incorrectos.",
         actor_movies_header: "Películas protagonizadas por este actor",
         actor_no_movies: "Este actor no tiene créditos conocidos en películas.",
         failed_image_loading: "Error al cargar imágenes",
@@ -242,7 +244,8 @@ i18n.use(initReactI18next).init({
         login_text: "Não tem uma conta? Registre-se",
         login_cta: "Enviar",
         no_account_login: "Nenhuma conta encontrada com este e-mail.",
-        incorrect_password: "A senha que você inseriu está incorreta.",
+        incorrect_credentials:
+          "O e-mail ou a senha que você inseriu estão incorretos.",
         actor_movies_header: "Filmes com este ator",
         actor_no_movies: "Este ator não tem créditos conhecidos em filmes.",
         failed_image_loading: "Falha ao carregar imagens",
@@ -333,7 +336,8 @@ i18n.use(initReactI18next).init({
         login_text: "Non hai un account? Registrati",
         login_cta: "Invia",
         no_account_login: "Nessun account trovato con questa email.",
-        incorrect_password: "La password inserita non è corretta.",
+        incorrect_credentials:
+          "L'e-mail o la password inseriti non sono corretti.",
         actor_movies_header: "Film con questo attore",
         actor_no_movies: "Questo attore non ha crediti cinematografici noti.",
         failed_image_loading: "Caricamento delle immagini non riuscito",
