@@ -72,13 +72,13 @@ const SignUpPage: React.FC = () => {
     console.log("User signed up:", data);
 
     // Store data in the local storage
-    localStorage.setItem("userFirstName", firstName);
-    localStorage.setItem("userLastName", lastName);
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("userPassword", password);
+    // localStorage.setItem("userFirstName", firstName);
+    // localStorage.setItem("userLastName", lastName);
+    // localStorage.setItem("userEmail", email);
+    // localStorage.setItem("userPassword", password);
 
     // Simulate sign-up logic
-    console.log("User registered:", { firstName, lastName, email, password });
+    console.log("User registered:", { firstName, lastName, email });
 
     // Redirect to login page once signed up
     navigate("/login");

@@ -67,7 +67,7 @@ const SiteHeader: React.FC = () => {
       // Get the 'userFirstName' or 'Usaer' fall back if not found
       //  const name = localStorage.getItem("userFirstName") || "User";
 
-      // Update the userName state with the value from localStorage
+      // Update the userName state with the value from supabase or fallback to 'User'
       setUserName(user?.firstName ?? "User");
     },
     // Run this effect every time `token` changes ensuring the 'userFirstName' is up-to-date

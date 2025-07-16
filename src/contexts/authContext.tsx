@@ -1,9 +1,11 @@
-import React, { useState, createContext } from "react";
+import React, { useState, createContext, useEffect } from "react";
 // import fakeAuth from "../util";
 import { useLocation, useNavigate } from "react-router-dom";
 import { AuthContextInterface, User } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/i18n";
+import { supabase } from "../supabaseClient";
+import Spinner from "../components/spinner";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext<AuthContextInterface | null>(null);
@@ -64,9 +66,48 @@ const AuthContextProvider: React.FC<React.PropsWithChildren> = (props) => {
     // https://supabase.com/docs/reference/javascript/auth-setsession
     setToken(session.access_token || null);
 
-    const origin = location.state?.intent?.pathname || "/";
-    navigate(origin);
+    /**
+     * Since we have now added the getSession() function, we need to ensure that
+     * the 'origin' redirection does occur if 'origin' is there and avoid a fallback to '/'
+     * Without the 'if' condition, it won't work
+     */
+    const origin = location.state?.intent?.pathname;
+    if (origin) {
+      navigate(origin);
+    }
   };
+
+  useEffect(() => {
+    /**
+     * This async function tries to restore an existing user session on page load or refresh.
+     * If a valid session is found, it will `authenticate()` to set user state and token again
+     * The session data will be fetched from the localStorage and the session will be resumed.
+     */
+
+    async function fetchSession() {
+      // https://supabase.com/docs/reference/javascript/auth-getsession
+      // https://github.com/orgs/supabase/discussions/32783
+      const { data, error } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("Failed to restore session");
+        return;
+      }
+
+      console.log("getSession(): ", data.session, error);
+
+      // We create a const variable called 'session'
+      const session = data.session;
+
+      // If the session and user of that session exist, then, we will authenticate them again and
+      // the session will be restored (authenticate() takes the 2 values as per 'const { user, session } = supabaseData;')
+      if (session && session.user) {
+        authenticate({ user: session.user, session });
+      }
+    }
+
+    fetchSession();
+  });
 
   const signout = () => {
     setToken(null);
