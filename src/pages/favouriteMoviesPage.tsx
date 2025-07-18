@@ -13,7 +13,7 @@ import MovieFilterUI, {
 import RemoveFromFavourites from "../components/cardIcons/removeFromFavourites";
 import WriteReview from "../components/cardIcons/writeReview";
 import { useTranslation } from "react-i18next";
-import i18n from "../i18n/i18n";
+// import i18n from "../i18n/i18n";
 
 /**
  * The Favourite movies page can use the favourite movie ids to fetch the movie details from TMDB
@@ -39,6 +39,13 @@ const releaseFiltering = {
 };
 
 const FavouriteMoviesPage: React.FC = () => {
+  /** 
+       *Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+       If undefined or empty, fallback to 'en-US'
+       */
+  const { i18n } = useTranslation();
+
+  const lang = i18n.language || "en-US";
   /**
    * We are using the translation hook gets the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
@@ -59,8 +66,9 @@ const FavouriteMoviesPage: React.FC = () => {
   const favouriteMovieQueries = useQueries(
     movieIds.map((movieId) => {
       return {
-        queryKey: ["movie", movieId],
-        queryFn: () => getMovie(movieId.toString()),
+        // By adding the 'lang' parameter, we noe fetch 'in-language' favourites
+        queryKey: ["movie", movieId, lang],
+        queryFn: () => getMovie(movieId.toString(), lang),
       };
     })
   );

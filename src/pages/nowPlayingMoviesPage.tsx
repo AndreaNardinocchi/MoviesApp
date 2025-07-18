@@ -107,7 +107,6 @@ const NowPlayingMoviesPage: React.FC = () => {
    * The API function has been updated to return response.json();, otherwise
    * the pagination would not work
    */
-
   const displayedMovies = movies?.results ? filterFunction(movies.results) : [];
 
   // Called when the user changes title, genre filter, or release year

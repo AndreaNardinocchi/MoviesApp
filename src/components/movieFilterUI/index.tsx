@@ -11,6 +11,12 @@ export const titleFilter = (movie: BaseMovieProps, value: string): boolean => {
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
+// export const titleFilter = (movie: { title: string }, value: string) => {
+//   if (!movie || !movie.title) return false;
+//   return movie.title.toLowerCase().includes(value.toLowerCase());
+// };
+
+// eslint-disable-next-line react-refresh/only-export-components
 export const genreFilter = (movie: BaseMovieProps, value: string) => {
   const genreId = Number(value);
   const genreIds = movie.genre_ids;
