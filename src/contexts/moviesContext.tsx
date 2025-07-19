@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from "react";
 import { BaseMovieProps, Review } from "../types/interfaces";
+import { supabase } from "../supabaseClient";
 
 // Define the structure of the context's value using an interface
 // This describes what data and functions are available in the context
@@ -49,8 +50,9 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   // This ensures that we are storing full movie objects in mustWatchList, not just IDs.
   const [mustWatchList, setMustWatchList] = useState<BaseMovieProps[]>([]);
 
-  // Function to add a movie to the favourites list, ensuring no duplicates
-  const addToFavourites = useCallback((movie: BaseMovieProps) => {
+  // Function to add a movie to the favourites list, ensuring no duplicates.
+  // We extended the functon to 'insert' data to the 'supabase' database
+  const addToFavourites = useCallback(async (movie: BaseMovieProps) => {
     setFavourites((prevFavourites) => {
       if (!prevFavourites.includes(movie.id)) {
         console.log("Adding to favourites:", movie.id);
@@ -58,6 +60,44 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
       }
       return prevFavourites;
     });
+
+    /**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    // If no user or error, we will get the below error
+    if (!user || userError) {
+      console.error("User not authenticated", userError);
+      return;
+    }
+
+    /**
+     * We then insert the favourite movie  to supabase based upon the table structure
+     * we created in the supabase SQL Editor
+     * https://supabase.com/docs/guides/auth/managing-user-data
+     * https://supabase.com/docs/guides/database/postgres/row-level-security
+     * https://supabase.com/docs/reference/javascript/insert
+     */
+    const { error } = await supabase.from("favourites").insert({
+      user_id: user.id,
+      movie_id: movie.id.toString(),
+      movie_title: movie.title,
+      poster_path: movie.poster_path,
+    });
+
+    if (error) {
+      console.error("No data inserted in Supabase: ", error.message);
+    }
+
+    console.log(
+      "Successfully added this movie to Supabase favourites: ",
+      movie.title
+    );
   }, []);
 
   // Function to add a review for a movie
