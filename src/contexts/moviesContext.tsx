@@ -125,14 +125,14 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     // If data is successfully returned, map through the movie to extract the movie_id value,
     // and update the component's state const [favourites, setFavourites] = useState<number[]>([]);
     if (data) {
-      const ids = data.map((movie) => movie.movie_id);
+      // We amended this since we had declared the useState for the const favourites as an array of numbers
+      // Also, 'm' is a better label than 'movie', which is an object, but we are essentially fetchin a value from
+      // the supabase table row
+      // const ids = data.map((movie) => movie.movie_id);
+      const ids = data.map((m) => Number(m.movie_id));
       setFavourites(ids);
     }
   }, []);
-
-  // !!!!!!!!!!! The below useEffect() does fetch the favourite movies when the  component mouts after a browser !!!!!!!!!!!! //
-  // !!!!!!!!!!! refresh ensuring persitence, but does not filter them in based upon the user id  !!!!!!!!!! //
-  // !!!!!!!!!!!  FIX NEEDED !!!!!!!!!!!!!!!! //
 
   /**
    * useEffect here enables to load the user's favourite movies when the component mounts.
@@ -154,6 +154,37 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     };
 
     loadUserFavourites();
+
+    /**
+     * This sets up a listener to detect changes in the authentication user state
+     * SIGNED_IN: Emitted each time a user session is confirmed or re-established, including on user sign in and when refocusing a tab.
+     * SIGNED_OUT: Emitted when the user signs out.
+     * https://supabase.com/docs/reference/javascript/auth-onauthstatechange
+     * */
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(event, session);
+
+      if (event === "SIGNED_IN" && session) {
+        fetchSupabaseFavouriteMovies(session.user.id);
+      } else if (event === "SIGNED_OUT") {
+        setFavourites([]); // This will set the favourites list to empty
+      }
+    });
+
+    // Call unsubscribe to remove the callback NOT WORKING
+    // data.subscription.unsubscribe();
+
+    /**
+     * The above unsubscribe call was not correctly unsubscribing, and we were
+     * ending up showing the same favourites list regardless of the user logging in.
+     * Apparently, the correct logic is  return () => { // Cleanup logic };
+     * https://devchallenges.io/learn/4-frontend-libraries/side-effects-in-react
+     */
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
   }, [fetchSupabaseFavouriteMovies]); // dependency array
 
   // Function to add a review for a movie
