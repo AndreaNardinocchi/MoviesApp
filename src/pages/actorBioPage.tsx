@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // React Router hooks for accessing route parameters and navigation
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 // React Query hook for data fetching and caching
 import { useQuery } from "react-query";
 import TemplateMoviePage from "../components/templateMoviePage";
@@ -9,15 +9,16 @@ import Typography from "@mui/material/Typography";
 import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import IconButton from "@mui/material/IconButton";
-import Button from "@mui/material/Button";
+// import Button from "@mui/material/Button";
 // MUI icons for modal navigation
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 // API methods to fetch actor details and their images
-import { fetchActorDetails, getPersonImages } from "../api/tmdb-api";
+import { fetchActorDetails, getMovie, getPersonImages } from "../api/tmdb-api";
 import { MovieDetailsProps } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
+import { Box } from "@mui/material";
 // import i18n from "../i18n/i18n";
 
 /**
@@ -47,7 +48,12 @@ const ActorBioPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
 
   // Hook to navigate pages
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
+
+  const location = useLocation();
+  // const movieId = location?.state?.fromMovieId;
+
+  const movieId = location.state?.movie?.id || undefined;
 
   /**
    * We now use 2 Queries since we need to use different API endpoints:
@@ -65,6 +71,13 @@ const ActorBioPage: React.FC = () => {
   } = useQuery(
     ["actorDetails", id, lang], // Unique key used by React Query to cache the response
     () => fetchActorDetails(id || "", lang) // API function to get actor info from '/api/tmdb-api'
+  );
+
+  // Fetch movie data using React Query's useQuery hook
+  useQuery(
+    ["movie", movieId, lang],
+    // Fetch the movie id
+    () => getMovie(movieId, lang)
   );
 
   /**
@@ -197,165 +210,220 @@ const ActorBioPage: React.FC = () => {
 
   // Component render
   return (
-    <TemplateMoviePage
-      movie={dummyMovie}
-      overrideImages={firstImage ? [firstImage] : []}
-    >
-      <>
-        {/* Actor name */}
-        <Typography variant="h4" component="h1" gutterBottom>
-          {actor?.name || t("unknown_actor")}
-        </Typography>
+    <>
+      <TemplateMoviePage
+        movie={dummyMovie}
+        overrideImages={firstImage ? [firstImage] : []}
+      >
+        <>
+          {/* Actor name */}
+          <Typography variant="h4" component="h1" gutterBottom>
+            {actor?.name || t("unknown_actor")}
+          </Typography>
 
-        {/* Actor birth details */}
-        <Typography variant="subtitle1" gutterBottom>
-          {t("actor_birthday")} {actor?.birthday || t("unknown_actor")}
-        </Typography>
+          {/* Actor birth details */}
+          <Typography variant="subtitle1" gutterBottom>
+            {t("actor_birthday")} {actor?.birthday || t("unknown_actor")}
+          </Typography>
 
-        <Typography variant="subtitle1" gutterBottom>
-          {t("birthplace")} {actor?.place_of_birth || t("unknown_actor")}
-        </Typography>
+          <Typography variant="subtitle1" gutterBottom>
+            {t("birthplace")} {actor?.place_of_birth || t("unknown_actor")}
+          </Typography>
 
-        {/* Biography */}
-        <Typography variant="body1" paragraph>
-          {t("biography")}
-        </Typography>
+          {/* Biography */}
+          <Typography variant="body1" paragraph>
+            {t("biography")}
+          </Typography>
 
-        <Typography variant="body2" paragraph>
-          {actor?.biography ? actor.biography : t("no_biography")}
-        </Typography>
+          <Typography variant="body2" paragraph>
+            {actor?.biography ? actor.biography : t("no_biography")}
+          </Typography>
 
-        {/* Photo gallery section */}
-        {galleryImages.length > 0 && (
-          <>
-            <Typography variant="h6" gutterBottom>
-              {t("photogallery")}
-            </Typography>
+          {/* Photo gallery section */}
+          {galleryImages.length > 0 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                {t("photogallery")}
+              </Typography>
 
-            {/* Responsive image grid */}
-            <ImageList cols={3} gap={10}>
-              {galleryImages.map(
-                (
-                  img: { file_path: React.Key | null | undefined },
-                  index: number
-                ) => (
-                  <ImageListItem key={img.file_path}>
-                    <img
-                      src={`https://image.tmdb.org/t/p/w300${img.file_path}`}
-                      alt={actor?.name}
-                      loading="lazy"
-                      style={{ borderRadius: 10, cursor: "pointer" }}
-                      onClick={() => openModal(index)} // Open modal on click
-                    />
-                  </ImageListItem>
-                )
-              )}
-            </ImageList>
-          </>
-        )}
+              {/* Responsive image grid */}
+              <ImageList cols={3} gap={10}>
+                {galleryImages.map(
+                  (
+                    img: { file_path: React.Key | null | undefined },
+                    index: number
+                  ) => (
+                    <ImageListItem key={img.file_path}>
+                      <img
+                        src={`https://image.tmdb.org/t/p/w300${img.file_path}`}
+                        alt={actor?.name}
+                        loading="lazy"
+                        style={{ borderRadius: 10, cursor: "pointer" }}
+                        onClick={() => openModal(index)} // Open modal on click
+                      />
+                    </ImageListItem>
+                  )
+                )}
+              </ImageList>
+            </>
+          )}
 
-        {/* Back button to return to previous page */}
-        <Button
-          variant="outlined"
-          onClick={() => navigate(-1)} // Go back one page in browser history
-          style={{ marginBottom: 16, marginRight: 8 }}
-          sx={{
-            color: "#8E4585",
-          }}
-        >
-          {t("back_to_movie_page")}
-        </Button>
+          {/* Back button to return to previous page
 
-        {/* Button to land the user to the actor movies page */}
-        <Button
-          variant="outlined"
-          onClick={() => navigate(`/actor/${id}/movies`)}
-          style={{ marginBottom: 16 }}
-          sx={{
-            color: "#8E4585",
-          }}
-        >
-          {t("actor_movie_page_cta")}
-        </Button>
-
-        {/**
-         * Zoom modal for viewing images larger with arrow controls
-         * https://reactjsexample.com/a-lightweight-react-hook-for-modals-dialogs/
-         * https://react.dev/learn/state-a-components-memory
-         * https://thewebdev.info/2021/01/26/create-an-image-modal-with-react-and-javascript/
-         * https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
-         *
-         *  */}
-        {modalOpen && (
-          <div
-            style={{
-              position: "fixed",
-              top: 0,
-              left: 0,
-              width: "100vw",
-              height: "100vh",
-              backgroundColor: "rgba(0,0,0,0.85)",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              zIndex: 1500,
+          <Button
+            variant="outlined"
+            // onClick={() => navigate(-1)} // Go back one page in browser history
+            onClick={() => {
+              if (movieId) {
+                navigate(`/movies/${movieId}`);
+              } else {
+                navigate(`/movies/discover`); // fallback to go back to Discover page
+              }
+            }}
+            style={{ marginBottom: 16, marginRight: 8 }}
+            sx={{
+              color: "#8E4585",
             }}
           >
-            {/* Close modal button */}
-            <IconButton
-              onClick={closeModal}
-              style={{
-                position: "absolute",
-                top: 20,
-                right: 20,
-                color: "white",
-              }}
-              aria-label="close"
-            >
-              <CloseIcon fontSize="large" />
-            </IconButton>
+            {t("back_to_movie_page")}
+          </Button> */}
 
-            {/* Previous image button */}
-            <IconButton
-              onClick={prevImage}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: 20,
-                color: "white",
-              }}
-              aria-label="previous"
-            >
-              <ArrowBackIosNewIcon fontSize="large" />
-            </IconButton>
+          {/* Button to land the user to the actor movies page
+          <Button
+            variant="outlined"
+            onClick={() => navigate(`/actor/${id}/movies`)}
+            style={{ marginBottom: 16 }}
+            sx={{
+              color: "#8E4585",
+            }}
+          >
+            {t("actor_movie_page_cta")}
+          </Button> */}
 
-            {/* Fullscreen image display */}
-            <img
-              src={`https://image.tmdb.org/t/p/original${galleryImages[currentIndex].file_path}`}
-              alt={actor?.name}
+          {/**
+           * Zoom modal for viewing images larger with arrow controls
+           * https://reactjsexample.com/a-lightweight-react-hook-for-modals-dialogs/
+           * https://react.dev/learn/state-a-components-memory
+           * https://thewebdev.info/2021/01/26/create-an-image-modal-with-react-and-javascript/
+           * https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
+           *
+           *  */}
+          {modalOpen && (
+            <div
               style={{
-                maxHeight: "100vh",
-                maxWidth: "100vw",
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(0,0,0,0.85)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1500,
               }}
-            />
-
-            {/* Next image button */}
-            <IconButton
-              onClick={nextImage}
-              style={{
-                position: "absolute",
-                top: "50%",
-                right: 20,
-                color: "white",
-              }}
-              aria-label="next"
             >
-              <ArrowForwardIosIcon fontSize="large" />
-            </IconButton>
-          </div>
-        )}
-      </>
-    </TemplateMoviePage>
+              {/* Close modal button */}
+              <IconButton
+                onClick={closeModal}
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  color: "white",
+                }}
+                aria-label="close"
+              >
+                <CloseIcon fontSize="large" />
+              </IconButton>
+
+              {/* Previous image button */}
+              <IconButton
+                onClick={prevImage}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 20,
+                  color: "white",
+                }}
+                aria-label="previous"
+              >
+                <ArrowBackIosNewIcon fontSize="large" />
+              </IconButton>
+
+              {/* Fullscreen image display */}
+              <img
+                src={`https://image.tmdb.org/t/p/original${galleryImages[currentIndex].file_path}`}
+                alt={actor?.name}
+                style={{
+                  maxHeight: "100vh",
+                  maxWidth: "100vw",
+                }}
+              />
+
+              {/* Next image button */}
+              <IconButton
+                onClick={nextImage}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: 20,
+                  color: "white",
+                }}
+                aria-label="next"
+              >
+                <ArrowForwardIosIcon fontSize="large" />
+              </IconButton>
+            </div>
+          )}
+        </>
+      </TemplateMoviePage>
+
+      {/* Sticky Bottom Bar */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          zIndex: 1000,
+          backgroundColor: "#ffffff",
+          textAlign: "left",
+          boxShadow: "0px -2px 6px rgba(0, 0, 0, 0.06)",
+          display: "flex", // Use flexbox
+          //          justifyContent: "flex-end", // Push content to the right
+          justifyContent: "space-between", // <-- spread left and right
+          alignItems: "center", // Vertically center the content
+          padding: {
+            xs: "3% 4%",
+            sm: "2% 1.8%",
+            md: "1.5% 1.0%",
+            lg: "0.7% 0.8%",
+          },
+        }}
+      >
+        <Link
+          to={movieId ? `/movies/${movieId}` : `/movies/discover`}
+          style={{
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
+            textAlign: "right",
+          }}
+        >
+          ← {t("back")}
+        </Link>
+
+        <Link
+          to={`/actor/${id}/movies`}
+          style={{
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
+          }}
+        >
+          {t("jump_to_actor_movies_page")} →
+        </Link>
+      </Box>
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import PageTemplate from "../components/templateMovieListPage";
 import { fetchActorDetails, getActorMovies } from "../api/tmdb-api";
 import { useQuery } from "react-query";
@@ -7,6 +7,7 @@ import Spinner from "../components/spinner";
 import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
 import { BaseMovieProps } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
+import { Box } from "@mui/material";
 // import i18n from "../i18n/i18n";
 
 const ActorMoviesPage: React.FC = () => {
@@ -65,13 +66,54 @@ const ActorMoviesPage: React.FC = () => {
   if (!movies) return <h2>{t("actor_no_movies")}</h2>;
 
   return (
-    <PageTemplate
-      title={`${t("actor_movies_header")} ${actorDetails.name}`}
-      movies={movies}
-      action={(movie: BaseMovieProps) => {
-        return <AddToFavouritesIcon {...movie} />;
-      }}
-    />
+    <>
+      <PageTemplate
+        title={`${t("actor_movies_header")} ${actorDetails?.name}`}
+        movies={movies}
+        action={(movie: BaseMovieProps) => {
+          return <AddToFavouritesIcon {...movie} />;
+        }}
+      />
+
+      {/* Sticky Bar */}
+      {/* https://mui.com/system/react-box/ */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          zIndex: 1000,
+          backgroundColor: "#ffffff",
+          boxShadow: "0px -2px 6px rgba(0, 0, 0, 0.06)",
+          display: "flex", // Use flexbox
+          justifyContent: "flex-start", // Push content to the left
+          alignItems: "center", // Vertically center the content
+          padding: {
+            xs: "3% 4%", // small devices
+            sm: "2% 1.8%", // tablets
+            md: "1.5% 1.0%", // medium screens
+            lg: "0.7% 0.8%", // large screens
+          },
+        }}
+      >
+        <span
+          style={{
+            textAlign: "right",
+          }}
+        >
+          <Link
+            to={`/actor/${id}`}
+            style={{
+              textDecoration: "none",
+              color: "#8E4585",
+              fontWeight: "bold",
+              textAlign: "right",
+            }}
+          >
+            ← {t("back_to_actor_page")} {actorDetails?.name}
+          </Link>
+        </span>
+      </Box>
+    </>
   );
 };
 
