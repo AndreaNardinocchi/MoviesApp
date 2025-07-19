@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { BaseMovieProps, Review } from "../types/interfaces";
 import { supabase } from "../supabaseClient";
 
@@ -99,6 +99,62 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
       movie.title
     );
   }, []);
+
+  /**
+   * Fetches the list of favourite movies for a given user from Supabase.
+   * useCallBack() lets us cache a function definition between re-renders.
+   *https://react.dev/reference/react/useCallback
+   */
+  const fetchSupabaseFavouriteMovies = useCallback(async (userId: string) => {
+    /**
+     * Use Supabase to query the "favourites" table
+     * where the "user_id" column matches the provided userId
+     * https://supabase.com/docs/reference/javascript/using-filters
+     */
+    const { data, error } = await supabase
+      .from("favourites")
+      .select()
+      .eq("user_id", userId);
+
+    // If error, we will get the below message
+    if (error) {
+      console.error("User not found", error.message);
+      return;
+    }
+
+    // If data is successfully returned, map through the movie to extract the movie_id value,
+    // and update the component's state const [favourites, setFavourites] = useState<number[]>([]);
+    if (data) {
+      const ids = data.map((movie) => movie.movie_id);
+      setFavourites(ids);
+    }
+  }, []);
+
+  // !!!!!!!!!!! The below useEffect() does fetch the favourite movies when the  component mouts after a browser !!!!!!!!!!!! //
+  // !!!!!!!!!!! refresh ensuring persitence, but does not filter them in based upon the user id  !!!!!!!!!! //
+  // !!!!!!!!!!!  FIX NEEDED !!!!!!!!!!!!!!!! //
+
+  /**
+   * useEffect here enables to load the user's favourite movies when the component mounts.
+   * Any time the `fetchSupabaseFavouriteMovies` function changes the favourites are fetched
+   */
+  useEffect(() => {
+    const loadUserFavourites = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("User not found", userError?.message);
+        return;
+      }
+
+      fetchSupabaseFavouriteMovies(user?.id);
+    };
+
+    loadUserFavourites();
+  }, [fetchSupabaseFavouriteMovies]); // dependency array
 
   // Function to add a review for a movie
   const addReview = (movie: BaseMovieProps, review: Review) => {
