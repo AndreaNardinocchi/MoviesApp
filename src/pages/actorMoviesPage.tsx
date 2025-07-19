@@ -95,23 +95,17 @@ const ActorMoviesPage: React.FC = () => {
           },
         }}
       >
-        <span
+        <Link
+          to={`/actor/${id}`}
           style={{
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
             textAlign: "right",
           }}
         >
-          <Link
-            to={`/actor/${id}`}
-            style={{
-              textDecoration: "none",
-              color: "#8E4585",
-              fontWeight: "bold",
-              textAlign: "right",
-            }}
-          >
-            ← {t("back_to_actor_page")} {actorDetails?.name}
-          </Link>
-        </span>
+          ← {t("back_to_actor_page")} {actorDetails?.name}
+        </Link>
       </Box>
     </>
   );

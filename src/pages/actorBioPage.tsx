@@ -50,9 +50,15 @@ const ActorBioPage: React.FC = () => {
   // Hook to navigate pages
   // const navigate = useNavigate();
 
+  /**
+   * Get the current location object from React Router
+   * Extract movieId from location state, falling back to undefined if not present.
+   * The movie object is passed via navigation state from state={{ actor: actor, movie: movie }}
+   * in movieDetails.tsx
+   * https://reactrouter.com/en/main/hooks/use-location
+   * https://reactrouter.com/en/main/hooks/use-navigate#passing-state
+   */
   const location = useLocation();
-  // const movieId = location?.state?.fromMovieId;
-
   const movieId = location.state?.movie?.id || undefined;
 
   /**
@@ -73,13 +79,6 @@ const ActorBioPage: React.FC = () => {
     () => fetchActorDetails(id || "", lang) // API function to get actor info from '/api/tmdb-api'
   );
 
-  // Fetch movie data using React Query's useQuery hook
-  useQuery(
-    ["movie", movieId, lang],
-    // Fetch the movie id
-    () => getMovie(movieId, lang)
-  );
-
   /**
    * This is the browser title
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
@@ -96,6 +95,13 @@ const ActorBioPage: React.FC = () => {
   } = useQuery(
     ["actorImages", id], // Unique key by React Query to track and cache this response
     () => getPersonImages(Number(id)) // The API function here needs a number
+  );
+
+  // Fetch movie data using React Query's useQuery hook
+  useQuery(
+    ["movie", movieId, lang],
+    // Fetch the movie id
+    () => getMovie(movieId, lang)
   );
 
   /**
