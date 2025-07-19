@@ -6,7 +6,7 @@ import { useQuery } from "react-query";
 import TemplateMoviePage from "../components/templateMoviePage";
 import Spinner from "../components/spinner";
 import Typography from "@mui/material/Typography";
-import ImageList from "@mui/material/ImageList";
+// import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import IconButton from "@mui/material/IconButton";
 // import Button from "@mui/material/Button";
@@ -251,26 +251,54 @@ const ActorBioPage: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 {t("photogallery")}
               </Typography>
-
               {/* Responsive image grid */}
-              <ImageList cols={3} gap={10}>
+
+              {/* <ImageList cols={3} gap={10} > */}
+
+              <Box
+                sx={{
+                  // Use CSS Grid layout to arrange the imageList children component
+                  display: "grid",
+                  gap: 2,
+                  /**
+                   * Define the number and size of columns responsively.
+                   * '1fr' means one fraction of the available space, which is translated into
+                   * 1 column, and so on.
+                   * https://mui.com/system/getting-started/the-sx-prop/
+                   * https://mui.com/system/react-box/
+                   * https://mui.com/system/grid/
+                   */
+                  gridTemplateColumns: {
+                    xs: "1fr", // 1 column on mobile
+                    sm: "1fr 1fr", // 2 columns on tablets
+                    md: "1fr 1fr 1fr", // 3 columns on desktop
+                  },
+                }}
+              >
                 {galleryImages.map(
                   (
                     img: { file_path: React.Key | null | undefined },
                     index: number
                   ) => (
                     <ImageListItem key={img.file_path}>
-                      <img
+                      <Box
+                        component="img"
                         src={`https://image.tmdb.org/t/p/w300${img.file_path}`}
                         alt={actor?.name}
                         loading="lazy"
-                        style={{ borderRadius: 10, cursor: "pointer" }}
-                        onClick={() => openModal(index)} // Open modal on click
+                        onClick={() => openModal(index)}
+                        sx={{
+                          borderRadius: 2,
+                          cursor: "pointer",
+                          width: "100%",
+                          height: "auto", // Maintain aspect ratio
+                        }}
                       />
                     </ImageListItem>
                   )
                 )}
-              </ImageList>
+                {/* </ImageList> */}
+              </Box>
             </>
           )}
 
