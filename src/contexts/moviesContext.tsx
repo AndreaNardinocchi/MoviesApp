@@ -161,7 +161,6 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
      * SIGNED_OUT: Emitted when the user signs out.
      * https://supabase.com/docs/reference/javascript/auth-onauthstatechange
      * */
-
     const { data } = supabase.auth.onAuthStateChange((event, session) => {
       console.log(event, session);
 

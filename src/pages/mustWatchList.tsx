@@ -54,6 +54,14 @@ const MustWatchListPage: React.FC = () => {
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("mustwatch_movies")} | MovieApp`;
+  }, [t]);
+
   // Access global must-watch list and remove function from context
   const { mustWatchList, removeFromMustWatchList } = useContext(MoviesContext);
 

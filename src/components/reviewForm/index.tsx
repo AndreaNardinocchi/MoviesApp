@@ -1,4 +1,4 @@
-import React, { useContext, useState, ChangeEvent } from "react";
+import React, { useContext, useState, ChangeEvent, useEffect } from "react";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
@@ -48,6 +48,14 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
    */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("reviews")} | MovieApp`;
+  }, [t]);
 
   const defaultValues = {
     defaultValues: {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 // React Router hooks for accessing route parameters and navigation
 import { useParams, useNavigate } from "react-router-dom";
 // React Query hook for data fetching and caching
@@ -66,6 +66,14 @@ const ActorBioPage: React.FC = () => {
     ["actorDetails", id, lang], // Unique key used by React Query to cache the response
     () => fetchActorDetails(id || "", lang) // API function to get actor info from '/api/tmdb-api'
   );
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${actor?.name} | MovieApp `;
+  }, [actor?.name]);
 
   // Fetch images associated with the actor
   const {

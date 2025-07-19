@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Button,
@@ -23,6 +23,14 @@ const SignUpPage: React.FC = () => {
    */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("sign_up")} | MovieApp`;
+  }, [t]);
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

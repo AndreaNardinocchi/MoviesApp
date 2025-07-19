@@ -60,6 +60,14 @@ const NowPlayingMoviesPage: React.FC = () => {
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("now_playing")} | MovieApp`;
+  }, [t]);
+
   // Access the mustWatchList and addToMustWatchList function from context
   const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
 

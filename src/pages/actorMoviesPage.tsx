@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import PageTemplate from "../components/templateMovieListPage";
-import { getActorMovies } from "../api/tmdb-api";
+import { fetchActorDetails, getActorMovies } from "../api/tmdb-api";
 import { useQuery } from "react-query";
 import Spinner from "../components/spinner";
 import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
@@ -39,6 +39,23 @@ const ActorMoviesPage: React.FC = () => {
     () => getActorMovies(id || "", lang)
   );
 
+  // Fetch movie data using React Query's useQuery hook
+  const { data: actorDetails } = useQuery(
+    ["actorDetails", id, lang],
+    // Fetch the movie with cast information using the provided function
+    () => fetchActorDetails(id || "", lang)
+  );
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("actor_movies_header")}  ${
+      actorDetails?.name
+    }  | MovieApp`;
+  }, [t, actorDetails?.name]);
+
   if (isLoading) return <Spinner />;
 
   if (isError) {
@@ -49,7 +66,7 @@ const ActorMoviesPage: React.FC = () => {
 
   return (
     <PageTemplate
-      title={t("actor_movies_header")}
+      title={`${t("actor_movies_header")} ${actorDetails.name}`}
       movies={movies}
       action={(movie: BaseMovieProps) => {
         return <AddToFavouritesIcon {...movie} />;

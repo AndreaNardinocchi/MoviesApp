@@ -1,4 +1,4 @@
-import React from "react"; // replace existing react import
+import React, { useEffect } from "react"; // replace existing react import
 import { useParams } from "react-router-dom";
 import MovieDetails from "../components/movieDetails";
 import PageTemplate from "../components/templateMoviePage";
@@ -64,6 +64,7 @@ const MovieDetailsPage: React.FC = () => {
    If undefined or empty, fallback to 'en-US'
    */
   const { i18n } = useTranslation();
+  // const { t } = useTranslation();
 
   const lang = i18n.language || "en-US";
 
@@ -82,6 +83,14 @@ const MovieDetailsPage: React.FC = () => {
       // Fetch the movie with cast information using the provided function
       fetchMovieWithCast(id || "", lang)
   );
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    document.title = `${movie?.title} | MovieApp`;
+  }, [movie?.title]);
 
   if (isLoading) {
     return <Spinner />;

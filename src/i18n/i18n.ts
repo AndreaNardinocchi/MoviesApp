@@ -75,7 +75,7 @@ i18n
           no_account_login: "No account found with this email.",
           incorrect_credentials:
             "The email or password you entered are incorrect.",
-          actor_movies_header: "Movies Starring This Actor",
+          actor_movies_header: "Movies Starring ",
           actor_no_movies: "This actor has no known movie credits.",
           failed_image_loading: "Failed to load images",
           unknown_actor: "Unknown actor",
@@ -169,7 +169,7 @@ i18n
             "No se encontró ninguna cuenta con este correo electrónico.",
           incorrect_credentials:
             "El correo electrónico o la contraseña que ingresaste son incorrectos.",
-          actor_movies_header: "Películas protagonizadas por este actor",
+          actor_movies_header: "Películas protagonizadas por ",
           actor_no_movies:
             "Este actor no tiene créditos conocidos en películas.",
           failed_image_loading: "Error al cargar imágenes",
@@ -263,7 +263,7 @@ i18n
           no_account_login: "Nenhuma conta encontrada com este e-mail.",
           incorrect_credentials:
             "O e-mail ou a senha que você inseriu estão incorretos.",
-          actor_movies_header: "Filmes com este ator",
+          actor_movies_header: "Filmes com ",
           actor_no_movies: "Este ator não tem créditos conhecidos em filmes.",
           failed_image_loading: "Falha ao carregar imagens",
           unknown_actor: "Ator desconhecido",
@@ -355,7 +355,7 @@ i18n
           no_account_login: "Nessun account trovato con questa email.",
           incorrect_credentials:
             "L'e-mail o la password inseriti non sono corretti.",
-          actor_movies_header: "Film con questo attore",
+          actor_movies_header: "Film con ",
           actor_no_movies: "Questo attore non ha crediti cinematografici noti.",
           failed_image_loading: "Caricamento delle immagini non riuscito",
           unknown_actor: "Attore sconosciuto",

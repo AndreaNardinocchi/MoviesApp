@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { AuthContext } from "../contexts/authContext";
 // https://v5-0-6.mui.com/components/text-fields/?
 import {
@@ -31,6 +31,14 @@ const LoginPage: React.FC = () => {
    */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("login")} | MovieApp`;
+  }, [t]);
 
   const { authenticate } = useContext(AuthContext) || {};
 

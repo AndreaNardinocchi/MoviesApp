@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { getMovies } from "../api/tmdb-api";
 import useFiltering from "../hooks/useFiltering";
@@ -52,6 +52,14 @@ const DiscoverMoviesPage: React.FC = () => {
    */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("discover_movies")} | MovieApp`;
+  }, [t]);
 
   /**
    * We are setting the state for page as '1' as we want to show the first page first

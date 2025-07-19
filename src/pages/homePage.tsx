@@ -557,6 +557,14 @@ const HomePage: React.FC = () => {
   console.log("Current language:", i18n.language);
 
   /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `MovieApp | ${t("all_you_ever_wanted")}`;
+  }, [t]);
+
+  /**
    * We are setting the state for page as '1' as we want to show the first page first
    * https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
    */
