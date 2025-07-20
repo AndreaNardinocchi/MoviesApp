@@ -74,6 +74,8 @@ const DiscoverMoviesPage: React.FC = () => {
     { keepPreviousData: true }
   );
 
+  const [sortOrder, setSortOrder] = useState("desc"); // Default to newest first
+
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,
@@ -88,26 +90,59 @@ const DiscoverMoviesPage: React.FC = () => {
     return <h1>{error.message}</h1>;
   }
 
-  // Called when the user changes title, genre filter, or release year
+  //   const changeFilterValues = (type: string, value: string) => {
+  //   if (type === "sort") {
+  //     setSortOrder(value); // ✅ Handle sort separately
+  //     return;
+  //   }
+  //   // Called when the user changes title, genre filter, or release year
+  //  // const changeFilterValues = (type: string, value: string) => {
+  //     const changedFilter = { name: type, value };
+  //     const updatedFilterSet =
+  //       /**
+  //        * If type === "title", update the first filter.
+  //        * Otherwise, if type === "genre", update the second filter.
+  //        * Otherwise, type === "release", update the third filter.
+  //        */
+  //       type === "title"
+
+  //     return;
+  //         ? [changedFilter, filterValues[1], filterValues[2]]
+  //         : type === "genre"
+  //         ? [filterValues[0], changedFilter, filterValues[2]]
+  //         : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
+  //     setFilterValues(updatedFilterSet);
+  //   };
+
   const changeFilterValues = (type: string, value: string) => {
+    if (type === "sort") {
+      setSortOrder(value); // ✅ Handle sort separately
+      return;
+    }
+
     const changedFilter = { name: type, value };
+
     const updatedFilterSet =
-      /**
-       * If type === "title", update the first filter.
-       * Otherwise, if type === "genre", update the second filter.
-       * Otherwise, type === "release", update the third filter.
-       */
       type === "title"
         ? [changedFilter, filterValues[1], filterValues[2]]
         : type === "genre"
         ? [filterValues[0], changedFilter, filterValues[2]]
         : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
+
     setFilterValues(updatedFilterSet);
   };
 
   // This is the ternary operator, which works like an inline if...else.
   const movies = data ? data.results : [];
   const displayedMovies = filterFunction(movies);
+
+  // Add sorting by release date
+  displayedMovies.sort((a, b) => {
+    if (!a.release_date || !b.release_date) return 0;
+    return sortOrder === "asc"
+      ? a.release_date.localeCompare(b.release_date)
+      : b.release_date.localeCompare(a.release_date);
+  });
 
   // Redundant, but necessary to avoid app crashing.
   // const favourites = movies.filter((m) => m.favourite);
@@ -131,6 +166,7 @@ const DiscoverMoviesPage: React.FC = () => {
         genreFilter={filterValues[1].value}
         // This is NOT a string, so we wrap it with a Number()
         releaseFilter={Number(filterValues[2].value)}
+        sortOrder={sortOrder}
       />
       <Pagination
         // color="primary"

@@ -67,6 +67,8 @@ interface MovieFilterUIProps {
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;
+  // Controls the sorting order of movies by release date.
+  sortOrder: string;
 }
 
 const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
@@ -74,6 +76,7 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
   titleFilter,
   genreFilter,
   releaseFilter,
+  sortOrder,
 }) => {
   /**
    * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
@@ -121,6 +124,7 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
           titleFilter={titleFilter}
           genreFilter={genreFilter}
           releaseFilter={releaseFilter}
+          sortOrder={sortOrder}
         />
       </Drawer>
     </>

@@ -64,7 +64,7 @@ export interface MovieDetailsProps extends BaseMovieProps {
   }[];
 }
 
-export type FilterOption = "title" | "genre" | "release";
+export type FilterOption = "title" | "genre" | "release" | "sort";
 
 /**
  * To avoid code duplication between the home page and favourites page,

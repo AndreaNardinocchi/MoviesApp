@@ -23,6 +23,7 @@ interface FilterMoviesCardProps {
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;
+  sortOrder: string;
 }
 
 const styles = {
@@ -42,6 +43,7 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
   titleFilter,
   genreFilter,
   releaseFilter,
+  sortOrder,
   onUserInput,
 }) => {
   /**
@@ -125,6 +127,10 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
     handleChange(e, "release", e.target.value);
   };
 
+  const handleSortOrder = (e: SelectChangeEvent) => {
+    handleChange(e, "sort", e.target.value);
+  };
+
   return (
     <>
       <Card sx={styles.root} variant="outlined">
@@ -187,6 +193,26 @@ const FilterMoviesCard: React.FC<FilterMoviesCardProps> = ({
             <SortIcon fontSize="large" />
             {t("sort_movies")}
           </Typography>
+
+          {/* 
+      This dropdown allows the user to sort movies by release date.
+      'asc' is ascending which puts the oldest movies first
+      'desc' is descending which puts the newest movies first
+      The selected value is controlled by the `sortOrder` prop.
+      When changed, it triggers the `handleSortOrder` function to update the parent state.
+    */}
+          <FormControl sx={styles.formControl}>
+            <InputLabel id="sort-label">{t("sort_by_date")}</InputLabel>
+            <Select
+              labelId="sort-label"
+              id="sort-select"
+              value={sortOrder}
+              onChange={handleSortOrder}
+            >
+              <MenuItem value="asc">{t("oldest_first")}</MenuItem>
+              <MenuItem value="desc">{t("newest_first")}</MenuItem>
+            </Select>
+          </FormControl>
         </CardContent>
       </Card>
     </>
