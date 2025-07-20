@@ -189,9 +189,10 @@ const SiteHeader: React.FC = () => {
   // List of menu options for mobile view (no dropdowns here)
   const mobileMenuOptions = [
     { label: "Home", path: "/" },
-    { label: "Upcoming", path: "/movies/upcoming" },
     { label: "Discover", path: "/movies/discover" },
+    { label: "Upcoming", path: "/movies/upcoming" },
     { label: "MustWatch", path: "/movies/mustwatchlist" },
+    { label: "Now Playing", path: "/movies/nowplaying" },
     { label: "Favorites", path: "/movies/favourites" },
     { label: "TV Series", path: "/tvseries" },
   ];
@@ -251,6 +252,7 @@ const SiteHeader: React.FC = () => {
           {/* Conditional rendering based on screen size */}
           {isMobile ? (
             <>
+              <LanguageSwitcher />
               {/* Mobile hamburger icon button */}
               <IconButton
                 aria-label="menu"
@@ -298,6 +300,7 @@ const SiteHeader: React.FC = () => {
             </>
           ) : (
             <>
+              <LanguageSwitcher />
               {/* Desktop "Home" button */}
               <Button color="inherit" onClick={() => handleNavigate("/")}>
                 {t("home")}
@@ -392,7 +395,6 @@ const SiteHeader: React.FC = () => {
                   {t("login")} <LoginIcon sx={{ ml: 1 }} />
                 </Button>
               )}
-              <LanguageSwitcher />
             </>
           )}
         </Toolbar>

@@ -28,7 +28,7 @@ export default function LanguageSwitcher() {
   };
 
   return (
-    <Box sx={{ minWidth: 120, color: "#8E4585" }}>
+    <Box sx={{ minWidth: 60, color: "#8E4585" }}>
       <FormControl fullWidth>
         <InputLabel
           id="demo-simple-select-label"
@@ -47,7 +47,7 @@ export default function LanguageSwitcher() {
             },
           }}
         >
-          Language
+          Lang
         </InputLabel>
         <Select
           labelId="demo-simple-select-label"
@@ -86,10 +86,10 @@ export default function LanguageSwitcher() {
            https://developer.themoviedb.org/docs/languages?
            https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
            */}
-          <MenuItem value={"en-US"}>English</MenuItem>
-          <MenuItem value={"es-ES"}>Spanish</MenuItem>
-          <MenuItem value={"pt-BR"}>Portuguese</MenuItem>
-          <MenuItem value={"it-IT"}>Italian</MenuItem>
+          <MenuItem value={"en-US"}>EN</MenuItem>
+          <MenuItem value={"es-ES"}>ES</MenuItem>
+          <MenuItem value={"pt-BR"}>PT</MenuItem>
+          <MenuItem value={"it-IT"}>IT</MenuItem>
         </Select>
       </FormControl>
     </Box>

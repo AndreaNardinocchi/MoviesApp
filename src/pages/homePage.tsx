@@ -65,6 +65,7 @@ const HeroVideoSection = ({
         component="img"
         image={`${IMAGE_BASE}${movie.poster_path}`}
         alt={movie.title}
+        title={movie.title}
         sx={{ width: "100%", height: "100%", objectFit: "cover" }}
       />
     )}
@@ -237,6 +238,7 @@ const MovieCarouselDiscover = ({
                       : undefined
                   }
                   alt={movie.title}
+                  title={movie.title}
                   sx={{ height: "90%" }}
                 />
                 <CardContent>
@@ -398,6 +400,7 @@ const MovieCarouselUpcoming = ({
                       : undefined
                   }
                   alt={movie.title}
+                  title={movie.title}
                   sx={{ height: "90%" }}
                 />
                 <CardContent>
@@ -559,6 +562,7 @@ const MovieCarouselNowPlaying = ({
                       : undefined
                   }
                   alt={movie.title}
+                  title={movie.title}
                   sx={{ height: "90%" }}
                 />
                 <CardContent>
