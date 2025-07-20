@@ -77,6 +77,32 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     }
 
     /**
+     * This function will enable us to avoid duplicates. Essentially, we are
+     * 'selecting' the id of the movie addition, and checking 'user_id' and 'movie_id'
+     * to find the existing one and append maybeSingle() to Return data as a single object
+     * instead of an array of objects, meaning it won't get duplicated.
+     * https://supabase.com/docs/reference/javascript/maybesingle
+     *  */
+    const { data: exist, error: selectError } = await supabase
+      .from("favourites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("movie_id", movie.id)
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("Error checking existing favourite: ", selectError.message);
+      return;
+    }
+
+    if (exist) {
+      console.error(
+        "This movie already exists in your favourite movies list: ",
+        movie.title
+      );
+      return;
+    }
+    /**
      * We then insert the favourite movie  to supabase based upon the table structure
      * we created in the supabase SQL Editor
      * https://supabase.com/docs/guides/auth/managing-user-data
@@ -192,11 +218,44 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   };
 
   // Function to remove a movie from the favourites list
-  const removeFromFavourites = useCallback((movie: BaseMovieProps) => {
+  const removeFromFavourites = useCallback(async (movie: BaseMovieProps) => {
     setFavourites((prevFavourites) =>
       prevFavourites.filter((mId) => mId !== movie.id)
     );
     console.log("Removing from favourites:", movie.id);
+
+    /**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    // If no user or error, we will get the below error
+    if (!user || userError) {
+      console.error("User not authenticated", userError);
+      return;
+    }
+
+    /**
+     * We delete the favourite movie from supabase
+     * https://supabase.com/docs/reference/kotlin/delete
+     */
+    const { error } = await supabase
+      .from("favourites")
+      .delete()
+      .eq("movie_id", movie.id);
+
+    if (error) {
+      console.error("No data deleted from Supabase: ", error.message);
+    }
+
+    console.log(
+      "Successfully deleted this movie from Supabase favourites: ",
+      movie.title
+    );
   }, []);
 
   // Function to add a movie to the must-watch list, ensuring no duplicates
