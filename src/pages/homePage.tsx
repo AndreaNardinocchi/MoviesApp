@@ -180,7 +180,10 @@ const MovieCarouselDiscover = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          overflowX: "auto",
+          // We have changed the overflowX to 'visible' to enable the card to sticke out
+          // whithout getting its borders cut off
+          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
+          overflowX: "visible",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -193,19 +196,32 @@ const MovieCarouselDiscover = ({
         {movies.map((movie) => (
           <Card
             key={movie.id}
+            // We apply appropriate width based on the device size to make the cards responsive
+            // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
             sx={{
-              // We apply appropriate width based on the device size to make the cards responsive
-              // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
               width: {
-                xs: "100%", // 1 card per row on mobile
-                sm: "48%", // 2 cards on small tablets
-                md: "32%", // 3 cards on medium screens
-                lg: "20%", // 4 cards on large screens
+                xs: "100%",
+                sm: "48%",
+                md: "32%",
+                lg: "20%",
               },
-              // minWidth: "2%",
               flex: "0 0 auto",
               borderRadius: "10px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              // The transition will kick in at a reasonable speed
+              // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              // https://mui.com/system/getting-started/the-sx-prop/
+              "&:hover": {
+                // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+                // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+                transform: "scale(1.05)",
+                // we cahne the box Shadow property values to make it more prominent on hovering
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+                // This property will make the card stick out with a sort of the 3D effect
+                zIndex: 10,
+                cursor: "pointer",
+              },
             }}
           >
             <Link
@@ -328,7 +344,10 @@ const MovieCarouselUpcoming = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          overflowX: "auto",
+          // We have changed the overflowX to 'visible' to enable the card to sticke out
+          // whithout getting its borders cut off
+          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
+          overflowX: "visible",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -345,15 +364,28 @@ const MovieCarouselUpcoming = ({
               // We apply appropriate width based on the device size to make the cards responsive
               // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
               width: {
-                xs: "100%", // 1 card per row on mobile
-                sm: "48%", // 2 cards on small tablets
-                md: "32%", // 3 cards on medium screens
-                lg: "20%", // 4 cards on large screens
+                xs: "100%",
+                sm: "48%",
+                md: "32%",
+                lg: "20%",
               },
-              // minWidth: "2%",
               flex: "0 0 auto",
               borderRadius: "10px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              // The transition will kick in at a reasonable speed
+              // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              // https://mui.com/system/getting-started/the-sx-prop/
+              "&:hover": {
+                // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+                // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+                transform: "scale(1.05)",
+                // we cahne the box Shadow property values to make it more prominent on hovering
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+                // This property will make the card stick out with a sort of the 3D effect
+                zIndex: 10,
+                cursor: "pointer",
+              },
             }}
           >
             <Link
@@ -476,7 +508,10 @@ const MovieCarouselNowPlaying = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          overflowX: "auto",
+          // We have changed the overflowX to 'visible' to enable the card to sticke out
+          // whithout getting its borders cut off
+          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
+          overflowX: "visible",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -493,15 +528,28 @@ const MovieCarouselNowPlaying = ({
               // We apply appropriate width based on the device size to make the cards responsive
               // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
               width: {
-                xs: "100%", // 1 card per row on mobile
-                sm: "48%", // 2 cards on small tablets
-                md: "32%", // 3 cards on medium screens
-                lg: "20%", // 4 cards on large screens
+                xs: "100%",
+                sm: "48%",
+                md: "32%",
+                lg: "20%",
               },
-              // minWidth: "2%",
               flex: "0 0 auto",
               borderRadius: "10px",
               boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              // The transition will kick in at a reasonable speed
+              // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              // https://mui.com/system/getting-started/the-sx-prop/
+              "&:hover": {
+                // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+                // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+                transform: "scale(1.05)",
+                // we cahne the box Shadow property values to make it more prominent on hovering
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+                // This property will make the card stick out with a sort of the 3D effect
+                zIndex: 10,
+                cursor: "pointer",
+              },
             }}
           >
             <Link
