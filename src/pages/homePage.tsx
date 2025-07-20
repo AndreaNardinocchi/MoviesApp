@@ -241,8 +241,16 @@ const MovieCarouselDiscover = ({
                   title={movie.title}
                   sx={{ height: "90%" }}
                 />
-                <CardContent>
-                  <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", height: "10%" }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: "140%",
+                    }}
+                    noWrap
+                  >
                     {movie.title}
                   </Typography>
                 </CardContent>
@@ -403,7 +411,9 @@ const MovieCarouselUpcoming = ({
                   title={movie.title}
                   sx={{ height: "90%" }}
                 />
-                <CardContent>
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", height: "10%" }}
+                >
                   <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
                     {movie.title}
                   </Typography>
@@ -565,7 +575,9 @@ const MovieCarouselNowPlaying = ({
                   title={movie.title}
                   sx={{ height: "90%" }}
                 />
-                <CardContent>
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", height: "10%" }}
+                >
                   <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
                     {movie.title}
                   </Typography>

@@ -29,7 +29,9 @@ export default function LanguageSwitcher() {
 
   return (
     <Box sx={{ minWidth: 60, color: "#8E4585" }}>
-      <FormControl fullWidth>
+      {/* We want the switcher to be a bit shorter, and we added the 'size' property
+      https://mui.com/material-ui/api/form-control/ */}
+      <FormControl fullWidth size="small">
         <InputLabel
           id="demo-simple-select-label"
           sx={{

@@ -246,6 +246,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     const { error } = await supabase
       .from("favourites")
       .delete()
+      .eq("user_id", user.id)
       .eq("movie_id", movie.id);
 
     if (error) {
@@ -258,8 +259,8 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     );
   }, []);
 
-  // Function to add a movie to the must-watch list, ensuring no duplicates
-  const addToMustWatchList = useCallback((movie: BaseMovieProps) => {
+  const addToMustWatchList = useCallback(async (movie: BaseMovieProps) => {
+    // First: Add to local state
     setMustWatchList((prevMustWatchList) => {
       // The old version checked against an array of IDs:
       // if (!prevMustWatchList.includes(movie.id)) {
@@ -267,21 +268,213 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
       //   return [...prevMustWatchList, movie.id];
       // }
 
-      // The new version checks for the movie object by ID
-      if (!prevMustWatchList.find((m) => m.id === movie.id)) {
-        console.log("Adding to MustWatchList:", movie);
+      const alreadyExists = prevMustWatchList.find((m) => m.id === movie.id);
+      if (!alreadyExists) {
+        console.log("Adding to MustWatchList:", movie.title);
         return [...prevMustWatchList, movie];
       }
       return prevMustWatchList;
     });
+
+    /**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    // If no user or error, we will get the below error
+    if (!user || userError) {
+      console.error("User not authenticated", userError);
+      return;
+    }
+
+    /**
+     * This function will enable us to avoid duplicates. Essentially, we are
+     * 'selecting' the id of the movie addition, and checking 'user_id' and 'movie_id'
+     * to find the existing one and append maybeSingle() to return data as a single object
+     * instead of an array of objects, meaning it won't get duplicated.
+     * https://supabase.com/docs/reference/javascript/maybesingle
+     */
+    const { data: exist, error: selectError } = await supabase
+      .from("mustwatch_movies")
+      .select("id")
+      .eq("user_id", user?.id)
+      .eq("movie_id", movie.id)
+      .maybeSingle();
+
+    if (selectError) {
+      console.error(
+        "Error checking existing favourite: ",
+        selectError?.message
+      );
+      return;
+    }
+
+    if (exist) {
+      console.error(
+        "This movie already exists in your mustWatch movies list: ",
+        movie.title
+      );
+      return;
+    }
+
+    /**
+     * We then insert the mustWatch movie to supabase based upon the table structure
+     * we created in the supabase SQL Editor
+     * https://supabase.com/docs/guides/auth/managing-user-data
+     * https://supabase.com/docs/guides/database/postgres/row-level-security
+     * https://supabase.com/docs/reference/javascript/insert
+     */
+    const { error } = await supabase.from("mustwatch_movies").insert({
+      user_id: user?.id,
+      movie_id: movie.id.toString(),
+      movie_title: movie.title,
+      poster_path: movie.poster_path,
+    });
+
+    if (error) {
+      console.error("No data inserted in Supabase: ", error?.message);
+    }
+
+    console.log(
+      "Successfully added this movie to Supabase mustWatch movies: ",
+      movie.title
+    );
   }, []);
 
+  /**
+   * Fetches the list of favourite movies for a given user from Supabase.
+   * useCallBack() lets us cache a function definition between re-renders.
+   *https://react.dev/reference/react/useCallback
+   */
+  const fetchSupabaseMustWatchMovies = useCallback(async (userId: string) => {
+    /**
+     * Use Supabase to query the "favourites" table
+     * where the "user_id" column matches the provided userId
+     * https://supabase.com/docs/reference/javascript/using-filters
+     */
+    const { data, error } = await supabase
+      .from("mustwatch_movies")
+      .select("movie_id, movie_title, poster_path")
+      .eq("user_id", userId);
+
+    // If error, we will get the below message
+    if (error) {
+      console.error("User not found", error.message);
+      return;
+    }
+
+    // If data is successfully returned, map through the movie to extract the movie_id value,
+    // and update the component's state const [favourites, setFavourites] = useState<number[]>([]);
+    if (data) {
+      // We amended this since we had declared the useState for the const favourites as an array of numbers
+      // Also, 'm' is a better label than 'movie', which is an object, but we are essentially fetchin a value from
+      // the supabase table row
+      // const ids = data.map((m) => m.movie_id);
+      const movies = data.map((m) => ({
+        id: Number(m.movie_id),
+        title: m.movie_title,
+        poster_path: m.poster_path,
+      }));
+      setMustWatchList(movies);
+    }
+  }, []);
+
+  /**
+   * useEffect here enables to load the user's favourite movies when the component mounts.
+   * Any time the `fetchSupabaseFavouriteMovies` function changes the favourites are fetched
+   */
+  useEffect(() => {
+    const loadUserMustWatch = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("User not found", userError?.message);
+        return;
+      }
+
+      fetchSupabaseMustWatchMovies(user?.id);
+    };
+
+    loadUserMustWatch();
+
+    /**
+     * This sets up a listener to detect changes in the authentication user state
+     * SIGNED_IN: Emitted each time a user session is confirmed or re-established, including on user sign in and when refocusing a tab.
+     * SIGNED_OUT: Emitted when the user signs out.
+     * https://supabase.com/docs/reference/javascript/auth-onauthstatechange
+     * */
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(event, session);
+
+      if (event === "SIGNED_IN" && session) {
+        fetchSupabaseMustWatchMovies(session.user.id);
+      } else if (event === "SIGNED_OUT") {
+        setMustWatchList([]); // This will set the favourites list to empty
+      }
+    });
+
+    // Call unsubscribe to remove the callback NOT WORKING
+    // data.subscription.unsubscribe();
+
+    /**
+     * The above unsubscribe call was not correctly unsubscribing, and we were
+     * ending up showing the same favourites list regardless of the user logging in.
+     * Apparently, the correct logic is  return () => { // Cleanup logic };
+     * https://devchallenges.io/learn/4-frontend-libraries/side-effects-in-react
+     */
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
+  }, [fetchSupabaseMustWatchMovies]); // dependency array
+
   // Function to remove amust watch movie from the must watch list
-  const removeFromMustWatchList = useCallback((movie: BaseMovieProps) => {
+  const removeFromMustWatchList = useCallback(async (movie: BaseMovieProps) => {
     setMustWatchList((prevMustWatchList) =>
       prevMustWatchList.filter((m) => m.id !== movie.id)
     );
     console.log("Removing from must watch list:", movie.id);
+
+    /**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    // If no user or error, we will get the below error
+    if (!user || userError) {
+      console.error("User not authenticated", userError);
+      return;
+    }
+
+    /**
+     * We delete the favourite movie from supabase
+     * https://supabase.com/docs/reference/kotlin/delete
+     */
+    const { error } = await supabase
+      .from("mustwatch_movies")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("movie_id", movie.id);
+
+    if (error) {
+      console.error("No data deleted from Supabase: ", error.message);
+    }
+
+    console.log(
+      "Successfully deleted this movie from Supabase mustWatch list: ",
+      movie.title
+    );
   }, []);
 
   // Provide context values and render children
