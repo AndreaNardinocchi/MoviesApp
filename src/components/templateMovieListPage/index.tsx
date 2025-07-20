@@ -23,11 +23,14 @@ const MovieListPageTemplate: React.FC<MovieListPageTemplateProps> = ({
   return (
     <>
       <Header title={title} />
-      <Grid container sx={styles.root}>
+      {/* The justifyContent gets content centered in the page */}
+      <Grid container sx={styles.root} justifyContent="center">
         <Grid item xs={12}>
           {/* <Header title={title} /> */}
         </Grid>
-        <Grid item container spacing={3}>
+        {/* We wnsure that the container fills the whole space available.
+        This achieves a centered card on the mobile view */}
+        <Grid item container spacing={3} sx={{ width: "100%" }}>
           <MovieList action={action} movies={movies}></MovieList>
         </Grid>
       </Grid>
