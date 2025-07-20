@@ -27,7 +27,11 @@ const ActorMoviesPage: React.FC = () => {
   console.log("Current language:", i18n.language);
 
   // Extract the 'id' parameter from the URL using React Router's useParams hook
-  const { id } = useParams<{ id: string }>();
+  const { movieId, actorId } = useParams() as {
+    movieId: string;
+    actorId: string;
+  };
+  // const { id } = useParams<{ id: string }>();
   // Fetch movie data using React Query's useQuery hook
   const {
     data: movies,
@@ -35,16 +39,16 @@ const ActorMoviesPage: React.FC = () => {
     isLoading,
     isError,
   } = useQuery<BaseMovieProps[], Error>(
-    ["actorMovies", id, lang],
+    ["actorMovies", actorId, lang],
     // Fetch the movie with cast information using the provided function
-    () => getActorMovies(id || "", lang)
+    () => getActorMovies(actorId || "", lang)
   );
 
   // Fetch movie data using React Query's useQuery hook
   const { data: actorDetails } = useQuery(
-    ["actorDetails", id, lang],
+    ["actorDetails", actorId, lang],
     // Fetch the movie with cast information using the provided function
-    () => fetchActorDetails(id || "", lang)
+    () => fetchActorDetails(actorId || "", lang)
   );
 
   /**
@@ -96,7 +100,7 @@ const ActorMoviesPage: React.FC = () => {
         }}
       >
         <Link
-          to={`/actor/${id}`}
+          to={`/movies/${movieId}/actor/${actorId}`}
           style={{
             textDecoration: "none",
             color: "#8E4585",

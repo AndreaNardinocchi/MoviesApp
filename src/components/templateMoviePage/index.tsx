@@ -73,7 +73,12 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
         <Grid container spacing={5} style={{ padding: "15px" }}>
           {/* Left column: image list */}
           <Grid item xs={3}>
-            <ImageList cols={1}>
+            <ImageList
+              cols={1}
+              sx={{
+                borderRadius: 2,
+              }}
+            >
               {/* Map over the images array and render each image */}
               {images.map((image: MovieImage) => (
                 <ImageListItem

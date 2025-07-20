@@ -124,7 +124,7 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
           {movie.cast.map((actor) => (
             <li key={actor.id}>
               <Link
-                to={`/actor/${actor.id}`} // URL path for the actor page
+                to={`/movies/${movie.id}/actor/${actor.id}`} // URL path for the actor page
                 state={{ actor: actor, movie: movie }} // Pass actor and movie data as navigation state
                 style={{ textDecoration: "none" }} // Optional styling to remove underline from link
               >

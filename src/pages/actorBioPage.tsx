@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // React Router hooks for accessing route parameters and navigation
-import { useParams, Link, useLocation } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 // React Query hook for data fetching and caching
 import { useQuery } from "react-query";
 import TemplateMoviePage from "../components/templateMoviePage";
@@ -45,7 +45,15 @@ const ActorBioPage: React.FC = () => {
   console.log("Current language:", i18n.language);
 
   // Get the actor ID from the URL params
-  const { id } = useParams<{ id: string }>();
+  // const { movieId, actorId } =
+  //   useParams<{ movieId: string; actorId: string }>();
+
+  const { movieId, actorId } = useParams() as {
+    movieId: string;
+    actorId: string;
+  };
+
+  console.log("ids: ", movieId, actorId);
 
   // Hook to navigate pages
   // const navigate = useNavigate();
@@ -58,8 +66,8 @@ const ActorBioPage: React.FC = () => {
    * https://reactrouter.com/en/main/hooks/use-location
    * https://reactrouter.com/en/main/hooks/use-navigate#passing-state
    */
-  const location = useLocation();
-  const movieId = location.state?.movie?.id || undefined;
+  // const location = useLocation();
+  // const movieId = location.state?.movie?.id || undefined;
 
   /**
    * We now use 2 Queries since we need to use different API endpoints:
@@ -75,8 +83,8 @@ const ActorBioPage: React.FC = () => {
     isLoading,
     isError,
   } = useQuery(
-    ["actorDetails", id, lang], // Unique key used by React Query to cache the response
-    () => fetchActorDetails(id || "", lang) // API function to get actor info from '/api/tmdb-api'
+    ["actorDetails", actorId, lang], // Unique key used by React Query to cache the response
+    () => fetchActorDetails(actorId || "", lang) // API function to get actor info from '/api/tmdb-api'
   );
 
   /**
@@ -93,8 +101,8 @@ const ActorBioPage: React.FC = () => {
     isLoading: imagesLoading, // Rename isLoading to imagesLoading the queries don’t clash
     isError: imagesError, // Likewise, rename isError to imagesError
   } = useQuery(
-    ["actorImages", id], // Unique key by React Query to track and cache this response
-    () => getPersonImages(Number(id)) // The API function here needs a number
+    ["actorImages", actorId], // Unique key by React Query to track and cache this response
+    () => getPersonImages(Number(actorId)) // The API function here needs a number
   );
 
   // Fetch movie data using React Query's useQuery hook
@@ -435,7 +443,7 @@ const ActorBioPage: React.FC = () => {
         }}
       >
         <Link
-          to={movieId ? `/movies/${movieId}` : `/movies/discover`}
+          to={movieId ? `/movies/${movieId}` : `/`}
           style={{
             textDecoration: "none",
             color: "#8E4585",
@@ -447,7 +455,7 @@ const ActorBioPage: React.FC = () => {
         </Link>
 
         <Link
-          to={`/actor/${id}/movies`}
+          to={`/movies/${movieId}/actor/${actorId}/movies`}
           style={{
             textDecoration: "none",
             color: "#8E4585",

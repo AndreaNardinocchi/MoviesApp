@@ -65,7 +65,10 @@ const App = () => {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/tvseries" element={<TVSeriesPage />} />
                 <Route path="/tvseries/:id" element={<TVSeriesDetailsPage />} />
-                <Route path="/actor/:id" element={<ActorBioPage />} />
+                <Route
+                  path="/movies/:movieId/actor/:actorId"
+                  element={<ActorBioPage />}
+                />
                 <Route path="/reviews/form" element={<AddMovieReviewPage />} />
                 <Route path="/reviews/:id" element={<MovieReviewPage />} />
                 <Route path="/movies/discover" element={<DiscoverMovies />} />
@@ -109,7 +112,10 @@ const App = () => {
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/actor/:id/movies" element={<ActorMoviesPage />} />
+                <Route
+                  path="/movies/:movieId/actor/:actorId/movies"
+                  element={<ActorMoviesPage />}
+                />
 
                 <Route path="*" element={<Navigate to="/" />} />
                 <Route path="/login" element={<LoginPage />} />
