@@ -30,8 +30,13 @@ const styles = {
   fab: {
     marginTop: "2%",
     position: "fixed",
-    top: 50,
-    right: 2,
+    top: {
+      xs: "8%",
+      sm: "6%",
+      md: "5%",
+      lg: "3%",
+    },
+    right: "2%",
     bgcolor: "#8E4585",
     color: "white",
   },

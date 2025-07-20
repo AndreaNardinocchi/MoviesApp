@@ -54,7 +54,7 @@ const styles = {
       xs: "8%",
       sm: "6%",
       md: "5%",
-      lg: "3%",
+      lg: "4%",
     },
     right: "2%",
     bgcolor: "#8E4585",

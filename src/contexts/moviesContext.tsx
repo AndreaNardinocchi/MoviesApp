@@ -260,19 +260,28 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   }, []);
 
   const addToMustWatchList = useCallback(async (movie: BaseMovieProps) => {
-    // First: Add to local state
+    /**
+     * Update the local state mustWatchList using the previous state.
+     * This ensures state updates are based on the most current version.
+     */
     setMustWatchList((prevMustWatchList) => {
-      // The old version checked against an array of IDs:
-      // if (!prevMustWatchList.includes(movie.id)) {
-      //   console.log("Adding to MustWatchList:", movie.id);
-      //   return [...prevMustWatchList, movie.id];
-      // }
-
+      /**
+       * Check if the movie already exists in the list.
+       * Using `.find()` instead of `.includes()` because we're now storing full movie objects,
+       * not just IDs.
+       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+       */
       const alreadyExists = prevMustWatchList.find((m) => m.id === movie.id);
+      /**
+       * If the movie is not already in the list, add it.
+       * This ensures we avoid duplicates in the local state.
+       * The spread operator ensure we keep the existing list.
+       */
       if (!alreadyExists) {
         console.log("Adding to MustWatchList:", movie.title);
         return [...prevMustWatchList, movie];
       }
+      // If it already exists, just return the current list unchanged
       return prevMustWatchList;
     });
 
@@ -307,7 +316,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
 
     if (selectError) {
       console.error(
-        "Error checking existing favourite: ",
+        "Error checking existing mustWatch movies: ",
         selectError?.message
       );
       return;
@@ -346,13 +355,13 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   }, []);
 
   /**
-   * Fetches the list of favourite movies for a given user from Supabase.
+   * Fetches the list of mustWatch movies for a given user from Supabase.
    * useCallBack() lets us cache a function definition between re-renders.
    *https://react.dev/reference/react/useCallback
    */
   const fetchSupabaseMustWatchMovies = useCallback(async (userId: string) => {
     /**
-     * Use Supabase to query the "favourites" table
+     * Use Supabase to query the "mustWatch" table
      * where the "user_id" column matches the provided userId
      * https://supabase.com/docs/reference/javascript/using-filters
      */
@@ -368,7 +377,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     }
 
     // If data is successfully returned, map through the movie to extract the movie_id value,
-    // and update the component's state const [favourites, setFavourites] = useState<number[]>([]);
+    // and update the component's state const [mustWatchList, setMustWatchList] = useState<number[]>([]);
     if (data) {
       // We amended this since we had declared the useState for the const favourites as an array of numbers
       // Also, 'm' is a better label than 'movie', which is an object, but we are essentially fetchin a value from
@@ -426,7 +435,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     /**
      * The above unsubscribe call was not correctly unsubscribing, and we were
      * ending up showing the same favourites list regardless of the user logging in.
-     * Apparently, the correct logic is  return () => { // Cleanup logic };
+     * Apparently, the correct logic is return () => { // Cleanup logic };
      * https://devchallenges.io/learn/4-frontend-libraries/side-effects-in-react
      */
 
@@ -458,7 +467,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
     }
 
     /**
-     * We delete the favourite movie from supabase
+     * We delete the mustWatch movie from supabase
      * https://supabase.com/docs/reference/kotlin/delete
      */
     const { error } = await supabase
