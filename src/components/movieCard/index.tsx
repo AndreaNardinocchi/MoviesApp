@@ -38,7 +38,7 @@ const styles = {
       // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
       // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
       transform: "scale(1.05)",
-      // we cahne the box Shadow property values to make it more prominent on hovering
+      // we change the box Shadow property values to make it more prominent on hovering
       boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
       // This property will make the card stick out with a sort of the 3D effect
       cursor: "pointer",

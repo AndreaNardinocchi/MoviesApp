@@ -180,10 +180,7 @@ const MovieCarouselDiscover = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          // We have changed the overflowX to 'visible' to enable the card to sticke out
-          // whithout getting its borders cut off
-          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
-          overflowX: "visible",
+          overflowX: "auto",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -240,7 +237,7 @@ const MovieCarouselDiscover = ({
                       : undefined
                   }
                   alt={movie.title}
-                  sx={{ height: "100%" }}
+                  sx={{ height: "90%" }}
                 />
                 <CardContent>
                   <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
@@ -344,10 +341,7 @@ const MovieCarouselUpcoming = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          // We have changed the overflowX to 'visible' to enable the card to sticke out
-          // whithout getting its borders cut off
-          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
-          overflowX: "visible",
+          overflowX: "auto",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -404,7 +398,7 @@ const MovieCarouselUpcoming = ({
                       : undefined
                   }
                   alt={movie.title}
-                  sx={{ height: "100%" }}
+                  sx={{ height: "90%" }}
                 />
                 <CardContent>
                   <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
@@ -508,10 +502,7 @@ const MovieCarouselNowPlaying = ({
         ref={scrollRef}
         sx={{
           display: "flex",
-          // We have changed the overflowX to 'visible' to enable the card to sticke out
-          // whithout getting its borders cut off
-          // https://developer.mozilla.org/en-US/docs/Web/CSS/overflow-x
-          overflowX: "visible",
+          overflowX: "auto",
           scrollbarWidth: "none",
           // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
           // In this case, we do not want to have a scrollbar showing
@@ -568,7 +559,7 @@ const MovieCarouselNowPlaying = ({
                       : undefined
                   }
                   alt={movie.title}
-                  sx={{ height: "100%" }}
+                  sx={{ height: "90%" }}
                 />
                 <CardContent>
                   <Typography variant="body1" sx={{ fontSize: "140%" }} noWrap>
