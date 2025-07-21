@@ -71,10 +71,17 @@ const DiscoverMoviesPage: React.FC = () => {
   const { data, error, isLoading, isError } = useQuery<DiscoverMovies, Error>(
     ["discover", page, lang],
     () => getMovies(page, lang),
+    /**
+     * We added this line in our useQuery hook in order to tell React-Query that this query is part
+     * of a paginated component. React-Query would then take care to not remove the cached data for
+     *  each page for a super fast response time in case of a page change.
+     * https://upmostly.com/tutorials/how-to-build-a-pagination-component-with-react-query
+     */
     { keepPreviousData: true }
   );
 
-  const [sortOrder, setSortOrder] = useState("desc"); // Default to newest first
+  // Create the state for 'sortOrder' and set to newest first
+  const [sortOrder, setSortOrder] = useState("desc");
 
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
@@ -90,45 +97,33 @@ const DiscoverMoviesPage: React.FC = () => {
     return <h1>{error.message}</h1>;
   }
 
-  //   const changeFilterValues = (type: string, value: string) => {
-  //   if (type === "sort") {
-  //     setSortOrder(value); // ✅ Handle sort separately
-  //     return;
-  //   }
-  //   // Called when the user changes title, genre filter, or release year
-  //  // const changeFilterValues = (type: string, value: string) => {
-  //     const changedFilter = { name: type, value };
-  //     const updatedFilterSet =
-  //       /**
-  //        * If type === "title", update the first filter.
-  //        * Otherwise, if type === "genre", update the second filter.
-  //        * Otherwise, type === "release", update the third filter.
-  //        */
-  //       type === "title"
-
-  //     return;
-  //         ? [changedFilter, filterValues[1], filterValues[2]]
-  //         : type === "genre"
-  //         ? [filterValues[0], changedFilter, filterValues[2]]
-  //         : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
-  //     setFilterValues(updatedFilterSet);
-  //   };
-
+  // Called when the user changes title, genre filter, release year, and sort
   const changeFilterValues = (type: string, value: string) => {
     if (type === "sort") {
-      setSortOrder(value); // ✅ Handle sort separately
+      /**
+       * Sort is managed by its own state sortOrder, not in the filterValues array.
+       * So we update the sort order separately and exit early to skip the rest of the filter logic.
+       * */
+      setSortOrder(value);
+      /**
+       * So, by returning early, we make sure only setSortOrder is called,
+       * and we avoid mistakenly trying to update filter state with an invalid type.
+       */
       return;
     }
 
     const changedFilter = { name: type, value };
-
     const updatedFilterSet =
+      /**
+       * If type === "title", update the first filter.
+       * Otherwise, if type === "genre", update the second filter.
+       * Otherwise, type === "release", update the third filter.
+       */
       type === "title"
         ? [changedFilter, filterValues[1], filterValues[2]]
         : type === "genre"
         ? [filterValues[0], changedFilter, filterValues[2]]
-        : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
-
+        : [filterValues[0], filterValues[1], changedFilter];
     setFilterValues(updatedFilterSet);
   };
 
@@ -137,12 +132,26 @@ const DiscoverMoviesPage: React.FC = () => {
   const displayedMovies = filterFunction(movies);
 
   // Add sorting by release date
-  displayedMovies.sort((a, b) => {
-    if (!a.release_date || !b.release_date) return 0;
-    return sortOrder === "asc"
-      ? a.release_date.localeCompare(b.release_date)
-      : b.release_date.localeCompare(a.release_date);
-  });
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+  // https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+  displayedMovies.sort(
+    (a: { release_date: string }, b: { release_date: string }) => {
+      if (!a.release_date || !b.release_date) {
+        return 0;
+      }
+
+      /**
+       * After After filtering, we sort the already 'filtered movies' by their release_date,
+       * depending on the sortOrder selected by the user.
+       * If sortOrder is 'asc', compare a to b (oldest first)
+       * If sortOrder is 'desc', compare b to a (newest first)
+       * */
+      return sortOrder === "asc"
+        ? a.release_date.localeCompare(b.release_date)
+        : b.release_date.localeCompare(a.release_date);
+    }
+  );
 
   // Redundant, but necessary to avoid app crashing.
   // const favourites = movies.filter((m) => m.favourite);

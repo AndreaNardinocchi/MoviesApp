@@ -42,10 +42,10 @@ const releaseFiltering = {
 };
 
 const UpcomingMoviesPage: React.FC = () => {
-  /** 
-       * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
-       If undefined or empty, fallback to 'en-US'
-       */
+  /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   */
   const { i18n } = useTranslation();
 
   const lang = i18n.language || "en-US";
@@ -71,6 +71,9 @@ const UpcomingMoviesPage: React.FC = () => {
   const [page, setPage] = useState(1);
   // The below code has been slighly adjusted as per
   // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+
+  // Create the state for 'sortOrder' and set to newest first
+  const [sortOrder, setSortOrder] = useState("desc");
 
   // Set up filtering state and logic using the custom `useFiltering` hook
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
@@ -131,13 +134,44 @@ const UpcomingMoviesPage: React.FC = () => {
    * is an object containing metadata like `page` and `total_pages`,
    * and the actual array of movie objects is inside the `results` property.
    * The API function has been updated to return response.json();, otherwise
-   * the pagination would not work
+   * the pagination would not work.
    */
-
   const displayedMovies = movies?.results ? filterFunction(movies.results) : [];
 
-  // Called when the user changes title, genre filter, or release year
+  // Add sorting by release date
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+  // https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+  displayedMovies.sort(
+    (a: { release_date: string }, b: { release_date: string }) => {
+      if (!a.release_date || !b.release_date) return 0;
+
+      return sortOrder === "asc"
+        ? a.release_date.localeCompare(b.release_date)
+        : b.release_date.localeCompare(a.release_date);
+    }
+  );
+
+  // Called when the user changes title, genre filter, release year, and sort
   const changeFilterValues = (type: string, value: string) => {
+    if (type === "sort") {
+      /**
+       * Sort is managed by its own state sortOrder, not in the filterValues array.
+       * So we update the sort order separately and exit early to skip the rest of the filter logic.
+       * */
+      setSortOrder(value);
+      /**
+       * So, by returning early, we make sure only setSortOrder is called,
+       * and we avoid mistakenly trying to update filter state with an invalid type.
+       */
+      return;
+    }
+    /**
+     * After After filtering, we sort the already 'filtered movies' by their release_date,
+     * depending on the sortOrder selected by the user.
+     * If sortOrder is 'asc', compare a to b (oldest first)
+     * If sortOrder is 'desc', compare b to a (newest first)
+     * */
     const changedFilter = { name: type, value };
     const updatedFilterSet =
       /**
@@ -149,7 +183,7 @@ const UpcomingMoviesPage: React.FC = () => {
         ? [changedFilter, filterValues[1], filterValues[2]]
         : type === "genre"
         ? [filterValues[0], changedFilter, filterValues[2]]
-        : [filterValues[0], filterValues[1], changedFilter]; // handles "release"
+        : [filterValues[0], filterValues[1], changedFilter];
     setFilterValues(updatedFilterSet);
   };
 
@@ -170,6 +204,8 @@ const UpcomingMoviesPage: React.FC = () => {
         action={(movie: BaseMovieProps) => {
           // Check if the movie is already in the must-watch list
           const isInMustWatch = mustWatchList.some((m) => m.id === movie.id);
+
+          console.log("Sort Order:", sortOrder);
 
           // Add the movie to the must-watch list if not already there
           const handleClick = () => {
@@ -223,6 +259,7 @@ const UpcomingMoviesPage: React.FC = () => {
         genreFilter={filterValues[1].value}
         // This is NOT a string, so we wrap it with a Number()
         releaseFilter={Number(filterValues[2].value)}
+        sortOrder={sortOrder}
       />
       <Pagination
         // color="primary"
