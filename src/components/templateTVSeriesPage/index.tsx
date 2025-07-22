@@ -6,6 +6,7 @@ import ImageListItem from "@mui/material/ImageListItem";
 import { getTVSeriesImages } from "../../api/tmdb-api"; // TV series images fetcher
 import { TVSeriesDetailsProps } from "../../types/interfaces";
 import { MovieImage } from "../../types/interfaces";
+import { Box } from "@mui/material";
 
 const styles = {
   gridListTile: {
@@ -57,34 +58,48 @@ const TemplateTVSeriesPage: React.FC<TemplateTVSeriesPageProps> = ({
 
   return (
     <>
-      {/* TVSeries header (title, poster, etc.) */}
-      <TVSeriesHeader {...series} />
+      <Box
+        sx={{
+          minHeight: "100vh",
+          padding: 0,
+          margin: 0,
+          backgroundColor: "#ffffff",
+        }}
+      >
+        {/* TVSeries header (title, poster, etc.) */}
+        <TVSeriesHeader {...series} />
 
-      <Grid container spacing={5} style={{ padding: "15px" }}>
-        {/* Left column: image list */}
-        <Grid item xs={3}>
-          <ImageList cols={1}>
-            {/* Map over the images array and render each image */}
-            {images.map((image) => (
-              <ImageListItem
-                key={image.file_path}
-                sx={styles.gridListTile}
-                cols={1}
-              >
-                <img
-                  src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
-                  alt={"Image alternative"}
-                />
-              </ImageListItem>
-            ))}
-          </ImageList>
-        </Grid>
+        <Grid container spacing={5} style={{ padding: "15px" }}>
+          {/* Left column: image list */}
+          <Grid item xs={3}>
+            <ImageList
+              cols={1}
+              sx={{
+                borderRadius: 2,
+              }}
+            >
+              {/* Map over the images array and render each image */}
+              {images.map((image) => (
+                <ImageListItem
+                  key={image.file_path}
+                  sx={styles.gridListTile}
+                  cols={1}
+                >
+                  <img
+                    src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
+                    alt={"Image alternative"}
+                  />
+                </ImageListItem>
+              ))}
+            </ImageList>
+          </Grid>
 
-        {/* Right column: children content (e.g., movie details, reviews) */}
-        <Grid item xs={9}>
-          {children}
+          {/* Right column: children content (e.g., movie details, reviews) */}
+          <Grid item xs={9}>
+            {children}
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </>
   );
 };

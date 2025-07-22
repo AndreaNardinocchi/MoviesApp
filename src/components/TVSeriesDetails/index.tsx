@@ -6,6 +6,10 @@ import StarRate from "@mui/icons-material/StarRate";
 import Typography from "@mui/material/Typography";
 import { TVSeriesDetailsProps } from "../../types/interfaces";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import i18n from "../../i18n/i18n";
+import TopicIcon from "@mui/icons-material/Topic";
+import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
 
 const styles = {
   chipSet: {
@@ -20,14 +24,25 @@ const styles = {
   chipLabel: {
     margin: 0.5,
   },
+  right: "2%",
+  bgcolor: "#8E4585",
+  color: "white",
 };
 
 const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+  console.log(
+    "Current language and series.overview:",
+    i18n.language,
+    series.overview
+  );
+
   return (
     <>
       {/* Overview */}
       <Typography variant="h5" component="h3">
-        Overview
+        {t("overview")}
       </Typography>
       <Typography variant="h6" component="p">
         {series.overview}
@@ -37,7 +52,7 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
       <Paper component="ul" sx={styles.chipSet}>
         <li>
           <Chip
-            label="Genres"
+            label={t("genres")}
             sx={{
               // Spread styles.chipLabel keeps the original chip styling
               ...styles.chipLabel,
@@ -55,17 +70,23 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
 
       {/* Runtime, Seasons, Episodes, Rating, First Air Date */}
       <Paper component="ul" sx={styles.chipSet}>
-        <Chip label={`Seasons: ${series.number_of_seasons}`} />
-        <Chip label={`Episodes: ${series.number_of_episodes}`} />
+        <Chip
+          icon={<TopicIcon />}
+          label={`${t("seasons")}: ${series.number_of_seasons}`}
+        />
+        <Chip
+          icon={<PlaylistPlayIcon />}
+          label={`${t("episodes")}: ${series.number_of_episodes}`}
+        />
         <Chip icon={<StarRate />} label={`${series.vote_average}`} />
-        <Chip label={`First Aired: ${series.first_air_date}`} />
+        <Chip label={`${t("first_aired")}: ${series.first_air_date}`} />
       </Paper>
 
       {/* Production Countries */}
       <Paper component="ul" sx={styles.chipSet}>
         <li>
           <Chip
-            label="Production Countries"
+            label={t("production_countries")}
             sx={{
               // Spread styles.chipLabel keeps the original chip styling
               ...styles.chipLabel,
@@ -83,7 +104,7 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
 
       {/* Cast */}
       <Typography variant="h5" component="h3">
-        Cast
+        {t("cast")}
       </Typography>
       {/* 
       To safely handle the series.cast potentially being undefined or empty, we are using
@@ -112,8 +133,8 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
         </Paper>
       ) : (
         <Typography
-          variant="h5"
-          component="h3"
+          variant="body2"
+          color="text.secondary"
           sx={{ textAlign: "center", mt: 1 }}
         >
           No cast information available.

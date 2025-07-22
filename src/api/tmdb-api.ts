@@ -298,26 +298,43 @@ export const getTVSeriesImages = (id: string | number) => {
 /**
  * This is cloned from getMovie function, modified to fetch TV series details instead of movies.
  * https://developers.themoviedb.org/3/tv/get-tv-details
- */
-export const getTVSeries = (id: string) => {
+ *
+ *  */
+export const getTVSeries = (id: string | number, language = "en-US") => {
+  console.log("Requested language:", language);
   return fetch(
     `https://api.themoviedb.org/3/tv/${id}?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }`
-  )
-    .then((response) => {
-      if (!response.ok) {
-        throw new Error(
-          `Failed to get TV series data. Response status: ${response.status}`
-        );
-      }
-      console.log("TV Series Details:", response);
-      return response.json();
-    })
-    .catch((error) => {
-      throw error;
-    });
+    }&language=${language}`
+  ).then((response) => {
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get TV series data. Response status: ${response.status}`
+      );
+    }
+    return response.json();
+  });
 };
+
+// export const getTVSeries = (tv_id: string, language: string) => {
+//   return fetch(
+//     `https://api.themoviedb.org/3/tv/${tv_id}?api_key=${
+//       import.meta.env.VITE_TMDB_KEY
+//     }&language=pt-BR`
+//   ) // ${language}`
+//     .then((response) => {
+//       if (!response.ok) {
+//         throw new Error(
+//           `Failed to get TV series data. Response status: ${response.status}`
+//         );
+//       }
+//       console.log("TV Series Details:", response);
+//       return response.json();
+//     })
+//     .catch((error) => {
+//       throw error;
+//     });
+// };
 
 /**
  * Fetches the cast (actors) for a given TV series ID from The Movie Database (TMDb) API.

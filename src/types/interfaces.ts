@@ -142,10 +142,6 @@ export interface BaseTVSeriesProps {
   first_air_date: string;
   vote_average: number;
   genre_ids: number[];
-  page: number;
-  total_pages: number;
-  total_results: number;
-  results: BaseMovieProps[];
 }
 
 export interface TVSeriesListProps {
@@ -185,6 +181,13 @@ export interface TVSeriesDetailsProps extends BaseTVSeriesProps {
   number_of_episodes: number;
   cast?: CastMember[];
   favourite?: boolean;
+}
+
+export interface TVSeriesResponse {
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: BaseTVSeriesProps[];
 }
 
 // Signed up User interface

@@ -5,15 +5,12 @@ import TVSeriesCard from "../tvSeriesCard";
 
 // 'series' is fetched from the TVSeriesListProps interface 'series: BaseTVSeriesProps[];'
 const TVSeriesList: React.FC<TVSeriesListProps> = ({ series, action }) => {
-  return (
-    <Grid container spacing={5}>
-      {series.map((tv) => (
-        <Grid key={tv.id} item xs={12} sm={6} md={4} lg={3} xl={2}>
-          <TVSeriesCard series={tv} action={action} />
-        </Grid>
-      ))}
+  const seriesCards = series.map((tv) => (
+    <Grid key={tv.id} item xs={12} sm={6} md={4} lg={3} xl={2}>
+      <TVSeriesCard series={tv} action={action} />
     </Grid>
-  );
+  ));
+  return seriesCards;
 };
 
 export default TVSeriesList;

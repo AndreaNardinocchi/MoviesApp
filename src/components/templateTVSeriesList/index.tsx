@@ -7,6 +7,11 @@ import TVSeriesList from "../TvSeriesList";
 const styles = {
   root: {
     backgroundColor: "#bfbfbf",
+    paddingRight: "1%",
+    paddingLeft: "1%",
+    paddingBottom: "2%",
+    paddingTop: "1%",
+    minHeight: "50vh",
   },
 };
 
@@ -21,15 +26,21 @@ const TVSeriesListPageTemplate: React.FC<TVSeriesListPageTemplateProps> = ({
   action,
 }) => {
   return (
-    <Grid container sx={styles.root}>
-      <Grid item xs={12}>
-        <Header title={title} />
+    <>
+      <Header title={title} />
+      {/* The justifyContent gets content centered in the page */}
+      <Grid container sx={styles.root} justifyContent="center">
+        <Grid item xs={12}>
+          {/* <Header title={title} /> */}
+        </Grid>
+        {/* We ensure that the container fills the whole space available.
+        This achieves a centered card on the mobile view */}
+        <Grid item container spacing={3} sx={{ width: "100%" }}>
+          {/* Using TV SeriesList created 'ad hoc' and in place of 'MovieList' to display series */}
+          <TVSeriesList series={series || []} action={action} />
+        </Grid>
       </Grid>
-      <Grid item container sx={{ marginTop: "1rem" }}>
-        {/* Using TV SeriesList created 'ad hoc' and in place of 'MovieList' to display series */}
-        <TVSeriesList series={series || []} action={action} />
-      </Grid>
-    </Grid>
+    </>
   );
 };
 

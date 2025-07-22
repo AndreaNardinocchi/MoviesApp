@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery } from "react-query";
 import Spinner from "../components/spinner";
@@ -6,6 +6,12 @@ import TemplateTVSeriesPage from "../components/templateTVSeriesPage";
 import TVSeriesDetails from "../components/TVSeriesDetails";
 import { getTVSeries, getTVSeriesCredits } from "../api/tmdb-api";
 import { TVSeriesDetailsProps } from "../types/interfaces";
+/**
+ * This imports the `useTranslation` hook from the `react-i18next` library,
+ * which provides languages support. It basically enables us to access translations functions,
+ * and the curent language context in the component/page
+ */
+import { useTranslation } from "react-i18next";
 
 /**
  * ====== Fetch TVSeries details + cast info ==========
@@ -16,9 +22,14 @@ import { TVSeriesDetailsProps } from "../types/interfaces";
  * to be passed as a single prop to components that need both sets of info.
  */
 const fetchTVSeriesWithCast = async (
-  id: string
+  id: string,
+  /**
+   * We pass the parameter language into this function, and it will define
+   * the language of the movie data
+   */
+  language: string
 ): Promise<TVSeriesDetailsProps> => {
-  const series = await getTVSeries(id);
+  const series = await getTVSeries(id, language);
   const cast = await getTVSeriesCredits(id);
   return {
     /**
@@ -43,6 +54,18 @@ const fetchTVSeriesWithCast = async (
 const TVSeriesDetailsPage: React.FC = () => {
   // Extract the 'id' parameter from the URL using React Router's useParams hook
   const { id } = useParams();
+
+  /** 
+     * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+     If undefined or empty, fallback to 'en-US'
+     */
+  const { i18n } = useTranslation();
+  // const { t } = useTranslation();
+
+  const lang = i18n.language || "en-US";
+
+  // Log the current languag
+  console.log("Current i18n language:", i18n.language);
   // Fetches TV series details and cast using React Query
   const {
     data: series, // The fetched series data will be stored in 'series'
@@ -50,11 +73,20 @@ const TVSeriesDetailsPage: React.FC = () => {
     isLoading, // Boolean flag indicating if the query is currently loading
     isError, // Boolean flag indicating if there was an error during the query
   } = useQuery<TVSeriesDetailsProps, Error>(
-    ["tvseries", id], // Unique query key for caching and refetching
+    ["tvseries", id, lang], // Unique query key for caching and refetching
     () =>
       // Fetch the TV Series with cast information using the provided function
-      fetchTVSeriesWithCast(id || "")
+      fetchTVSeriesWithCast(id || "", lang)
   );
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  useEffect(() => {
+    document.title = `${series?.title} | MovieApp`;
+  }, [series?.title]);
 
   if (isLoading) return <Spinner />;
 

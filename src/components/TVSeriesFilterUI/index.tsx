@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
-import { BaseTVSeriesProps } from "../../types/interfaces";
+import { BaseTVSeriesProps, FilterOption } from "../../types/interfaces";
 import { useTranslation } from "react-i18next";
 import FilterTVSeriesCard from "../filterTVSeriesCard";
 
@@ -66,7 +66,7 @@ const styles = {
 };
 
 interface TVSeriesFilterUIProps {
-  onFilterValuesChange: (f: string, s: string) => void;
+  onFilterValuesChange: (f: FilterOption, s: string) => void;
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;

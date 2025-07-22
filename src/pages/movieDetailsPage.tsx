@@ -83,6 +83,7 @@ const MovieDetailsPage: React.FC = () => {
       // Fetch the movie with cast information using the provided function
       fetchMovieWithCast(id || "", lang)
   );
+
   /**
    * This is the browser title
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
