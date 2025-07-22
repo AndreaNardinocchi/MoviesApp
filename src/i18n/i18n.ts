@@ -120,6 +120,8 @@ i18n
           sort_by_date: "Sort by Release Date",
           oldest_first: "Oldest First",
           newest_first: "Newest First",
+          filter_tv_series: "Filter the TV series",
+          sort_tv_series: "Sort TV series",
         },
       },
 
@@ -221,6 +223,8 @@ i18n
           sort_by_date: "Ordenar por fecha de lanzamiento",
           oldest_first: "Más antiguas primero",
           newest_first: "Más recientes primero",
+          filter_tv_series: "Filtrar las series de TV",
+          sort_tv_series: "Ordenar series de TV",
         },
       },
 
@@ -320,6 +324,8 @@ i18n
           sort_by_date: "Ordenar por data de lançamento",
           oldest_first: "Mais antigas primeiro",
           newest_first: "Mais recentes primeiro",
+          filter_tv_series: "Filtrar as séries de TV",
+          sort_tv_series: "Ordenar séries de TV",
         },
       },
       it: {
@@ -418,6 +424,8 @@ i18n
           sort_by_date: "Ordina per data di uscita",
           oldest_first: "Più vecchi prima",
           newest_first: "Più recenti prima",
+          filter_tv_series: "Filtra le serie TV",
+          sort_tv_series: "Ordina le serie TV",
         },
       },
     },

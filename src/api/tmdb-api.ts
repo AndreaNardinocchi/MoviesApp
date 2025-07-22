@@ -227,16 +227,48 @@ export const getNowPlayingMovies = (page: number, language = "en-US") => {
 
 /**
  * Fetches a list of currently airing TV series from TMDb.
- * https://developer.themoviedb.org/reference/tv-on-the-air-list
+ * https://developer.themoviedb.org/reference/tv-series-on-the-air-list
  */
-export const getCurrentlyAiringTV = () => {
+export const getCurrentlyAiringTV = (page: number, language = "en-US") => {
   return fetch(
     `https://api.themoviedb.org/3/tv/on_the_air?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=en-US&page=1`
+    }&language=${language}&page=${page}`
   )
-    .then((res) => res.json())
-    .then((json) => json.results); // Only return the TV show list
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch TV series. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+  // .then((res) => res.json())
+  // .then((json) => json.results); // Only return the TV show list
+};
+
+/**
+ * Fetches the TV series genres
+ * https://developers.themoviedb.org/3/genres/get-tv-list
+ */
+export const getTVSeriesGenres = (language = "en-US") => {
+  return fetch(
+    "https://api.themoviedb.org/3/genre/tv/list?api_key=" +
+      import.meta.env.VITE_TMDB_KEY +
+      `&language=${language}`
+  )
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch TV series genres. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
 
 /**

@@ -1,50 +1,49 @@
 import React, { useState } from "react";
-import FilterCard from "../filterMoviesCard";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
-import { BaseMovieProps } from "../../types/interfaces";
+import { BaseTVSeriesProps } from "../../types/interfaces";
 import { useTranslation } from "react-i18next";
+import FilterTVSeriesCard from "../filterTVSeriesCard";
 
 // eslint-disable-next-line react-refresh/only-export-components
-// export const titleFilter = (movie: BaseMovieProps, value: string): boolean => {
-//   return movie.title.toLowerCase().search(value.toLowerCase()) !== -1;
-// };
-
-export const titleFilter = (movie: { title?: string }, value: string) => {
-  return (movie.title || "").toLowerCase().includes(value.toLowerCase());
+export const titleFilter = (
+  series: BaseTVSeriesProps,
+  value: string
+): boolean => {
+  /**
+   * This filters TV series by their title (or name field).
+   * It checks if the search string is included in the series name.
+   * To avoid errors, we default to an empty string if `name` is missing.
+   */
+  return (series.name || "").toLowerCase().search(value.toLowerCase()) !== -1;
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
-export const genreFilter = (movie: BaseMovieProps, value: string) => {
+export const genreFilter = (
+  series: BaseTVSeriesProps,
+  value: string
+): boolean => {
   const genreId = Number(value);
-  const genreIds = movie.genre_ids;
+  const genreIds = series.genre_ids;
   return genreId > 0 && genreIds ? genreIds.includes(genreId) : true;
 };
 
 /**
- * This function filters movies by their release year.
- * It returns true if the movie's release year matches the given year (value).
- * If value is 0, it means "All years" and the function returns true for every movie.
- * value: number is a parameter passed into the releaseFilter function, and
- * it represents the year selected by the user to filter movies by release date
- * */
+ * This function filters TV series by their first air year.
+ * It returns true if the series's first air year matches the given year (value).
+ * If value is 0, it means "All years" and the function returns true for every series.
+ * value: number is a parameter passed into the releaseFilter function,
+ * and it represents the year selected by the user to filter series by air date
+ */
 // eslint-disable-next-line react-refresh/only-export-components
 export const releaseFilter = (
-  movie: BaseMovieProps,
+  series: BaseTVSeriesProps,
   value: number
 ): boolean => {
-  // If value is 0, do not filter out any movies, but show them all
   if (value === 0) return true;
-  // If the movie has no release date, exclude it and return it as false
-  else if (!movie.release_date) return false;
-  /**
-   * Extract the year from the movie's release_date string
-   * getFullYear() is a built-in JavaScript Date object method.
-   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
-   */
-  const movieYear = new Date(movie.release_date).getFullYear();
-  // Return true only if the movie's release year equals the filter year
-  return movieYear === Number(value);
+  if (!series.first_air_date) return false;
+  const seriesYear = new Date(series.first_air_date).getFullYear();
+  return seriesYear === Number(value);
 };
 
 const styles = {
@@ -66,16 +65,15 @@ const styles = {
   },
 };
 
-interface MovieFilterUIProps {
+interface TVSeriesFilterUIProps {
   onFilterValuesChange: (f: string, s: string) => void;
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;
-  // Controls the sorting order of movies by release date.
   sortOrder: string;
 }
 
-const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
+const TVSeriesFilterUI: React.FC<TVSeriesFilterUIProps> = ({
   onFilterValuesChange,
   titleFilter,
   genreFilter,
@@ -89,7 +87,7 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
   const { i18n } = useTranslation();
 
   /**
-   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * We are using the translation hook to get the t function and i18n instance inside our functional component.
    * However, i18n is already embedded into the <LanguageSwitcher /> component
    * https://react.i18next.com/latest/usetranslation-hook
    */
@@ -105,13 +103,9 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
         variant="extended"
         onClick={() => setDrawerOpen(true)}
         sx={{
-          // Spread the base fab styles defined earlier
           ...styles.fab,
-          // https://mui.com/system/getting-started/the-sx-prop/?
           "&:hover": {
-            // Text color on hover
             color: "#000000",
-            // Change background slightly on hover
             bgcolor: "#ffe6f0",
           },
         }}
@@ -123,7 +117,7 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
       >
-        <FilterCard
+        <FilterTVSeriesCard
           onUserInput={onFilterValuesChange}
           titleFilter={titleFilter}
           genreFilter={genreFilter}
@@ -135,4 +129,4 @@ const MovieFilterUI: React.FC<MovieFilterUIProps> = ({
   );
 };
 
-export default MovieFilterUI;
+export default TVSeriesFilterUI;

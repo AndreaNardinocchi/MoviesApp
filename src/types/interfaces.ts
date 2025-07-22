@@ -142,6 +142,10 @@ export interface BaseTVSeriesProps {
   first_air_date: string;
   vote_average: number;
   genre_ids: number[];
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: BaseMovieProps[];
 }
 
 export interface TVSeriesListProps {
