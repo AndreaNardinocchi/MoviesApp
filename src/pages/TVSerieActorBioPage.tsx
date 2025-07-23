@@ -3,23 +3,24 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 // React Query hook for data fetching and caching
 import { useQuery } from "react-query";
-import TemplateMoviePage from "../components/templateMoviePage";
+import TemplateTVSeriesPage from "../components/templateTVSeriesPage";
 import Spinner from "../components/spinner";
 import Typography from "@mui/material/Typography";
-// import ImageList from "@mui/material/ImageList";
 import ImageListItem from "@mui/material/ImageListItem";
 import IconButton from "@mui/material/IconButton";
-// import Button from "@mui/material/Button";
 // MUI icons for modal navigation
 import CloseIcon from "@mui/icons-material/Close";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 // API methods to fetch actor details and their images
-import { fetchActorDetails, getMovie, getPersonImages } from "../api/tmdb-api";
-import { MovieDetailsProps } from "../types/interfaces";
+import {
+  fetchActorDetails,
+  getTVSeries,
+  getPersonImages,
+} from "../api/tmdb-api";
+import { TVSeriesDetailsProps } from "../types/interfaces"; // NEW: TV-specific type
 import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
-// import i18n from "../i18n/i18n";
 
 /**
  * Even though React Query handles the data fetching (useQuery), we're building an
@@ -27,13 +28,12 @@ import { Box } from "@mui/material";
  * and this is where useState kicks in.
  * */
 
-const ActorBioPage: React.FC = () => {
+const TVSeriesActorBioPage: React.FC = () => {
   /**
    * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
    * If undefined or empty, fallback to 'en-US'
    * */
   const { i18n } = useTranslation();
-
   const lang = i18n.language || "en-US";
 
   /**
@@ -44,30 +44,12 @@ const ActorBioPage: React.FC = () => {
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
-  // Get the actor ID from the URL params
-  // const { movieId, actorId } =
-  //   useParams<{ movieId: string; actorId: string }>();
-
-  const { movieId, actorId } = useParams() as {
-    movieId: string;
+  const { tvId, actorId } = useParams() as {
+    tvId: string;
     actorId: string;
   };
 
-  console.log("ids: ", movieId, actorId);
-
-  // Hook to navigate pages
-  // const navigate = useNavigate();
-
-  /**
-   * Get the current location object from React Router
-   * Extract movieId from location state, falling back to undefined if not present.
-   * The movie object is passed via navigation state from state={{ actor: actor, movie: movie }}
-   * in movieDetails.tsx
-   * https://reactrouter.com/en/main/hooks/use-location
-   * https://reactrouter.com/en/main/hooks/use-navigate#passing-state
-   */
-  // const location = useLocation();
-  // const movieId = location.state?.movie?.id || undefined;
+  console.log("ids: ", tvId, actorId);
 
   /**
    * We now use 2 Queries since we need to use different API endpoints:
@@ -82,9 +64,8 @@ const ActorBioPage: React.FC = () => {
     error,
     isLoading,
     isError,
-  } = useQuery(
-    ["actorDetails", actorId, lang], // Unique key used by React Query to cache the response
-    () => fetchActorDetails(actorId || "", lang) // API function to get actor info from '/api/tmdb-api'
+  } = useQuery(["actorDetails", actorId, lang], () =>
+    fetchActorDetails(actorId || "", lang)
   );
 
   /**
@@ -97,26 +78,25 @@ const ActorBioPage: React.FC = () => {
 
   // Fetch images associated with the actor
   const {
-    data: imagesData, // Rename the result to imagesData so we don’t confuse it with the actor data
-    isLoading: imagesLoading, // Rename isLoading to imagesLoading the queries don’t clash
-    isError: imagesError, // Likewise, rename isError to imagesError
-  } = useQuery(
-    ["actorImages", actorId], // Unique key by React Query to track and cache this response
-    () => getPersonImages(Number(actorId)) // The API function here needs a number
+    data: imagesData,
+    isLoading: imagesLoading,
+    isError: imagesError,
+  } = useQuery(["actorImages", actorId], () =>
+    getPersonImages(Number(actorId))
   );
 
-  // Fetch movie data using React Query's useQuery hook
+  // Fetch TV series data using React Query's useQuery hook
   useQuery(
-    ["movie", movieId, lang],
-    // Fetch the movie id
-    () => getMovie(movieId, lang)
+    ["tv", tvId, lang],
+    // Fetch the TV series id
+    () => getTVSeries(tvId, lang)
   );
 
   /**
    * State to control image modal visibility
    * modalOpen → controls if the image modal is shown
    */
-  const [modalOpen, setModalOpen] = useState(false); // Every render would reset it back to false
+  const [modalOpen, setModalOpen] = useState(false);
 
   /**
    * currentIndex tracks the currently selected image index in the gallery
@@ -166,26 +146,22 @@ const ActorBioPage: React.FC = () => {
    * Hence, a placeholder is created to satisfy the type and structural requirements of the TemplateMoviePage without feeding the page with any movie data.
    * We will then be adding some <Typography /> to add actor bio data we need and <imageList /> and <ImageListIte /> to create the actor umages grid
    */
-  const dummyMovie: MovieDetailsProps = {
+  const dummyTVSeries: TVSeriesDetailsProps = {
     id: 0,
-    title: actor?.name || "Actor Bio",
-    budget: 0,
-    homepage: undefined,
-    imdb_id: "",
-    original_language: "",
+    name: actor?.name || "Actor Bio", // TV equivalent of title
     overview: "",
-    release_date: "",
-    vote_average: 0,
-    popularity: 0,
-    poster_path: firstImage ? firstImage.file_path : undefined, // Actor image as poster
-    tagline: "",
-    runtime: 0,
-    revenue: 0,
-    vote_count: 0,
     genres: [],
-    production_countries: [],
+    first_air_date: "",
+    vote_average: 0,
+    poster_path: firstImage ? firstImage.file_path : undefined,
     cast: [],
-    release: [],
+    production_countries: [],
+    homepage: "",
+    tagline: "",
+    number_of_seasons: 0,
+    number_of_episodes: 0,
+    title: "",
+    genre_ids: [],
   };
 
   // Opens the image modal and displays the selected image
@@ -221,11 +197,13 @@ const ActorBioPage: React.FC = () => {
     setModalOpen(false); // Hides the modal by updating its visibility state
   };
 
+  console.log("Routing path:", window.location.pathname);
+
   // Component render
   return (
     <>
-      <TemplateMoviePage
-        movie={dummyMovie}
+      <TemplateTVSeriesPage
+        series={dummyTVSeries}
         overrideImages={firstImage ? [firstImage] : []}
       >
         <>
@@ -238,7 +216,6 @@ const ActorBioPage: React.FC = () => {
           <Typography variant="subtitle1" gutterBottom>
             {t("actor_birthday")} {actor?.birthday || t("unknown_actor")}
           </Typography>
-
           <Typography variant="subtitle1" gutterBottom>
             {t("birthplace")} {actor?.place_of_birth || t("unknown_actor")}
           </Typography>
@@ -247,7 +224,6 @@ const ActorBioPage: React.FC = () => {
           <Typography variant="body1" paragraph>
             {t("biography")}
           </Typography>
-
           <Typography variant="body2" paragraph>
             {actor?.biography ? actor.biography : t("no_biography")}
           </Typography>
@@ -258,9 +234,6 @@ const ActorBioPage: React.FC = () => {
               <Typography variant="h6" gutterBottom>
                 {t("photogallery")}
               </Typography>
-              {/* Responsive image grid */}
-
-              {/* <ImageList cols={3} gap={10} > */}
 
               <Box
                 sx={{
@@ -273,12 +246,11 @@ const ActorBioPage: React.FC = () => {
                    * 1 column, and so on.
                    * https://mui.com/system/getting-started/the-sx-prop/
                    * https://mui.com/system/react-box/
-                   * https://mui.com/system/grid/
-                   */
+                   * */
                   gridTemplateColumns: {
                     xs: "1fr", // 1 column on mobile
                     sm: "1fr 1fr", // 2 columns on tablets
-                    md: "1fr 1fr 1fr", // 3 columns on desktop
+                    md: "1fr 1fr 1fr", // 3 columns on desktop: "1fr",
                   },
                 }}
               >
@@ -298,48 +270,15 @@ const ActorBioPage: React.FC = () => {
                           borderRadius: 2,
                           cursor: "pointer",
                           width: "100%",
-                          height: "auto", // Maintain aspect ratio
+                          height: "auto",
                         }}
                       />
                     </ImageListItem>
                   )
                 )}
-                {/* </ImageList> */}
               </Box>
             </>
           )}
-
-          {/* Back button to return to previous page
-
-          <Button
-            variant="outlined"
-            // onClick={() => navigate(-1)} // Go back one page in browser history
-            onClick={() => {
-              if (movieId) {
-                navigate(`/movies/${movieId}`);
-              } else {
-                navigate(`/movies/discover`); // fallback to go back to Discover page
-              }
-            }}
-            style={{ marginBottom: 16, marginRight: 8 }}
-            sx={{
-              color: "#8E4585",
-            }}
-          >
-            {t("back_to_movie_page")}
-          </Button> */}
-
-          {/* Button to land the user to the actor movies page
-          <Button
-            variant="outlined"
-            onClick={() => navigate(`/actor/${id}/movies`)}
-            style={{ marginBottom: 16 }}
-            sx={{
-              color: "#8E4585",
-            }}
-          >
-            {t("actor_movie_page_cta")}
-          </Button> */}
 
           {/**
            * Zoom modal for viewing images larger with arrow controls
@@ -364,7 +303,6 @@ const ActorBioPage: React.FC = () => {
                 zIndex: 1500,
               }}
             >
-              {/* Close modal button */}
               <IconButton
                 onClick={closeModal}
                 style={{
@@ -378,7 +316,6 @@ const ActorBioPage: React.FC = () => {
                 <CloseIcon fontSize="large" />
               </IconButton>
 
-              {/* Previous image button */}
               <IconButton
                 onClick={prevImage}
                 style={{
@@ -392,17 +329,12 @@ const ActorBioPage: React.FC = () => {
                 <ArrowBackIosNewIcon fontSize="large" />
               </IconButton>
 
-              {/* Fullscreen image display */}
               <img
                 src={`https://image.tmdb.org/t/p/original${galleryImages[currentIndex].file_path}`}
                 alt={actor?.name}
-                style={{
-                  maxHeight: "100vh",
-                  maxWidth: "100vw",
-                }}
+                style={{ maxHeight: "100vh", maxWidth: "100vw" }}
               />
 
-              {/* Next image button */}
               <IconButton
                 onClick={nextImage}
                 style={{
@@ -418,7 +350,7 @@ const ActorBioPage: React.FC = () => {
             </div>
           )}
         </>
-      </TemplateMoviePage>
+      </TemplateTVSeriesPage>
 
       {/* Sticky Bottom Bar */}
       <Box
@@ -442,7 +374,7 @@ const ActorBioPage: React.FC = () => {
         }}
       >
         <Link
-          to={movieId ? `/movies/${movieId}` : `/`}
+          to={tvId ? `/tvseries/${tvId}` : `/`}
           style={{
             textDecoration: "none",
             color: "#8E4585",
@@ -454,18 +386,18 @@ const ActorBioPage: React.FC = () => {
         </Link>
 
         <Link
-          to={`/movies/${movieId}/actor/${actorId}/movies`}
+          to={`/tvseries/${tvId}/actor/${actorId}/tvseries`}
           style={{
             textDecoration: "none",
             color: "#8E4585",
             fontWeight: "bold",
           }}
         >
-          {t("jump_to_actor_movies_page")} →
+          {t("jump_to_actor_tvseries_page")} →
         </Link>
       </Box>
     </>
   );
 };
 
-export default ActorBioPage;
+export default TVSeriesActorBioPage;

@@ -15,7 +15,7 @@ import { useTranslation } from "react-i18next";
 
 const styles = {
   table: {
-    minWidth: 550,
+    minWidth: "100%",
   },
 };
 

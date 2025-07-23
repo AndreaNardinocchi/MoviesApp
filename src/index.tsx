@@ -28,6 +28,8 @@ import { Box, CssBaseline } from "@mui/material";
 // import Test from "./pages/homePage";
 import DiscoverMovies from "./pages/discoverPage";
 import HomePage from "./pages/homePage";
+import TVSeriesActorBioPage from "./pages/TVSerieActorBioPage";
+import ActorTVSeriesPage from "./pages/actorTVSeriesPage";
 
 // declare the query client (it will manage the cache in the browser):
 const queryClient = new QueryClient({
@@ -53,7 +55,7 @@ const App = () => {
         }}
       >
         {/*  Reset browser styles 
-      The CssBaseline component helps to kickstart an elegant, consistent, and simple baseline to build upon.
+      The Css Baseline component helps to kickstart an elegant, consistent, and simple baseline to build upon.
       https://mui.com/material-ui/react-css-baseline/
       */}
         <CssBaseline />
@@ -68,6 +70,14 @@ const App = () => {
                 <Route
                   path="/movies/:movieId/actor/:actorId"
                   element={<ActorBioPage />}
+                />
+                <Route
+                  path="/tvseries/:tvId/actor/:actorId"
+                  element={<TVSeriesActorBioPage />}
+                />
+                <Route
+                  path="/tvseries/:tvId/actor/:actorId/tvseries"
+                  element={<ActorTVSeriesPage />}
                 />
                 <Route path="/reviews/form" element={<AddMovieReviewPage />} />
                 <Route path="/reviews/:id" element={<MovieReviewPage />} />

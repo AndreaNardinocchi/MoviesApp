@@ -402,3 +402,21 @@ export const getMovieVideos = (id: string | number, language = "en-US") => {
       throw error;
     });
 };
+
+/**
+ * Fetches the TV series an actor appeared in.
+ * 'id' refers to the actor's id.
+ * https://developer.themoviedb.org/reference/person-tv-credits
+ */
+export const getActorTVSeries = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/person/${id}/tv_credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      console.log(json.cast);
+      return json.cast; // This returns an array of TV series the actor was in
+    });
+};

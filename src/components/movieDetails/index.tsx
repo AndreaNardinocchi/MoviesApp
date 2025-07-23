@@ -13,6 +13,7 @@ import MovieReviews from "../movieReviews";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
+import { Box } from "@mui/material";
 
 const styles = {
   chipSet: {
@@ -135,8 +136,24 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
               >
                 <Chip
                   clickable
-                  label={`${actor.name} (${actor.character})`}
-                  sx={styles.chipLabel}
+                  label={
+                    <Box
+                      sx={{
+                        // Allows text to wrap onto multiple lines instead of staying on a single line
+                        // https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {`${actor.name} (${actor.character})`}
+                    </Box>
+                  }
+                  sx={{
+                    ...styles.chipLabel,
+                    py: 1, // vertical padding
+                    minHeight: "3rem", // force taller chip
+                  }}
                 />
               </Link>
             </li>

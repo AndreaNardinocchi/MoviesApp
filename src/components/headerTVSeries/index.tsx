@@ -59,7 +59,15 @@ const TVSeriesHeader: React.FC<TVSeriesDetailsProps> = (series) => {
         </Avatar>
       )} */}
 
-      <Typography variant="h4" component="h3">
+      <Typography
+        variant="h4"
+        component="h3"
+        style={{
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          textAlign: "center",
+        }}
+      >
         {series.title}{" "}
         {series.homepage && (
           <a href={series.homepage}>

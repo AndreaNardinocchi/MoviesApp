@@ -117,11 +117,17 @@ const ActorMoviesPage: React.FC = () => {
 
   const displayedMovies = movies ? filterFunction(movies) : [];
 
-  // Add sorting by release date
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-  // https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
-  displayedMovies.sort(
+  /**
+   * We use the spread operator now to create a shallow copy of 'displayedMovies'
+   * before sorting because `.sort()` changes the original array in place, whereas the spread
+   * operator ensure we only create that shallow copy and won't modify the original array.
+   * Without spread operator, the sort() function was actually created duplicates for certain
+   * movies.ensures we don't modify the original filtered list,
+   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+   * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+   * */
+  const sortedDisplayedMovies = [...displayedMovies].sort(
     (a: { release_date: string }, b: { release_date: string }) => {
       if (!a.release_date || !b.release_date) return 0;
 
@@ -170,7 +176,7 @@ const ActorMoviesPage: React.FC = () => {
     <>
       <PageTemplate
         title={`${t("actor_movies_header")} ${actorDetails?.name}`}
-        movies={displayedMovies}
+        movies={sortedDisplayedMovies}
         action={(movie: BaseMovieProps) => {
           return <AddToFavouritesIcon {...movie} />;
         }}

@@ -12,7 +12,7 @@ import { Box } from "@mui/material";
 // Inline styles for image tiles
 const styles = {
   gridListTile: {
-    width: 450,
+    width: "100%",
     height: "100vh", // Takes full viewport height for image display
   },
 };

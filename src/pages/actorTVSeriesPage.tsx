@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { getCurrentlyAiringTV } from "../api/tmdb-api";
-import Spinner from "../components/spinner";
+import { Link, useParams } from "react-router-dom";
+import { fetchActorDetails, getActorTVSeries } from "../api/tmdb-api";
 import { useQuery } from "react-query";
-import { FilterOption, TVSeriesResponse } from "../types/interfaces";
-import TVSeriesListPageTemplate from "../components/templateTVSeriesList";
+import Spinner from "../components/spinner";
+// import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
+import {
+  FilterOption,
+  TVSeriesListPageTemplateProps,
+} from "../types/interfaces";
 import { useTranslation } from "react-i18next";
-import useFiltering from "../hooks/useFiltering";
-import { Pagination } from "@mui/material";
+import { Box } from "@mui/material";
 import TVSeriesFilterUI, {
   genreFilter,
   releaseFilter,
   titleFilter,
 } from "../components/TVSeriesFilterUI";
+import useFiltering from "../hooks/useFiltering";
+import TVSeriesListPageTemplate from "../components/templateTVSeriesList";
+// import i18n from "../i18n/i18n";
 
 // Define the default filter state for title filtering
 const titleFiltering = {
@@ -30,11 +36,11 @@ const genreFiltering = {
 // Define the default filter state for release filtering
 const releaseFiltering = {
   name: "release",
-  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any movies
+  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any TV seriess
   condition: releaseFilter,
 };
 
-const TVSeriesPage: React.FC = () => {
+const ActorTVSeriesPage: React.FC = () => {
   /**
    * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
    * If undefined or empty, fallback to 'en-US'
@@ -50,17 +56,11 @@ const TVSeriesPage: React.FC = () => {
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
-  /**
-   * This is the browser title
-   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
-   */
-  useEffect(() => {
-    document.title = `${t("TV_series")} | MovieApp`;
-  }, [t]);
-
-  const [page, setPage] = useState(1);
-  // The below code has been slightly adjusted as per
-  // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+  // Extract the 'id' parameter from the URL using React Router's useParams hook
+  const { tvId, actorId } = useParams() as {
+    tvId: string;
+    actorId: string;
+  };
 
   // Create the state for 'sortOrder' and set to newest first
   const [sortOrder, setSortOrder] = useState("desc");
@@ -72,43 +72,51 @@ const TVSeriesPage: React.FC = () => {
     releaseFiltering,
   ]);
 
-  /**
-   * 'series' is an array of BaseTVSeriesProps.
-   * To access the 'total_pages', series must be an object containing metadata like page, total_pages, and results and not an array.
-   */
+  // Fetch TV series data using React Query's useQuery hook
   const {
     data: series,
+    error,
     isLoading,
     isError,
-    error,
-  } = useQuery<TVSeriesResponse>(
-    ["currentlyAiringTV", page, lang],
-    () => getCurrentlyAiringTV(page, lang), // fetch function
-    { keepPreviousData: true }
+  } = useQuery<TVSeriesListPageTemplateProps[], Error>(
+    ["actorTVSeries", actorId, lang],
+    // Fetch the TV series with cast information using the provided function
+    () => getActorTVSeries(actorId || "", lang)
   );
+
+  // Fetch TV series data using React Query's useQuery hook
+  const { data: actorDetails } = useQuery(
+    ["actorDetails", actorId, lang],
+    // Fetch the TV series with cast information using the provided function
+    () => fetchActorDetails(actorId || "", lang)
+  );
+
+  /**
+   * This is the browser title
+   * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+   */
+  useEffect(() => {
+    document.title = `${t("actor_tvseries_header")}  ${
+      actorDetails?.name
+    }  | MovieApp`;
+  }, [t, actorDetails?.name]);
 
   if (isLoading) return <Spinner />;
 
-  if (isError)
-    return <p>Error fetching TV series: {(error as Error).message}</p>;
+  if (isError) {
+    return <h1>{(error as Error).message}</h1>;
+  }
 
-  /**
-   * We use `seris.results` here because the API response `series`
-   * is an object containing metadata like `page` and `total_pages`,
-   * and the actual array of series object is inside the `results` property.
-   * The API function has been updated to return response.json(); otherwise
-   * the pagination would not work
-   */
-  const displayedTVSeries = series?.results
-    ? filterFunction(series.results)
-    : [];
+  if (!series) return <h2>{t("actor_no_movies")}</h2>;
+
+  const displayedTVSeries = series ? filterFunction(series) : [];
 
   /**
    * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
    * before sorting because `.sort()` changes the original array in place, whereas the spread
    * operator ensure we only create that shallow copy and won't modify the original array.
-   * Without the spread operator, the sort() function was actually creating duplicates for certain
-   * series. This ensures we don't modify the original filtered list.
+   * Without spread operator, the sort() function was actually created duplicates for certain
+   * movies.ensures we don't modify the original filtered list,
    *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
    * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
@@ -134,9 +142,8 @@ const TVSeriesPage: React.FC = () => {
        */
       return;
     }
-
     /**
-     * After filtering, we sort the already 'filtered movies' by their release_date,
+     * After After filtering, we sort the already 'filtered TV seriess' by their release_date,
      * depending on the sortOrder selected by the user.
      * If sortOrder is 'asc', compare a to b (oldest first)
      * If sortOrder is 'desc', compare b to a (newest first)
@@ -158,48 +165,55 @@ const TVSeriesPage: React.FC = () => {
 
   return (
     <>
-      {/* This is a template created 'ad hoc' for the TV series page, as we are using the 'series' 
-      and not the 'movies' list*/}
       <TVSeriesListPageTemplate
-        title={t("tv_series")}
-        /**
-         * 'series' supplies the array of TV series to be displayed
-         * If `series` is null or undefined, fallback to an empty array to prevent runtime errors
-         */
+        title={`${t("actor_tvseries_header")} ${actorDetails?.name}`}
         series={sortedDisplayedTVSeries}
-        /**
-         * The `action` prop is a function that defines an extra UI action (an 'icon button', for instance)
-         * to be shown on each series card. In this case, it returns nothing,
-         * meaning no action will be shown or triggered on any series card.
-         */
-        action={() => <></>}
+        action={() => null}
       />
-      {/* Render the title/genre filtering UI BELOW the movie list */}
+
+      {/* Sticky Bar */}
+      {/* https://mui.com/system/react-box/ */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          zIndex: 1000,
+          backgroundColor: "#ffffff",
+          boxShadow: "0px -2px 6px rgba(0, 0, 0, 0.06)",
+          display: "flex", // Use flexbox
+          justifyContent: "flex-start", // Push content to the left
+          alignItems: "center", // Vertically center the content
+          padding: {
+            xs: "3% 4%", // small devices
+            sm: "2% 1.8%", // tablets
+            md: "1.5% 1.0%", // medium screens
+            lg: "0.7% 0.8%", // large screens
+          },
+        }}
+      >
+        <Link
+          to={`/tvseries/${tvId}/actor/${actorId}`}
+          style={{
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
+            textAlign: "right",
+          }}
+        >
+          ← {t("back_to_actor_page")} {actorDetails?.name}
+        </Link>
+      </Box>
+      {/* Render the title/genre filtering UI BELOW the TV series list */}
       <TVSeriesFilterUI
         onFilterValuesChange={changeFilterValues}
         titleFilter={filterValues[0].value}
         genreFilter={filterValues[1].value}
+        // This is NOT a string, so we wrap it with a Number()
         releaseFilter={Number(filterValues[2].value)}
         sortOrder={sortOrder}
-      />
-      <Pagination
-        size="large"
-        count={series?.total_pages || 1}
-        page={page}
-        onChange={(_, value) => setPage(value)}
-        sx={{
-          position: "sticky",
-          bottom: 0,
-          backgroundColor: "white", // or match your theme
-          py: 1,
-          zIndex: 10,
-          display: "flex",
-          justifyContent: "center",
-          borderTop: "1px solid #ccc",
-        }}
       />
     </>
   );
 };
 
-export default TVSeriesPage;
+export default ActorTVSeriesPage;

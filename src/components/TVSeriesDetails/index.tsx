@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
 import TopicIcon from "@mui/icons-material/Topic";
 import PlaylistPlayIcon from "@mui/icons-material/PlaylistPlay";
+import { Box } from "@mui/material";
 
 const styles = {
   chipSet: {
@@ -118,14 +119,30 @@ const TVSeriesDetails: React.FC<TVSeriesDetailsProps> = (series) => {
           {series.cast.map((actor) => (
             <li key={actor.id}>
               <Link
-                to={`/actor/${actor.id}`} // URL path for the actor page
+                to={`/tvseries/${series.id}/actor/${actor.id}`} // URL path for the actor page
                 state={{ actor: actor, series: series }} // Pass actor and series data as navigation state
                 style={{ textDecoration: "none" }} // Optional styling to remove underline from link
               >
                 <Chip
                   clickable
-                  label={`${actor.name} (${actor.character})`}
-                  sx={styles.chipLabel}
+                  label={
+                    <Box
+                      sx={{
+                        // Allows text to wrap onto multiple lines instead of staying on a single line
+                        // https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {`${actor.name} (${actor.character})`}
+                    </Box>
+                  }
+                  sx={{
+                    ...styles.chipLabel,
+                    py: 1, // vertical padding
+                    minHeight: "3rem", // force taller chip
+                  }}
                 />
               </Link>
             </li>

@@ -28,7 +28,15 @@ const Header: React.FC<HeaderProps> = (headerProps) => {
         <ArrowBackIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
 
-      <Typography variant="h4" component="h3">
+      <Typography
+        variant="h4"
+        component="h3"
+        style={{
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          textAlign: "center",
+        }}
+      >
         {title}
       </Typography>
       <IconButton aria-label="go forward">

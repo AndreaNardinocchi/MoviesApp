@@ -10,7 +10,7 @@ import { Box } from "@mui/material";
 
 const styles = {
   gridListTile: {
-    width: 450,
+    width: "100%",
     height: "100vh",
   },
 };
