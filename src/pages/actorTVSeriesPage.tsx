@@ -36,7 +36,7 @@ const genreFiltering = {
 // Define the default filter state for release filtering
 const releaseFiltering = {
   name: "release",
-  value: 0, // 0 = show all years and MUST be a number, otherwise it won't show any TV seriess
+  value: "0",
   condition: releaseFilter,
 };
 

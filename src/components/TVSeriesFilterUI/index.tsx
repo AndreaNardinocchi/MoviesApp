@@ -29,21 +29,45 @@ export const genreFilter = (
 };
 
 /**
- * This function filters TV series by their first air year.
- * It returns true if the series's first air year matches the given year (value).
- * If value is 0, it means "All years" and the function returns true for every series.
- * value: number is a parameter passed into the releaseFilter function,
- * and it represents the year selected by the user to filter series by air date
- */
+ * This function filters movies by their release year.
+ * It returns true if the movie's release year matches the given year (value).
+ * If value is 0, it means "All years" and the function returns true for every movie.
+ * value: number is a parameter passed into the releaseFilter function, and
+ * it represents the year selected by the user to filter movies by release date
+ * However, this function was throwing an error when deploying in Vercel:
+ * Types of property 'value' are incompatible.
+ * Type 'number' is not assignable to type 'string'. src/pages/discoverPage.tsx(89,5): error TS2322:
+ * Type '{ name: string; value: number; condition: (movie: BaseMovieProps, value: number) => boolean; }'
+ * is not assignable to type 'Filter'.
+ * Hence, I changed the value to 'string', but then converted to number for comparison.
+ * useFiltering.ts
+ * interface Filter {
+ * name: string;
+ * value: string;
+ * condition: (item: any, value: string) => boolean;
+ * }
+ * */
 // eslint-disable-next-line react-refresh/only-export-components
 export const releaseFilter = (
   series: BaseTVSeriesProps,
-  value: number
+  value: string
+  // The : boolean after the parameters means this function will always return a boolean value (true or false)
+  // https://www.typescriptlang.org/docs/handbook/2/functions.html#function-types
 ): boolean => {
-  if (value === 0) return true;
-  if (!series.first_air_date) return false;
-  const seriesYear = new Date(series.first_air_date).getFullYear();
-  return seriesYear === Number(value);
+  // Convert the value to a number for comparison
+  const year = Number(value);
+  // If value is 0, do not filter out any movies, but show them all
+  if (year === 0) return true;
+  // If the movie has no release date, exclude it and return it as false
+  else if (!series.first_air_date) return false;
+  /**
+   * Extract the year from the movie's release_date string
+   * getFullYear() is a built-in JavaScript Date object method.
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+   */
+  const TVseriesYear = new Date(series.first_air_date).getFullYear();
+  // Return true only if the movie's release year equals the filtered year
+  return TVseriesYear === year;
 };
 
 const styles = {

@@ -10,6 +10,7 @@ import { useTranslation } from "react-i18next";
 //   return movie.title.toLowerCase().search(value.toLowerCase()) !== -1;
 // };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const titleFilter = (movie: { title?: string }, value: string) => {
   return (movie.title || "").toLowerCase().includes(value.toLowerCase());
 };
@@ -27,14 +28,30 @@ export const genreFilter = (movie: BaseMovieProps, value: string) => {
  * If value is 0, it means "All years" and the function returns true for every movie.
  * value: number is a parameter passed into the releaseFilter function, and
  * it represents the year selected by the user to filter movies by release date
+ * However, this function was throwing an error when deploying in Vercel:
+ * Types of property 'value' are incompatible.
+ * Type 'number' is not assignable to type 'string'. src/pages/discoverPage.tsx(89,5): error TS2322:
+ * Type '{ name: string; value: number; condition: (movie: BaseMovieProps, value: number) => boolean; }'
+ * is not assignable to type 'Filter'.
+ * Hence, I changed the value to 'string', but then converted to number for comparison.
+ * useFiltering.ts
+ * interface Filter {
+ * name: string;
+ * value: string;
+ * condition: (item: any, value: string) => boolean;
+ * }
  * */
 // eslint-disable-next-line react-refresh/only-export-components
 export const releaseFilter = (
   movie: BaseMovieProps,
-  value: number
+  value: string
+  // The : boolean after the parameters means this function will always return a boolean value (true or false)
+  // https://www.typescriptlang.org/docs/handbook/2/functions.html#function-types
 ): boolean => {
+  // Convert the value to a number for comparison
+  const year = Number(value);
   // If value is 0, do not filter out any movies, but show them all
-  if (value === 0) return true;
+  if (year === 0) return true;
   // If the movie has no release date, exclude it and return it as false
   else if (!movie.release_date) return false;
   /**
@@ -43,8 +60,8 @@ export const releaseFilter = (
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
    */
   const movieYear = new Date(movie.release_date).getFullYear();
-  // Return true only if the movie's release year equals the filter year
-  return movieYear === Number(value);
+  // Return true only if the movie's release year equals the filtered year
+  return movieYear === year;
 };
 
 const styles = {
