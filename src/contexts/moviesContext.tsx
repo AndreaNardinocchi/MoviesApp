@@ -54,9 +54,10 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
   // We extended the functon to 'insert' data to the 'supabase' database
   const addToFavourites = useCallback(async (movie: BaseMovieProps) => {
     setFavourites((prevFavourites) => {
-      if (!prevFavourites.includes(movie.id)) {
-        console.log("Adding to favourites:", movie.id);
-        return [...prevFavourites, movie.id];
+      const movieId = Number(movie.id); // Convert to number
+      if (!prevFavourites.includes(movieId)) {
+        console.log("Adding to favourites:", movieId);
+        return [...prevFavourites, movieId];
       }
       return prevFavourites;
     });

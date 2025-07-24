@@ -45,7 +45,7 @@ const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
 
   // Check if the current movie is in the favourites list (by id)
   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
-  const isFavourite = favourites.includes(movie.id);
+  const isFavourite = favourites.includes(Number(movie.id));
 
   return (
     // Root Paper component providing structure and styling for the movie header

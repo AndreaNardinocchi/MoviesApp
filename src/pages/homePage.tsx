@@ -625,6 +625,8 @@ const HomePage: React.FC = () => {
    */
   const [page, setPage] = useState(1);
 
+  console.log("setPage: ", setPage);
+
   /**
    * The useState hook here allows function components to manage local component state. It returns the current
    * state value, and a setter function to update that value. When the setter function is called, the component

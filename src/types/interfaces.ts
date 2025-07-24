@@ -1,19 +1,19 @@
 export interface BaseMovieProps {
   title: string;
-  budget: number;
-  homepage: string | undefined;
+  budget?: number;
+  homepage?: string | undefined;
   id: number | string;
-  imdb_id: string;
-  original_language: string;
-  overview: string;
-  release_date: string;
-  vote_average: number;
-  popularity: number;
+  imdb_id?: string;
+  original_language?: string;
+  overview?: string;
+  release_date?: string;
+  vote_average?: number;
+  popularity?: number;
   poster_path?: string;
-  tagline: string;
-  runtime: number;
-  revenue: number;
-  vote_count: number;
+  tagline?: string;
+  runtime?: number;
+  revenue?: number;
+  vote_count?: number;
   favourite?: boolean;
   genre_ids?: number[];
 }
@@ -79,6 +79,9 @@ export interface Review {
   id: string;
   content: string;
   author: string;
+  movieId: number | string; // added to fix a Typescript error on review.movieId in the Review Form
+  agree: boolean;
+  rating: number;
 }
 
 /**
@@ -109,13 +112,13 @@ export interface DiscoverMovies {
   results: BaseMovieProps[];
 }
 
-export interface Review {
-  author: string;
-  content: string;
-  agree: boolean;
-  rating: number;
-  movieId: number;
-}
+// export interface Review {
+//   author: string;
+//   content: string;
+//   agree: boolean;
+//   rating: number;
+//   movieId: number;
+// }
 
 export interface MovieImage {
   file_path: string;
@@ -204,6 +207,7 @@ export interface AuthContextInterface {
   // User object added
   user?: User;
   // authenticate: (username: string, password: string) => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   authenticate: (user: any) => void;
   signout: () => void;
 }

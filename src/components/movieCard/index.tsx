@@ -79,7 +79,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
    * which is an array of movies IDs
    *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
    */
-  const isFavourite = favourites.includes(movie.id);
+  const isFavourite = favourites.includes(Number(movie.id));
 
   /**
    * Checks whether the current movie exists in the must-watch list, which is

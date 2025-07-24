@@ -8,7 +8,8 @@ export const excerpt = (string: string) => {
 };
 
 // This will create a fake authorizations for email and password through a fake token
-export const fakeAuth = async (username: string, password: string) =>
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const fakeAuth = async (_username: string, _password: string) =>
   new Promise<string>((resolve) => {
     setTimeout(() => resolve("2342f2f1d131rf12"), 250);
   });
