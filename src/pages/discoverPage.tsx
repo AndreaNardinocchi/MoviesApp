@@ -131,27 +131,28 @@ const DiscoverMoviesPage: React.FC = () => {
   const movies = data ? data.results : [];
   const displayedMovies = filterFunction(movies);
 
-  // Add sorting by release date
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-  // https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
-  displayedMovies.sort(
-    (a: { release_date: string }, b: { release_date: string }) => {
-      if (!a.release_date || !b.release_date) {
-        return 0;
-      }
-
-      /**
-       * After After filtering, we sort the already 'filtered movies' by their release_date,
-       * depending on the sortOrder selected by the user.
-       * If sortOrder is 'asc', compare a to b (oldest first)
-       * If sortOrder is 'desc', compare b to a (newest first)
-       * */
-      return sortOrder === "asc"
-        ? a.release_date.localeCompare(b.release_date)
-        : b.release_date.localeCompare(a.release_date);
-    }
-  );
+  /**
+   * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
+   * before sorting because `.sort()` changes the original array in place, whereas the spread
+   * operator ensure we only create that shallow copy and won't modify the original array.
+   * Without spread operator, the sort() function was actually creating duplicates for certain
+   * movies. This ensures we don't modify the original filtered list,
+   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+   * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+   * */
+  const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
+    if (!a.release_date || !b.release_date) return 0;
+    /**
+     * We sort the already 'filtered movies' by their release_date,
+     * depending on the sortOrder selected by the user.
+     * If sortOrder is 'asc', compare a to b (oldest first)
+     * If sortOrder is 'desc', compare b to a (newest first)
+     * */
+    return sortOrder === "asc"
+      ? a.release_date.localeCompare(b.release_date)
+      : b.release_date.localeCompare(a.release_date);
+  });
 
   // Redundant, but necessary to avoid app crashing.
   // const favourites = movies.filter((m) => m.favourite);
@@ -163,7 +164,7 @@ const DiscoverMoviesPage: React.FC = () => {
       <PageTemplate
         // title="Discover Movies"
         title={t("discover_movies")}
-        movies={displayedMovies}
+        movies={sortedDisplayedMovies}
         // movies={paginatedMovies}
         action={(movie: BaseMovieProps) => {
           return <AddToFavouritesIcon {...movie} />;

@@ -93,7 +93,7 @@ const TVSeriesPage: React.FC = () => {
     return <p>Error fetching TV series: {(error as Error).message}</p>;
 
   /**
-   * We use `seris.results` here because the API response `series`
+   * We use `series.results` here because the API response `series`
    * is an object containing metadata like `page` and `total_pages`,
    * and the actual array of series object is inside the `results` property.
    * The API function has been updated to return response.json(); otherwise
@@ -107,14 +107,20 @@ const TVSeriesPage: React.FC = () => {
    * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
    * before sorting because `.sort()` changes the original array in place, whereas the spread
    * operator ensure we only create that shallow copy and won't modify the original array.
-   * Without the spread operator, the sort() function was actually creating duplicates for certain
-   * series. This ensures we don't modify the original filtered list.
-   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+   * Without spread operator, the sort() function was actually creating duplicates for certain
+   * movies. This ensures we don't modify the original filtered list,
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
    * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
    * */
   const sortedDisplayedTVSeries = [...displayedTVSeries].sort((a, b) => {
     if (!a.first_air_date || !b.first_air_date) return 0;
+    /**
+     * We sort the already 'filtered TV series' by their first_air_date,
+     * depending on the sortOrder selected by the user.
+     * If sortOrder is 'asc', compare a to b (oldest first)
+     * If sortOrder is 'desc', compare b to a (newest first)
+     * */
     return sortOrder === "asc"
       ? a.first_air_date.localeCompare(b.first_air_date)
       : b.first_air_date.localeCompare(a.first_air_date);

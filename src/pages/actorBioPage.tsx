@@ -260,8 +260,6 @@ const ActorBioPage: React.FC = () => {
               </Typography>
               {/* Responsive image grid */}
 
-              {/* <ImageList cols={3} gap={10} > */}
-
               <Box
                 sx={{
                   // Use CSS Grid layout to arrange the imageList children component
@@ -304,42 +302,9 @@ const ActorBioPage: React.FC = () => {
                     </ImageListItem>
                   )
                 )}
-                {/* </ImageList> */}
               </Box>
             </>
           )}
-
-          {/* Back button to return to previous page
-
-          <Button
-            variant="outlined"
-            // onClick={() => navigate(-1)} // Go back one page in browser history
-            onClick={() => {
-              if (movieId) {
-                navigate(`/movies/${movieId}`);
-              } else {
-                navigate(`/movies/discover`); // fallback to go back to Discover page
-              }
-            }}
-            style={{ marginBottom: 16, marginRight: 8 }}
-            sx={{
-              color: "#8E4585",
-            }}
-          >
-            {t("back_to_movie_page")}
-          </Button> */}
-
-          {/* Button to land the user to the actor movies page
-          <Button
-            variant="outlined"
-            onClick={() => navigate(`/actor/${id}/movies`)}
-            style={{ marginBottom: 16 }}
-            sx={{
-              color: "#8E4585",
-            }}
-          >
-            {t("actor_movie_page_cta")}
-          </Button> */}
 
           {/**
            * Zoom modal for viewing images larger with arrow controls

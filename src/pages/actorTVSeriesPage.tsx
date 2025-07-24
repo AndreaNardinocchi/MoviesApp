@@ -112,21 +112,25 @@ const ActorTVSeriesPage: React.FC = () => {
   const displayedTVSeries = series ? filterFunction(series) : [];
 
   /**
-   * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
-   * before sorting because `.sort()` changes the original array in place, whereas the spread
-   * operator ensure we only create that shallow copy and won't modify the original array.
-   * Without spread operator, the sort() function was actually created duplicates for certain
-   * movies.ensures we don't modify the original filtered list,
-   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+   * We sort the filtered TV series
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
    * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
    * */
-  const sortedDisplayedTVSeries = [...displayedTVSeries].sort((a, b) => {
-    if (!a.first_air_date || !b.first_air_date) return 0;
-    return sortOrder === "asc"
-      ? a.first_air_date.localeCompare(b.first_air_date)
-      : b.first_air_date.localeCompare(a.first_air_date);
-  });
+  displayedTVSeries.sort(
+    (a: { first_air_date: string }, b: { first_air_date: string }) => {
+      if (!a.first_air_date || !b.first_air_date) return 0;
+      /**
+       * We sort the already 'filtered TV series' by their first_air_date,
+       * depending on the sortOrder selected by the user.
+       * If sortOrder is 'asc', compare a to b (oldest first)
+       * If sortOrder is 'desc', compare b to a (newest first)
+       * */
+      return sortOrder === "asc"
+        ? a.first_air_date.localeCompare(b.first_air_date)
+        : b.first_air_date.localeCompare(a.first_air_date);
+    }
+  );
 
   // Called when the user changes title, genre filter, release year, and sort
   const changeFilterValues = (type: FilterOption, value: string) => {
@@ -167,7 +171,7 @@ const ActorTVSeriesPage: React.FC = () => {
     <>
       <TVSeriesListPageTemplate
         title={`${t("actor_tvseries_header")} ${actorDetails?.name}`}
-        series={sortedDisplayedTVSeries}
+        series={displayedTVSeries}
         action={() => null}
       />
 

@@ -147,19 +147,28 @@ const MustWatchListPage: React.FC = () => {
   //const displayedMovies = mustWatchList ? filterFunction(mustWatchList) : [];
   const displayedMovies = filterFunction(localizedList);
 
-  // Add sorting by release date
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
-  // https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
-  displayedMovies.sort(
-    (a: { release_date: string }, b: { release_date: string }) => {
-      if (!a.release_date || !b.release_date) return 0;
-
-      return sortOrder === "asc"
-        ? a.release_date.localeCompare(b.release_date)
-        : b.release_date.localeCompare(a.release_date);
-    }
-  );
+  /**
+   * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
+   * before sorting because `.sort()` changes the original array in place, whereas the spread
+   * operator ensure we only create that shallow copy and won't modify the original array.
+   * Without spread operator, the sort() function was actually creating duplicates for certain
+   * movies. This ensures we don't modify the original filtered list,
+   *  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+   * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+   * */
+  const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
+    if (!a.release_date || !b.release_date) return 0;
+    /**
+     * We sort the already 'filtered movies' by their release_date,
+     * depending on the sortOrder selected by the user.
+     * If sortOrder is 'asc', compare a to b (oldest first)
+     * If sortOrder is 'desc', compare b to a (newest first)
+     * */
+    return sortOrder === "asc"
+      ? a.release_date.localeCompare(b.release_date)
+      : b.release_date.localeCompare(a.release_date);
+  });
 
   // Called when the user changes title, genre filter, release year, and sort
   const changeFilterValues = (type: string, value: string) => {
@@ -204,7 +213,7 @@ const MustWatchListPage: React.FC = () => {
         // title="Must Watch Movies List"
         title={t("must_watch_movies_list")}
         // Pass the list of must-watch movies to be displayed by the template
-        movies={displayedMovies}
+        movies={sortedDisplayedMovies}
         // Define a custom action to show next to each movie card
         action={(movie: BaseMovieProps) => (
           // Use a flex container to horizontally align the icons with a small gap
