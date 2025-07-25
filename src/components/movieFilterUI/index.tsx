@@ -69,7 +69,12 @@ const styles = {
     backgroundColor: "#bfbfbf",
   },
   fab: {
-    marginTop: "3%",
+    marginTop: {
+      xs: "8%",
+      sm: "6%",
+      md: "5%",
+      lg: "3%",
+    },
     position: "fixed",
     top: {
       xs: "8%",

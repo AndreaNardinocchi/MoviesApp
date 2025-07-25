@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Chip from "@mui/material/Chip";
 import Paper from "@mui/material/Paper";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import MonetizationIcon from "@mui/icons-material/MonetizationOn";
 import StarRate from "@mui/icons-material/StarRate";
 import Typography from "@mui/material/Typography";
-import { MovieDetailsProps } from "../../types/interfaces";
+import {
+  BaseMovieProps,
+  MovieDetailsProps,
+  VideoTrailer,
+} from "../../types/interfaces";
 import NavigationIcon from "@mui/icons-material/Navigation";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
@@ -13,7 +17,8 @@ import MovieReviews from "../movieReviews";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../../i18n/i18n";
-import { Box } from "@mui/material";
+import { Box, Card, CardMedia } from "@mui/material";
+import { getMovieVideos } from "../../api/tmdb-api";
 
 const styles = {
   chipSet: {
@@ -32,10 +37,10 @@ const styles = {
     marginTop: "2%",
     position: "fixed",
     top: {
-      xs: "8%",
-      sm: "6%",
-      md: "5%",
-      lg: "4%",
+      xs: "9%",
+      sm: "8%",
+      md: "7%",
+      lg: "6%",
     },
     right: "2%",
     bgcolor: "#8E4585",
@@ -49,12 +54,122 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
 
   const [drawerOpen, setDrawerOpen] = useState(false); // New
 
+  // In the end you will end up with a URL like https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg.
+  // https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
+  const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
+
+  /**
+   * This useState hook here holds the YouTube video key of the selected movie's trailer.
+   * This key is used to construct the URL for embedding the trailer in an iframe tag.
+   */
+  const [videoKey, setVideoKey] = useState<string>();
+
+  /**
+   * We are creating a Hero Video section with a video trailer of a movie randomly selected.
+   * It will also play automatically.
+   */
+  const HeroVideoSection = ({
+    movie,
+    videoKey,
+  }: {
+    movie: BaseMovieProps;
+    videoKey?: string;
+  }) => (
+    <Card
+      sx={{
+        position: "relative",
+        height: "70vh",
+      }}
+    >
+      {videoKey ? (
+        // https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
+        <CardMedia
+          component="iframe"
+          src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&loop=1&playlist=${videoKey}`}
+          title={movie.title}
+          sx={{
+            width: "100%",
+            height: "100%",
+            border: "none",
+          }}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : (
+        <CardMedia
+          component="img"
+          image={`${IMAGE_BASE}${movie.poster_path}`}
+          alt={movie.title}
+          title={movie.title}
+          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      )}
+
+      {/* Movie Title Overlay box */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "10%",
+          right: "1%",
+          color: "white",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: "1rem",
+          borderRadius: "8px",
+          minWidth: "20%",
+        }}
+      >
+        <Typography variant="h4">{movie.title}</Typography>
+      </Box>
+    </Card>
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      /**
+       * useEffect hook that runs a function as a 'side effect' after the component renders.
+       * Here, it runs when `movie.id` changes, and is used to fetch the corresponding trailer video.
+       */
+
+      /**
+       * Fetch the videos associated with the selected movie.
+       * https://developer.themoviedb.org/reference/movie-videos
+       * - Looks specifically for a "Trailer" hosted on "YouTube".
+       * - If found, stores the trailer's `key` in state to be embedded later.
+       */
+      const videos = await getMovieVideos(movie.id);
+
+      /**
+       * We then find() the specific video trailer.
+       * Only trailers hosted on YouTube are valid for embedding.
+       */
+      const trailer = videos.find(
+        (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"
+      );
+
+      // We then grab the trailer 'key', as per the 'VideoTrailer' interface.
+      // Could be undefined if no trailer is found, hence '?'
+      setVideoKey(trailer?.key);
+    };
+
+    // Call the async function
+    fetchData();
+  }, [movie.id]); // Re-run if the movie changes
+
   return (
     <>
+      <Box
+        sx={{
+          paddingTop: "2%",
+        }}
+      >
+        <HeroVideoSection movie={movie} videoKey={videoKey} />
+      </Box>
       {/* Overview Section */}
-      <Typography variant="h5" component="h3">
-        {t("overview")}
-      </Typography>
+      <Box sx={{ paddingTop: "4%" }}>
+        <Typography variant="h5" component="h3">
+          {t("overview")}
+        </Typography>
+      </Box>
 
       <Typography variant="h6" component="p">
         {movie.overview}
@@ -114,9 +229,11 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       </Paper>
 
       {/* Cast Section */}
-      <Typography variant="h5" component="h3">
-        {t("cast")}
-      </Typography>
+      <Box sx={{ paddingTop: "4%" }}>
+        <Typography variant="h5" component="h3">
+          {t("cast")}
+        </Typography>
+      </Box>
 
       {/*
       To safely handle the movie.cast potentially being undefined or empty, we are using

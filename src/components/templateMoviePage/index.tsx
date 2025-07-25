@@ -8,7 +8,6 @@ import { getMovieImages } from "../../api/tmdb-api";
 import { MovieDetailsProps } from "../../types/interfaces";
 import { MovieImage } from "../../types/interfaces";
 import { Box } from "@mui/material";
-
 // Inline styles for image tiles
 const styles = {
   gridListTile: {
@@ -45,6 +44,7 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
    * We want to fetch data from the API when the component mounts or when movie.id or overrideImages change.
    */
   useEffect(() => {
+    if (!movie || !movie.id) return;
     // If override images are provided, use them instead of fetching
     if (overrideImages) {
       setImages(overrideImages);
@@ -54,7 +54,7 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
         .then((data) => setImages(data)) // On success, update the images state
         .catch((err) => console.error("Failed to fetch movie images", err));
     }
-  }, [movie.id, overrideImages]); // Dependency array ensures effect runs only when `movie.id` or `overrideImages` changes
+  }, [movie, overrideImages]); // Dependency array ensures effect runs only when `movie.id` or `overrideImages` changes
 
   // TSX layout of the page
   return (
@@ -80,7 +80,7 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
               }}
             >
               {/* Map over the images array and render each image */}
-              {images.map((image: MovieImage) => (
+              {images.slice(0, 10).map((image: MovieImage) => (
                 <ImageListItem
                   key={image.file_path}
                   sx={styles.gridListTile}

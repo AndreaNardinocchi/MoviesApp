@@ -114,164 +114,181 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
    * It declares the field’s validation criteria (rules), name, and how it should render (render).
    */
   return (
-    <Box component="div" sx={styles.root}>
-      <Typography component="h2" variant="h3">
-        {t("write_review")}
-      </Typography>
-      <Snackbar
-        sx={styles.snack}
-        anchorOrigin={{ vertical: "top", horizontal: "right" }}
-        open={open}
-        onClose={handleSnackClose}
-      >
-        <Alert
-          severity="success"
-          variant="filled"
+    <>
+      <Box component="div" sx={styles.root}>
+        <Typography component="h2" variant="h3">
+          {t("write_review")}
+        </Typography>
+        <Snackbar
+          sx={styles.snack}
+          anchorOrigin={{ vertical: "top", horizontal: "center" }}
+          open={open}
           onClose={handleSnackClose}
-          sx={{
-            bgcolor: "#4CAF50",
-            color: "#ffffff",
-          }}
         >
-          <Typography variant="h4">{t("thank_you_for_review")}</Typography>
-        </Alert>
-      </Snackbar>
+          <Alert
+            severity="success"
+            variant="filled"
+            onClose={handleSnackClose}
+            sx={{
+              bgcolor: "#4CAF50",
+              color: "#ffffff",
+            }}
+          >
+            <Typography variant="h4">{t("thank_you_for_review")}</Typography>
+          </Alert>
+        </Snackbar>
 
-      <form style={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
-        <Controller
-          name="author"
-          control={control}
-          rules={{ required: t("name_required") }}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              sx={{ width: "40ch" }}
-              variant="outlined"
-              margin="normal"
-              required
-              onChange={onChange}
-              value={value}
-              id="author"
-              label={t("author_name")}
-              autoFocus
-            />
+        <form style={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <Controller
+            name="author"
+            control={control}
+            rules={{ required: t("name_required") }}
+            defaultValue=""
+            render={({ field: { onChange, value } }) => (
+              <TextField
+                sx={{ width: "100%" }}
+                variant="outlined"
+                margin="normal"
+                required
+                onChange={onChange}
+                value={value}
+                id="author"
+                label={t("author_name")}
+                autoFocus
+              />
+            )}
+          />
+          {errors.author && (
+            <Typography variant="h6" component="p">
+              {errors.author.message}
+            </Typography>
           )}
-        />
-        {errors.author && (
-          <Typography variant="h6" component="p">
-            {errors.author.message}
-          </Typography>
-        )}
-        <Controller
-          name="content"
-          control={control}
-          rules={{
-            required: t("review_empty"),
-            minLength: { value: 10, message: t("review_short") },
-          }}
-          defaultValue=""
-          render={({ field: { onChange, value } }) => (
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              value={value}
-              onChange={onChange}
-              label={t("review_text")}
-              id="review"
-              multiline
-              minRows={10}
-            />
-          )}
-        />
-        {/* The render prop above is an example of the Render prop pattern. 
+          <Controller
+            name="content"
+            control={control}
+            rules={{
+              required: t("review_empty"),
+              minLength: { value: 10, message: t("review_short") },
+            }}
+            defaultValue=""
+            render={({ field: { onChange, value } }) => (
+              <TextField
+                variant="outlined"
+                margin="normal"
+                required
+                fullWidth
+                value={value}
+                onChange={onChange}
+                label={t("review_text")}
+                id="review"
+                multiline
+                minRows={10}
+              />
+            )}
+          />
+          {/* The render prop above is an example of the Render prop pattern. 
         The callback assigned to it is invoked by the Controller, passing it 
         the current value of the field and a default onChange event handler. 
         The validation rules object above uses prescribed keys (e.g. required, minlength, min, max). 
         The hook enforces these rules, and it records any violations in an errors object, 
         which we use to control the display of error messages, for example: */}
-        {errors.content && (
-          <Typography variant="h6" component="p">
-            {errors.content.message}
-          </Typography>
-        )}
-
-        <Controller
-          control={control}
-          name="rating"
-          render={({ field }) => (
-            <TextField
-              {...field}
-              id="select-rating"
-              select
-              variant="outlined"
-              label={t("rating_select")}
-              value={rating}
-              onChange={handleRatingChange}
-              helperText={t("not_forget_rating")}
-            >
-              {ratings.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+          {errors.content && (
+            <Typography variant="h6" component="p">
+              {errors.content.message}
+            </Typography>
           )}
-        />
 
-        <Box>
-          <Button
-            type="submit"
-            variant="contained"
-            // color="primary"
-            sx={{
-              // Spread styles.chipLabel keeps the original chip styling
-              ...styles.submit,
-              bgcolor: "#8E4585",
-              color: "#ffffff",
-              // https://mui.com/system/getting-started/the-sx-prop/?
-              "&:hover": {
-                // Text color on hover
-                color: "#000000",
-                // Change background slightly on hover
-                bgcolor: "#ffe6f0",
-              },
-            }}
-            // sx={styles.submit}
-          >
-            {t("submit")}
-          </Button>
-          <Button
-            type="reset"
-            variant="contained"
-            //  color="secondary"
-            //  sx={styles.submit}
-            sx={{
-              // Spread styles.chipLabel keeps the original chip styling
-              ...styles.submit,
-              bgcolor: "#D86EBF",
-              color: "#ffffff",
-              // https://mui.com/system/getting-started/the-sx-prop/?
-              "&:hover": {
-                // Text color on hover
-                color: "#000000",
-                // Change background slightly on hover
-                bgcolor: "#ffe6f0",
-              },
-            }}
-            onClick={() => {
-              reset({
-                author: "",
-                content: "",
-              });
-            }}
-          >
-            {t("reset")}
-          </Button>
-        </Box>
-      </form>
-    </Box>
+          <Controller
+            control={control}
+            name="rating"
+            render={({ field }) => (
+              <TextField
+                {...field}
+                id="select-rating"
+                select
+                variant="outlined"
+                label={t("rating_select")}
+                value={rating}
+                onChange={handleRatingChange}
+                helperText={t("not_forget_rating")}
+              >
+                {ratings.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+            )}
+          />
+
+          <Box>
+            <Button
+              type="submit"
+              variant="contained"
+              // color="primary"
+              sx={{
+                // Spread styles.chipLabel keeps the original chip styling
+                ...styles.submit,
+                bgcolor: "#8E4585",
+                color: "#ffffff",
+                // https://mui.com/system/getting-started/the-sx-prop/?
+                "&:hover": {
+                  // Text color on hover
+                  color: "#000000",
+                  // Change background slightly on hover
+                  bgcolor: "#ffe6f0",
+                },
+              }}
+              // sx={styles.submit}
+            >
+              {t("submit")}
+            </Button>
+            <Button
+              type="reset"
+              variant="contained"
+              //  color="secondary"
+              //  sx={styles.submit}
+              sx={{
+                // Spread styles.chipLabel keeps the original chip styling
+                ...styles.submit,
+                bgcolor: "#D86EBF",
+                color: "#ffffff",
+                // https://mui.com/system/getting-started/the-sx-prop/?
+                "&:hover": {
+                  // Text color on hover
+                  color: "#000000",
+                  // Change background slightly on hover
+                  bgcolor: "#ffe6f0",
+                },
+              }}
+              onClick={() => {
+                reset({
+                  author: "",
+                  content: "",
+                });
+              }}
+            >
+              {t("reset")}
+            </Button>
+          </Box>
+        </form>
+      </Box>
+      <Button
+        onClick={() => navigate("/movies/favourites")}
+        sx={{
+          textDecoration: "none",
+          color: "#8E4585",
+          fontWeight: "bold",
+          textAlign: "right",
+          "&:hover": {
+            backgroundColor: "transparent",
+            textDecoration: "underline",
+          },
+        }}
+      >
+        ← {t("back")}
+      </Button>
+    </>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react"; // replace existing react import
-import { useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import MovieDetails from "../components/movieDetails";
 import PageTemplate from "../components/templateMoviePage";
 // import useMovie from "../hooks/useMovie";   Redundant
@@ -13,6 +13,8 @@ import { MovieDetailsProps } from "../types/interfaces";
  * and the curent language context in the component/page
  */
 import { useTranslation } from "react-i18next";
+import { Box, Button } from "@mui/material";
+import { t } from "i18next";
 
 /**
  * ====== Fetch movie details + cast info ==========
@@ -59,6 +61,12 @@ const MovieDetailsPage: React.FC = () => {
   // Extract the 'id' parameter from the URL using React Router's useParams hook
   const { id } = useParams();
 
+  const location = useLocation();
+
+  // Parse query parameters
+  const params = new URLSearchParams(location.search);
+  const from = params.get("from") || "/movies/discover"; // fallback
+
   /** 
    * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
    If undefined or empty, fallback to 'en-US'
@@ -70,6 +78,12 @@ const MovieDetailsPage: React.FC = () => {
 
   // Log the current languag
   console.log("Current i18n language:", i18n.language);
+
+  /**
+   * This hook gives us access to a function that can change the current URL programmatically,
+   * without needing <Link> components. Useful for menu navigation handlers.
+   */
+  const navigate = useNavigate();
 
   // Fetch movie data (including cast details) using React Query's useQuery hook
   const {

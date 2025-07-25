@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 const WriteReviewIcon: React.FC<BaseMovieProps> = (movie) => {
   return (
     <Link
-      to={"/reviews/form"}
+      to={`/movies/favourites/reviews/form`}
       state={{
         movieId: movie.id,
       }}
