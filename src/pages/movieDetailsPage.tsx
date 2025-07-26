@@ -90,7 +90,7 @@ const MovieDetailsPage: React.FC = () => {
    */
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    document.title = `${movie?.title} | MovieApp`;
+    document.title = `${movie?.title} | MoviesApp`;
   }, [movie?.title]);
 
   if (isLoading) {

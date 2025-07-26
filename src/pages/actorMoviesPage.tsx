@@ -95,7 +95,7 @@ const ActorMoviesPage: React.FC = () => {
   useEffect(() => {
     document.title = `${t("actor_movies_header")}  ${
       actorDetails?.name
-    }  | MovieApp`;
+    }  | MoviesApp`;
   }, [t, actorDetails?.name]);
 
   if (isLoading) return <Spinner />;

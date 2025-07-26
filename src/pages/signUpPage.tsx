@@ -29,7 +29,7 @@ const SignUpPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("sign_up")} | MovieApp`;
+    document.title = `${t("sign_up")} | MoviesApp`;
   }, [t]);
 
   const [firstName, setFirstName] = useState("");

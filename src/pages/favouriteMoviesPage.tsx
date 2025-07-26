@@ -59,7 +59,7 @@ const FavouriteMoviesPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("favorites_movies")} | MovieApp`;
+    document.title = `${t("favorites_movies")} | MoviesApp`;
   }, [t]);
 
   // Create the state for 'sortOrder' and set to newest first

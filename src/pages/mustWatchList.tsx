@@ -59,7 +59,7 @@ const MustWatchListPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("mustwatch_movies")} | MovieApp`;
+    document.title = `${t("mustwatch_movies")} | MoviesApp`;
   }, [t]);
 
   // Access global must-watch list and remove function from context

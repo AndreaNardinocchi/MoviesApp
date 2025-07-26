@@ -73,7 +73,7 @@ const TVSeriesActorBioPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${actor?.name} | MovieApp `;
+    document.title = `${actor?.name} | MoviesApp `;
   }, [actor?.name]);
 
   // Fetch images associated with the actor

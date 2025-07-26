@@ -616,7 +616,7 @@ const HomePage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `MovieApp | ${t("all_you_ever_wanted")}`;
+    document.title = `MoviesApp | ${t("all_you_ever_wanted")}`;
   }, [t]);
 
   /**
@@ -764,7 +764,7 @@ const HomePage: React.FC = () => {
                 fontSize: "150%",
               }}
             />
-            MovieApp{" "}
+            MoviesApp{" "}
           </Typography>
           <Typography variant="body1" sx={{ fontSize: "180%" }}>
             {t("all_you_ever_wanted")}

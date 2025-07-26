@@ -85,7 +85,7 @@ const TVSeriesDetailsPage: React.FC = () => {
    */
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
-    document.title = `${series?.title} | MovieApp`;
+    document.title = `${series?.title} | MoviesApp`;
   }, [series?.title]);
 
   if (isLoading) return <Spinner />;

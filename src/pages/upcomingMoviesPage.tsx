@@ -62,7 +62,7 @@ const UpcomingMoviesPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("upcoming_movies")} | MovieApp`;
+    document.title = `${t("upcoming_movies")} | MoviesApp`;
   }, [t]);
 
   // Access the mustWatchList and addToMustWatchList function from context

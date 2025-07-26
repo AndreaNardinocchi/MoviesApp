@@ -37,7 +37,7 @@ const LoginPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("login")} | MovieApp`;
+    document.title = `${t("login")} | MoviesApp`;
   }, [t]);
 
   const { authenticate } = useContext(AuthContext) || {};

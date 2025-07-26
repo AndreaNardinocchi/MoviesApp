@@ -55,7 +55,7 @@ const TVSeriesPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("TV_series")} | MovieApp`;
+    document.title = `${t("TV_series")} | MoviesApp`;
   }, [t]);
 
   const [page, setPage] = useState(1);

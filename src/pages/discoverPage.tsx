@@ -58,7 +58,7 @@ const DiscoverMoviesPage: React.FC = () => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("discover_movies")} | MovieApp`;
+    document.title = `${t("discover_movies")} | MoviesApp`;
   }, [t]);
 
   /**
