@@ -91,8 +91,53 @@ const FavouriteMoviesPage: React.FC = () => {
     return <Spinner />;
   }
 
+  /**
+   * Extract all movie data from the array of favourite queries.
+   * Each element is the `data` field from a React Query result object.
+   */
   const allFavourites = favouriteMovieQueries.map((q) => q.data);
-  const displayedMovies = allFavourites ? filterFunction(allFavourites) : [];
+
+  /**
+   * Normalize all favourite movies into a consistent structure.
+   * This ensures that each movie has `genre_ids`, even if originally only `genres` was provided,
+   * and filters out any 'null/undefined' entries.
+   */
+  const normalizedMovies = allFavourites
+    .map((movie) => {
+      if (!movie) return null;
+
+      // If genre_ids already exist, return movie as is
+      if (movie.genre_ids) {
+        return movie;
+      }
+
+      /**
+       * If the movie only has `genres` (array of { id, name }),
+       * extract the numeric genre_ids using optional chaining.
+       * If `genres` is missing or not an array, default to an empty array.
+       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+       */
+      const genre_ids = movie.genres?.map((g: { id: number }) => g.id) ?? [];
+
+      // Return a new movie object with genre_ids added
+      return {
+        ...movie,
+        genre_ids,
+      };
+    })
+    .filter(Boolean); // remove any null entries safely
+  /**
+   * PS* Boolean values are typically used in conditional testing, such as the condition for if...else and while statements,
+   * the conditional operator (? :), or the predicate return value of Array.prototype.filter().
+   * You would rarely need to explicitly convert something to a boolean value, as JavaScript does this automatically in
+   * boolean contexts, so you can use any value as if it's a boolean, based on its truthiness.
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+   */
+
+  // Apply filters (title, genre, release year) to the normalized movie list.
+  const displayedMovies = normalizedMovies
+    ? filterFunction(normalizedMovies)
+    : [];
 
   /**
    * We use the spread operator now to create a shallow copy of 'displayedTVSeries'

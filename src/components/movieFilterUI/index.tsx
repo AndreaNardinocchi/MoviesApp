@@ -6,14 +6,14 @@ import { BaseMovieProps } from "../../types/interfaces";
 import { useTranslation } from "react-i18next";
 
 // eslint-disable-next-line react-refresh/only-export-components
-// export const titleFilter = (movie: BaseMovieProps, value: string): boolean => {
-//   return movie.title.toLowerCase().search(value.toLowerCase()) !== -1;
-// };
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const titleFilter = (movie: { title?: string }, value: string) => {
-  return (movie.title || "").toLowerCase().includes(value.toLowerCase());
+export const titleFilter = (movie: BaseMovieProps, value: string): boolean => {
+  return movie.title.toLowerCase().search(value.toLowerCase()) !== -1;
 };
+
+// // eslint-disable-next-line react-refresh/only-export-components
+// export const titleFilter = (movie: { title?: string }, value: string) => {
+//   return (movie.title || "").toLowerCase().includes(value.toLowerCase());
+// };
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const genreFilter = (movie: BaseMovieProps, value: string) => {

@@ -75,10 +75,16 @@ const MustWatchListPage: React.FC = () => {
    */
   const [localizedList, setLocalizedList] = useState<BaseMovieProps[]>([]);
 
-  // Log list to console on update (for development/debugging)
-  // useEffect(() => {
-  //   console.log("Rendering mustWatchList:", mustWatchList);
-  // }, [mustWatchList]);
+  /**
+   * As the fetchLocalized() function is asynchronous, it might take some time before to fetch data.
+   * Hence, it might show partial or outadated data, or even no data at all because they are have not been fetched yet by the
+   * time the component renders.
+   * The React state hook loading is a boolean that tracks whether data is currently being loaded. Whereby, setLoading()
+   * will change that state and will ensure the component renders when data is loaded.
+   */
+  const [loading, setLoading] = useState(true);
+
+  console.log(loading);
 
   /**
    * useEffect as a React Hook Effects lets us run our code after rendering so that we can synchronize our
@@ -121,6 +127,12 @@ const MustWatchListPage: React.FC = () => {
           poster_path: data.poster_path,
           release_date: data.release_date,
           vote_average: data.vote_average,
+          /**
+           * If the movie only has `genres` (array of { id, name }),
+           * extract the numeric genre_ids using optional chaining.
+           * If `genres` is missing or not an array, default to an empty array.
+           */
+          genre_ids: data.genres?.map((g: { id: number }) => g.id) || [],
         });
       }
       /**
@@ -128,6 +140,7 @@ const MustWatchListPage: React.FC = () => {
        * so the UI can render it with the correct language.
        */
       setLocalizedList(updated);
+      setLoading(false); // Mark as finished loading
     };
 
     fetchLocalized();
@@ -143,10 +156,18 @@ const MustWatchListPage: React.FC = () => {
     releaseFiltering,
   ]);
 
-  // Apply active filters to the must-watch list
-  //const displayedMovies = mustWatchList ? filterFunction(mustWatchList) : [];
-  const displayedMovies = filterFunction(localizedList);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const normalizedMovies = localizedList.filter(Boolean).map((movie) => ({
+    ...movie,
+    genre_ids: Array.isArray(movie.genre_ids) ? movie.genre_ids : [],
+  }));
 
+  console.log("Normalized movies:", normalizedMovies);
+
+  const displayedMovies = normalizedMovies
+    ? filterFunction(normalizedMovies)
+    : [];
+  console.log("displayedMovies: ", displayedMovies);
   /**
    * We use the spread operator now to create a shallow copy of 'displayedTVSeries'
    * before sorting because `.sort()` changes the original array in place, whereas the spread
@@ -157,18 +178,22 @@ const MustWatchListPage: React.FC = () => {
    * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
    * https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
    * */
-  const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
-    if (!a.release_date || !b.release_date) return 0;
-    /**
-     * We sort the already 'filtered movies' by their release_date,
-     * depending on the sortOrder selected by the user.
-     * If sortOrder is 'asc', compare a to b (oldest first)
-     * If sortOrder is 'desc', compare b to a (newest first)
-     * */
-    return sortOrder === "asc"
-      ? a.release_date.localeCompare(b.release_date)
-      : b.release_date.localeCompare(a.release_date);
-  });
+  // const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
+  displayedMovies.sort(
+    (a: { release_date: string }, b: { release_date: string }) => {
+      if (!a.release_date || !b.release_date) return 0;
+      /**
+       * We sort the already 'filtered movies' by their release_date,
+       * depending on the sortOrder selected by the user.
+       * If sortOrder is 'asc', compare a to b (oldest first)
+       * If sortOrder is 'desc', compare b to a (newest first)
+       * */
+      return sortOrder === "asc"
+        ? a.release_date.localeCompare(b.release_date)
+        : b.release_date.localeCompare(a.release_date);
+    }
+  );
+  console.log("displayedMovies: ", displayedMovies);
 
   // Called when the user changes title, genre filter, release year, and sort
   const changeFilterValues = (type: string, value: string) => {
@@ -213,7 +238,7 @@ const MustWatchListPage: React.FC = () => {
         // title="Must Watch Movies List"
         title={t("must_watch_movies_list")}
         // Pass the list of must-watch movies to be displayed by the template
-        movies={sortedDisplayedMovies}
+        movies={displayedMovies}
         // Define a custom action to show next to each movie card
         action={(movie: BaseMovieProps) => (
           // Use a flex container to horizontally align the icons with a small gap

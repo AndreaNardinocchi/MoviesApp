@@ -3,11 +3,12 @@ export const getMovies = (page: number, language = "en-US") => {
     /**  To retrieve page by page for pagination, we added the 'page' parameter, so that,
      * whenever a page is selecetd, the API will show movies belonging to that
      * specific page
+     * https://www.themoviedb.org/talk/5e23977c8f26bc0011777a02?
      */
-    // https://www.themoviedb.org/talk/5e23977c8f26bc0011777a02?
+
     `https://api.themoviedb.org/3/discover/movie?api_key=${
       import.meta.env.VITE_TMDB_KEY
-    }&language=${language}&page=${page}`
+    }&language=${language}&include_adult=false&page=${page}`
   )
     .then((response) => {
       if (!response.ok)
