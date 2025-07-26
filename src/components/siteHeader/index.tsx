@@ -239,7 +239,7 @@ const SiteHeader: React.FC = () => {
               marginRight: "2%",
             }}
           >
-            MovieApp
+            MoviesApp
           </Typography>
 
           {/* Subtitle, also pushes remaining content right */}

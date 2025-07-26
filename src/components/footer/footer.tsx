@@ -63,7 +63,7 @@ const Footer: React.FC = () => {
                 <Typography
                   sx={{ fontSize: "1.3rem", paddingBottom: "0.05rem" }}
                 >
-                  MovieApp GitHub
+                  MoviesApp GitHub
                 </Typography>
               </Link>
               <Link
@@ -182,7 +182,7 @@ const Footer: React.FC = () => {
           />
         </Link>
         <Typography variant="body2" component="span" sx={{ color: "inherit" }}>
-          TMDB | © 2025 MovieApp
+          TMDB | © 2025 MoviesApp
         </Typography>
         <Link
           href="https://www.linkedin.com/in/andrea-nardinocchi-53084056/"
