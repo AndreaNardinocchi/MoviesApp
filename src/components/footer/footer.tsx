@@ -128,7 +128,7 @@ const Footer: React.FC = () => {
                 </Typography>
               </Link>
               <Link
-                href="cemarkyourjourney.netlify.app/login"
+                href="https://placemarkyourjourney.netlify.app/"
                 target="_blank"
                 rel="noopener"
                 color="inherit"
