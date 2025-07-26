@@ -51,10 +51,6 @@ const SiteHeader: React.FC = () => {
   const { token } = useContext(AuthContext) || {};
   const { user } = useContext(AuthContext) || {};
 
-  // , signout
-  // The signout is no longer needed as we are using the UserProfileDrawer
-  // which embeds the signout function and icon
-
   /**
    * Declare a state variable `userName` with a default value "User"
    * `setUserName` is the function used to update this state
@@ -118,22 +114,11 @@ const SiteHeader: React.FC = () => {
   const isMovieMenuOpen = Boolean(movieMenuAnchorEl);
 
   /**
-   * The Menu component uses an anchor element to position itself. When the menu is open,
-   * this state holds the DOM element that was clicked (the hamburger IconButton).
-   * When null, it means the menu is closed.
-   */
-  // State to track the anchor element of the desktop "Movie List" submenu (null if closed)
-  //  const [welcomeMenuAnchorEl, setWelcomeMenuAnchorEl] =
-  // useState<null | HTMLElement>(null);
-  // Boolean to check if submenu is open
-  // const isWelcomeMenuOpen = Boolean(welcomeMenuAnchorEl);
-
-  /**
    * Similar to anchorEl, but specifically for the submenu that drops down under
    * the "Movie List" button on desktop. It stores the element that triggered
    * the submenu to position it correctly.
+   * Handler to open the mobile hamburger menu by setting anchor element
    */
-  // Handler to open the mobile hamburger menu by setting anchor element
   const handleMobileMenu = (event: MouseEvent<HTMLElement>) => {
     setMobileAnchorEl(event.currentTarget);
   };
@@ -149,15 +134,6 @@ const SiteHeader: React.FC = () => {
   };
 
   /**
-   * Called when the "Welcome!" button is clicked and stores the clicked element
-   * button in welcomeMenuAnchorEl, which anchors the Log Out menu to that element.
-   * This ensures the menu opens directly below the button.
-   */
-  // const handleWelcomeMenu = (event: MouseEvent<HTMLElement>) => {
-  //   setWelcomeMenuAnchorEl(event.currentTarget);
-  // };
-
-  /**
    * This function is called when the hamburger icon is clicked.
    * event.currentTarget is the element clicked (IconButton),
    * which is stored in anchorEl state to open the mobile Menu at that element’s position.
@@ -166,7 +142,6 @@ const SiteHeader: React.FC = () => {
   const handleMenuClose = () => {
     setMobileAnchorEl(null);
     setMovieMenuAnchorEl(null);
-    // setWelcomeMenuAnchorEl(null);
   };
 
   /**
@@ -185,7 +160,6 @@ const SiteHeader: React.FC = () => {
    * It programmatically changes the URL to the specified path using React Router's navigate.
    * Then closes all menus to ensure clean UI state.
    */
-
   // List of menu options for mobile view (no dropdowns here)
   const mobileMenuOptions = [
     { label: "Home", path: "/" },
@@ -198,11 +172,12 @@ const SiteHeader: React.FC = () => {
   ];
 
   /**
-   * On mobile, menus are rendered as a flat list inside the hamburger menu for simplicity.
-   * No submenus are used here to keep the UI clean and usable on smaller screens.
+   * 'drawerOpen' state has been set for the logged in user state. The reason behind that is
+   * that to manage the open/close state of the UserProfileDrawer 'UserProfileDrawer/index.tsx',
+   * a side panel (also known as a drawer) that slides in from the edge of the screen, a boolean
+   * state variable that tracks whether the drawer is currently visible (true) or hidden (false)
+   * was needed
    */
-  // https://mui.com/material-ui/react-menu/
-
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -242,13 +217,6 @@ const SiteHeader: React.FC = () => {
             MoviesApp
           </Typography>
 
-          {/* Subtitle, also pushes remaining content right */}
-          {/* <Typography variant="h6" sx={{ flexGrow: 1, color: "white" }}>
-            {/* We put in 't' as per https://react.i18next.com/latest/usetranslation-hook, so that
-            we leverage content in i18n.ts, which is translated */}
-          {/* {t("all_you_ever_wanted")} */}
-          {/* </Typography> */}
-
           {/* Conditional rendering based on screen size */}
           {isMobile ? (
             <>
@@ -272,6 +240,10 @@ const SiteHeader: React.FC = () => {
                 sx={{ color: "white" }}
               >
                 {/* Render flat list of mobile menu options */}
+                {/* On mobile, menus are rendered as a flat list inside the hamburger menu for simplicity.
+                No submenus are used here to keep the UI clean and usable on smaller screens.
+                https://mui.com/material-ui/react-menu/
+                */}
                 {mobileMenuOptions.map((opt) => (
                   <MenuItem
                     key={opt.label}
@@ -290,12 +262,6 @@ const SiteHeader: React.FC = () => {
                     {t("login")} <LoginIcon sx={{ ml: 1 }} />
                   </MenuItem>
                 )}
-                {/* This was a duplicate in the mobile view */}
-                {/* {!token && (
-                  <MenuItem onClick={() => navigate("/login")}>
-                    Login <LoginIcon sx={{ ml: 1 }} />
-                  </MenuItem>
-                )} */}
               </Menu>
             </>
           ) : (
@@ -327,7 +293,7 @@ const SiteHeader: React.FC = () => {
               >
                 {/* Dropdown options under "Movie List" */}
                 <MenuItem onClick={() => handleNavigate("/movies/discover")}>
-                  {/* {t("upcoming_movies")} */} Discover Movies
+                  {t("discover_movies")}
                 </MenuItem>
                 <MenuItem onClick={() => handleNavigate("/movies/upcoming")}>
                   {t("upcoming_movies")}
@@ -361,34 +327,12 @@ const SiteHeader: React.FC = () => {
                 <>
                   <Button
                     color="inherit"
-                    // The onClick won't navigate to anywhere. Instead, it will
-                    // handle the onClick={handleWelcomeMenu}
-                    // onClick={handleWelcomeMenu}
-                    // aria-controls={
-                    //   isWelcomeMenuOpen ? "welcome-menu" : undefined
-                    // }
-                    // aria-haspopup="true"
-                    // aria-expanded={isWelcomeMenuOpen ? "true" : undefined}
-
                     // We are now handling the onClick with setDrawer
                     onClick={() => setDrawerOpen(true)}
                     endIcon={<SkateboardingIcon />}
                   >
                     {t("welcome")} {userName} !
                   </Button>
-
-                  {/* <Menu
-                    id="welcome-menu"
-                    anchorEl={welcomeMenuAnchorEl}
-                    open={isWelcomeMenuOpen}
-                    onClose={handleMenuClose}
-                    anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-                    transformOrigin={{ vertical: "top", horizontal: "left" }}
-                  >
-                    <MenuItem onClick={() => signout && signout()}>
-                      Log out <LogoutIcon sx={{ ml: 1 }} />
-                    </MenuItem>
-                  </Menu> */}
                 </>
               ) : (
                 <Button color="inherit" onClick={() => navigate("/login")}>

@@ -18,7 +18,7 @@ import { useQuery } from "react-query";
 import Spinner from "../spinner";
 import { useTranslation } from "react-i18next";
 
-interface FilterMoviesCardProps {
+export interface FilterMoviesCardProps {
   onUserInput: (f: FilterOption, s: string) => void; // Add this line
   titleFilter: string;
   genreFilter: string;

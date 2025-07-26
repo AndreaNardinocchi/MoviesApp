@@ -54,7 +54,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
    * https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
    */
   useEffect(() => {
-    document.title = `${t("reviews")} | MovieApp`;
+    document.title = `${t("reviews")} | MoviesApp`;
   }, [t]);
 
   const defaultValues = {
