@@ -127,1936 +127,867 @@ A 'Divider' separates the content from the bottom action area, which includes a 
 - https://mui.com/material-ui/react-divider/
 - https://www.codingeasypeasy.com/blog/mastering-material-ui-drawer-a-comprehensive-guide-with-examples
 
-=========== TO BE CONTINUED ==================
+## Auth Context Provider
 
-### Footer
+The **AuthContext.tsx** component sets up a centralized authentication state for the entire app using React Context, and Supabase. The most important function of this context file is to provide token, user, authenticate, and signout to any component that needs access to auth information.
 
-At the bottom of the page, there is a footer (**footer.hbs** partial), with a 2 column layout.
-While the first column shows an Irish address, the column on the right shows nav items/links.
-Additionally, there is an underfooter with the 'PlaceMark' clickable logo to boost brand awareness, and a string with the developer Linkedin link.
-
-![alt text](image-5.png)
-
-### Source attribution
-
-- https://bulma.io/documentation/layout/footer/
-
-## Lifestyle page
-
-(\*This page is part of a previous assignment for web-dev 1)
-
-This page is basically a blog embedded into the website and users can supposedly use the search bar on the top to search for a tourist destination (I found it interesting to combine the placemark subject with the tourist one).
-It shows a variegated layout (**lifestyle-view.hbs**).
-
-### Source attribution
-
-- https://bulma.io/documentation/elements/box/
-- https://bulma.io/documentation/elements/image/#arbitrary-ratios-with-any-
-
-All images have been taken from:
-https://pixabay.com/ and used availing of the IMGBB image hosting app in https://imgbb.com/ .
-
-## News page
-
-(\*This page is part of a previous assignment web-dev 1)
-
-This page is supposed to be a 'news' page to get travelers up to speed with the latest news about tourist destinations (**news-view.hbs**).
-
-### Source attribution
-
-- https://bulma.io/documentation/elements/box/
-
-All images have been taken from:
-https://pixabay.com/ and used availing of the IMGBB image hosting app in https://imgbb.com/ .
-
-## About page
-
-This is just a simple and plain page with a centered copy (header and paraghraph, **about-view.hbs**) contained in a 'box':
-
-## Log in page
-
-The 'Log in' page is a 2 column layout with a Bulma form on the left column and the PlaceMark logo on the right (**login-view**):
-
-![alt text](image-6.png)
-
-It is routed as per the below line of code in **web-routes.js**
+The useState hook initializes the token and user state, which defaults to a basic guest user profile until login:
 
 ```
- { method: "GET", path: "/login", config: accountsController.showLogin },
+ const [token, setToken] = useState<string | null>(null);
+
+  /**
+   * Declare a state variable `user` with a default value "User"
+   * `setUser` is the function used to update this state
+   * */
+  const [user, setUser] = useState<User>({
+    firstName: "User",
+    lastName: "User",
+    email: "user@example.com",
+    role: t("viewer"),
+  });
 ```
 
-and its view is rendered by the **accounts-controller.js**
+The authenticate function, wrapped with useCallback to avoid unnecessary re-creation (as prompted by Typescript), fetches the metadata from a Supabase authenticated user, and updates the app’s state. In addition to that, it redirects users back to the page they originally intended to visit after login:
+
+![alt text](image-19.png)
+
+On component mount, the useEffect hook runs the fetchSession() to check if a user session already exists, and if it does, it re-authenticates it (this usually happens when refreshing the brwoser):
 
 ```
-  showLogin: {
-    auth: false,
-    handler: function (request, h) {
-      return h.view("login-view", { title: "Login to Placemark" });
-    },
-  },
-  login: {
-    auth: false,
-    validate: {
-      payload: UserCredentialsSpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("login-view", { title: "Login error", errors: error.details }).takeover().code(400);
-      },
-    },
-    handler: async function (request, h) {
-      const { email, password } = request.payload;
-      const user = await db.userStore.getUserByEmail(email);
-      if (!user || user.password !== password) {
-        return h.redirect("/");
+ useEffect(() => {
+    async function fetchSession() {
+      // https://supabase.com/docs/reference/javascript/auth-getsession
+      // https://github.com/orgs/supabase/discussions/32783
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        console.error("Failed to restore session");
+        return;
       }
-      // We set the cookie and istall the object 'user', passing the '._id' of the user
-      request.cookieAuth.set({ id: user._id });
-      return h.redirect("/dashboard");
-    },
-```
-
-Once the user prompts the log in action, their data will be verified by the above 'handler' which will check email and password. The below function, instead, will validate whether the user exists by checking the 'payload' of the variable 'UserCredentialsSpec' (Joi schema).
-
-```
- /**
-   * The function has access to a session object - which will have the users ID.
-   * We use this ID to locate the user object from the store and, if found,
-   * return this object: { isValid: true, credentials: user }; otherwise
-   * { valid: false };
-   */
-  async validate(request, session) {
-    const user = await db.userStore.getUserById(session.id);
-    if (!user) {
-      return { isValid: false };
-    }
-    return { isValid: true, credentials: user };
-  },
-```
-
-### Source attribution
-
-Plane image taken from:
-https://fontawesome.com/v4/icons/
-
-## Sign up page
-
-![alt text](image-7.png)
-
-It is routed as per the below line of code in **web-routes.js**
-
-```
- { method: "GET", path: "/signup", config: accountsController.showSignup },
-```
-
-and its view is rendered by the **accounts-controller.js**
-
-```
-   signup: {
-    auth: false,
-    /**
-     * validate object specifying our validation schema
-     * (UserSpec) + failAction method,
-     * to be called if the validation fails.
-     * 'errors: error.details' will enable the signup page to show the errors
-     * .takeover() will avoid the redirection to accountController, as Joi will manage the error
-     */
-    validate: {
-      payload: UserSpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("signup-view", { title: "Sign up error", errors: error.details }).takeover().code(400);
-      },
-    },
-    handler: async function (request, h) {
-      const users = await db.userStore.getAllUsers();
-      const user = request.payload;
-
-      /**
-       * The below lines of code will verify whether the email inputted by the user to sign up
-       * is already in the user store or not.
-       * If the email is taken, the user will get redirected to the taken-email.hbs page, and advised
-       * to use a different email to sign up.
-       */
-
-      let { email } = request.payload;
-      let exEmail = "";
-      // eslint-disable-next-line prefer-const
-      let existingEmail = [];
-      // eslint-disable-next-line no-shadow
-      users.forEach((user) => {
-        exEmail = user.email;
-        console.log("Existing email", exEmail);
-        existingEmail.push(exEmail);
-      });
-      let existingEmailNow = "";
-      for (let i = 0; i < existingEmail.length; i += 1) {
-        existingEmailNow = existingEmail[i];
-        if (existingEmail[i] === email) {
-          email = existingEmailNow;
-          console.log("existingEmailNow", existingEmailNow);
-          return h.redirect("/taken-email");
-        }
+      console.log("getSession(): ", data.session, error);
+      // We create a const variable called 'session'
+      const session = data.session;
+      // If the session and user of that session exist, then, we will authenticate them again and
+      // the session will be restored (authenticate() takes the 2 values as per 'const { user, session } = supabaseData;')
+      if (session && session.user) {
+        authenticate({ user: session.user, session });
       }
-      await db.userStore.addUser(user);
-      return h.redirect("/");
-    },
-  }
-```
-
-Once a new user object is created, the 'validation()' function will check the Joi schemas 'UserSpec' data, and if it comes across any issues, the failAction method will be called in, and will redirect the page to the errors.
-
-The user data will, then, be stored into one of the stores being used by the app administrator:
-
-- user-mongo-store.js
-- user-json-store.js
-- user-mem-store.js
-
-**Mongoose T3**
-
-![alt text](image-8.png)
-
-**json**
-
-![alt text](image-9.png)
-
-The way that we tie these database logics is via the **db.js**, which is basically a facade from which we can choose the database we want the app to use.
-
-### Source attribution
-
-- https://www.mongodb.org
-- https://robomongo.org
-
-## Joi Schemas
-
-The information the user will be inputting is defined in the Joi Schemas file **joi-schema.js**, which indicates 'string', 'number', 'date' fields with value ranges when needed. Ex.:
-
-```
-export const UserSpec = UserCredentialsSpec.keys({
-  firstName: Joi.string().min(3).max(30).example("Homer").required(),
-  lastName: Joi.string().min(3).max(30).example("Simpson").required(),
-  userLat: Joi.number().max(100).example(40.41541290283203),
-  userLong: Joi.number().max(100).example(-3.684231996536255),
-  country: Joi.string().min(3).max(30).example("Portugal").required(),
-  street: Joi.string().min(3).max(50).example("Rua das Flores, 4").required(),
-  addressCode: Joi.string().min(3).max(15).example("T12Y2NE").required(),
-  DOB: JoiExtended.date().raw().format().required(),
-  phoneNumber: Joi.number().example(892356189).required(),
-  createdTimeStamp: JoiExtended.date().default(() => new Date()),
-}).label("UserDetails");
-```
-
-The same logic applies to the 'categories' and 'placemarks' data.
-
-## Joi Error Reporting
-
-Furthermore, the 'Joi Error Reporting' was introduced, as Joi can generate human readable errors. Therefore, **error.hbs** partial was created in which errors are looped through and a handlebar will enable errors to show on the UX:
-
-```
-{{#if errors}}
-  <div class="box content">
-    <p> There was a problem... </p>
-    <ul>
-      {{#each errors}}
-        <li>{{message}}</li>
-      {{/each}}
-    </ul>
-  </div>
-{{/if}}
-
-```
-
-The error.hbs file is added as a handlebar to the main.hbd template to ensure that the 'Joi Error Reporting' method is active throughout the app.
-Additionally, the errors are passed from Joi to the view on any 'controller' actions where it is relevant:
-
-```
-validate: {
-      payload: UserSpec,
-      failAction: function (request, h, error) {
-        return h.view("signup-view", { title: "Sign up error", errors: error.details }).takeover().code(400);
-      },
-    },
-
-```
-
-'errors: error.details' will enable the signup page to show the errors, whereas .takeover() will avoid the redirection to accountController, as Joi will manage the error:
-
-![alt text](image-27.png)
-
-## Account page
-
-This page is where the user can check their personal details, and, also, update them via a Bulma form, which will show in a pop-up:
-
-![alt text](image-10.png)
-
-![alt text](image-11.png)
-
-The **accounts-controller.js** renders the page through the below 'showAccount' route:
-
-```
- showAccount: {
-    handler: async function (request, h) {
-      const loggedInUser = request.auth.credentials;
-      const categories = await db.categoryStore.getUserCategories(loggedInUser._id);
-      const accCat0 = await somethingAnalytics.getAccountCategories0(categories);
-      const accCatId0 = await somethingAnalytics.getAccountCategoriesId0(categories);
-      const accCat1 = await somethingAnalytics.getAccountCategories1(categories);
-      const accCatId1 = await somethingAnalytics.getAccountCategoriesId1(categories);
-      const accCat2 = await somethingAnalytics.getAccountCategories2(categories);
-      const accCatId2 = await somethingAnalytics.getAccountCategoriesId2(categories);
-      const accCat3 = await somethingAnalytics.getAccountCategories3(categories);
-      const accCatId3 = await somethingAnalytics.getAccountCategoriesId3(categories);
-      const userDetails = await db.userStore.getUserById(loggedInUser._id);
-      const viewData = {
-        title: "Your Account details | PlaceMark",
-        user: loggedInUser,
-        firstName: userDetails.firstName,
-        lastName: userDetails.lastName,
-        userLat: userDetails.userLat,
-        userLong: userDetails.userLong,
-        country: userDetails.country,
-        street: userDetails.street,
-        addressCode: userDetails.addressCode,
-        DOB: userDetails.DOB,
-        phoneNumber: userDetails.phoneNumber,
-        email: userDetails.email,
-        password: userDetails.password,
-        accCat0: accCat0,
-        accCatId0: accCatId0,
-        accCat1: accCat1,
-        accCatId1: accCatId1,
-        accCat2: accCat2,
-        accCatId2: accCatId2,
-        accCat3: accCat3,
-        accCatId3: accCatId3,
-        _id: userDetails._id,
-        createdTimeStamp: userDetails.createdTimeStamp,
-      };
-      return h.view("account-view", viewData);
-    },
-  },
-```
-
-After requesting the authorized credentials, I retrieve the 'categories' of the 'loggedInUser' as well as their 'userDetails'. The userDetails const retrieves all added user data from the userStore, and, then, the const 'viewData' will itemize them in order to, then, be rendered on the account page via handlebars.
-
-![alt text](image-36.png)
-
-**user-details.hbs**
-
-If the user wished to update their details, or even delete the account altogether, the below routes will make the above-mentioned actions possible:
-
-```
-deleteAccount: {
-    handler: async function (request, h) {
-      const loggedInUser = request.auth.credentials;
-      const user = await db.userStore.getUserById(loggedInUser._id);
-      await db.userStore.deleteUserById(user._id);
-      request.cookieAuth.clear();
-      return h.redirect("/");
-    },
-  },
-
-  updateAccount: {
-    validate: {
-      payload: updatedUserSpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("account-view", { title: "Update user details error", errors: error.details }).takeover().code(400);
-      },
-    },
-    handler: async function (request, h) {
-      const loggedInUser = request.auth.credentials;
-      const user = await db.userStore.getUserById(loggedInUser._id);
-      const newUserLat = Number(request.payload.userLat);
-      const newUserLong = Number(request.payload.userLong);
-      const newCountry = request.payload.country;
-      const newStreet = request.payload.street;
-      const newAddressCode = request.payload.addressCode;
-      const newPhoneNumber = Number(request.payload.phoneNumber);
-      const newEmail = request.payload.email;
-      const newPassword = request.payload.password;
-      const updatedUser = {
-        userLat: newUserLat,
-        userLong: newUserLong,
-        country: newCountry,
-        street: newStreet,
-        addressCode: newAddressCode,
-        phoneNumber: newPhoneNumber,
-        email: newEmail,
-        password: newPassword,
-        _id: user._id,
-      };
-      await db.userStore.updateUser(user, updatedUser);
-      return h.redirect("/account");
-    },
-  },
-```
-
-The updateUser() function from the userStore will enable the user details updates:
-
-**user-mongo-store.js**
-
-```
- async updateUser(user, updatedUser) {
-    const userDoc = await User.findOne({ _id: user._id });
-    console.log(userDoc);
-    user._id = updatedUser._id;
-    userDoc.userLat = updatedUser.userLat;
-    userDoc.userLong = updatedUser.userLong;
-    userDoc.country = updatedUser.country;
-    userDoc.street = updatedUser.street;
-    userDoc.addressCode = updatedUser.addressCode;
-    userDoc.phoneNumber = updatedUser.phoneNumber;
-    userDoc.email = updatedUser.email;
-    userDoc.password = updatedUser.password;
-    await userDoc.save();
-  },
-```
-
-**user-json-store.js**
-
-```
-async updateUser(user, updatedUser) {
-    console.log(updatedUser);
-    user._id = updatedUser._id;
-    user.userLat = updatedUser.userLat;
-    user.userLong = updatedUser.userLong;
-    user.country = updatedUser.country;
-    user.street = updatedUser.street;
-    user.addressCode = updatedUser.addressCode;
-    user.phoneNumber = updatedUser.phoneNumber;
-    user.email = updatedUser.email;
-    user.password = updatedUser.password;
-    await db.write();
-    console.log(user);
-    return user;
-  },
-```
-
-**user-mem-store.js**
-
-```
-  async updateUser(user, updatedUser) {
-    console.log(updatedUser);
-    user._id = updatedUser._id;
-    user.userLat = updatedUser.userLat;
-    user.userLong = updatedUser.userLong;
-    user.country = updatedUser.country;
-    user.street = updatedUser.street;
-    user.addressCode = updatedUser.addressCode;
-    user.phoneNumber = updatedUser.phoneNumber;
-    user.email = updatedUser.email;
-    user.password = updatedUser.password;
-    console.log(user);
-    return user;
-  },
-```
-
-It is worth spending a few lines on a few variables created and itemized in the 'viewData' variable:
-
-```
-const accCat0 = await somethingAnalytics.getAccountCategories0(categories);
-const accCatId0 = await somethingAnalytics.getAccountCategoriesId0(categories);
-const accCat1 = await somethingAnalytics.getAccountCategories1(categories);
-const accCatId1 = await somethingAnalytics.getAccountCategoriesId1(categories);
-const accCat2 = await somethingAnalytics.getAccountCategories2(categories);
-const accCatId2 = await somethingAnalytics.getAccountCategoriesId2(categories);
-const accCat3 = await somethingAnalytics.getAccountCategories3(categories);
-const accCatId3 = await somethingAnalytics.getAccountCategoriesId3(categories);
-```
-
-Here, the objective is to retrieve the name of the categories as well as their ids since the partial **stats-account.hbs** embedded in the **account-view.hbs** will show the categories that the user added. In the example below, there is an extract of the functions created in the **something-analytics.js** util file to achieve just that:
-
-```
- getAccountCategories0(categories) {
-    let accCat = "";
-    // eslint-disable-next-line prefer-const
-    let accCats = [];
-    // eslint-disable-next-line prefer-const
-    let accCatsId = [];
-    let accCatId = "";
-    categories.forEach((category) => {
-      accCat = category.title;
-      accCatId = category._id;
-      accCats.push(accCat);
-      accCatsId.push(accCatId);
-    });
-    // eslint-disable-next-line prefer-const
-    let accCat0 = accCats[0];
-    return accCat0;
-  },
-
-  getAccountCategoriesId0(categories) {
-    let accCat = "";
-    // eslint-disable-next-line prefer-const
-    let accCats = [];
-    // eslint-disable-next-line prefer-const
-    let accCatsId = [];
-    let accCatId = "";
-    categories.forEach((category) => {
-      accCat = category.title;
-      accCatId = category._id;
-      accCats.push(accCat);
-      accCatsId.push(accCatId);
-    });
-    // eslint-disable-next-line prefer-const
-    let accCatId0 = accCatsId[0];
-    return accCatId0;
-  },
-```
-
-The 'categories' value is passed along the parameter 'categories' in the above function, and then through iteration, the category values are fetched to be shown in the account page. The category values are the 'title' of the category as well as its id which is needed to create the category URL and make the title clickable (see the **stats-account.hbs**):
-
-```
- <section class = "content pl-4">
-    <div class="columns">
-      <div class="column">
-        <p class="is-size-4 mb-2 "><a href="/category/{{accCatId0}}" class="has-text-grey-light">{{accCat0}}</a> </p>
-        <p class="is-size-4 mb-2"><a href="/category/{{accCatId1}}" class="has-text-grey-light">{{accCat1}}</a> </p>
-        <p class="is-size-4 mb-2 "><a href="/category/{{accCatId2}}" class="has-text-grey-light">{{accCat2}}</a> </p>
-        <p class="is-size-4 mb-6"><a href="/category/{{accCatId3}}" class="has-text-grey-light">{{accCat3}}</a> </p>
-        <p class="is-size-7">* If you have added any categories, they will get displayed in this box. </p>
-      </div>
-    </div>
-  </section>
-```
-
-![alt text](image-12.png)
-
-The **joi-schemas.js** also contains the below line which produces a 'time stamp' of when the account was created:
-
-```
-createdTimeStamp: JoiExtended.date().default(() => new Date().toLocaleString("en-IE")),
-
-```
-
-This is the list of the HTML files created for the account page:
-
-- account-view.hbs
-- user-deatils.hbs
-- stats-account.hbs
-
-and this is the list of the routes in **web-routes.js** for the account page:
-
-```
- { method: "GET", path: "/", config: accountsController.index },
-  { method: "GET", path: "/signup", config: accountsController.showSignup },
-  { method: "GET", path: "/login", config: accountsController.showLogin },
-  { method: "GET", path: "/logout", config: accountsController.logout },
-  { method: "POST", path: "/register", config: accountsController.signup },
-  { method: "POST", path: "/authenticate", config: accountsController.login },
-  { method: "GET", path: "/account", config: accountsController.showAccount },
-  { method: "GET", path: "/account/deleteuser/{id}", config: accountsController.deleteAccount },
-  { method: "GET", path: "/account/edituser/", config: accountsController.showAccount },
-  { method: "POST", path: "/account/updateuser/", config: accountsController.updateAccount },
-```
-
-### Source attribution
-
-- https://bulma.io/documentation/form/
-- https://bulma.io/documentation/components/modal/
-- https://endgrate.com/blog/using-the-mongodb-api-to-create-or-update-records-(with-javascript-examples)
-- https://www.geeksforgeeks.org/how-to-set-minimum-and-maximum-date-in-html-date-picker/
-
-## Dahboard
-
-As the user logs in, they will land to the dashboard view where they can select one of the 4 available categories (Restaurants, Museums, Parks, Beaches) from a dropdown menu in a form. Once the category is selected, 'notes' will show what the category is used for, and an image representative of the category will display on the right column.
-
-![alt text](image-38.png)
-
-The first thing to notice is that the user won't be able to add the same category twice, which is a paramount feature since we don't want the user to get unnecessary duplicates. For this purpose, a few lines of code have been injected into the 'addCategory' route aiming at checking that the category just added by the user is not already stored in the 'categoryStore' :
-
-```
-addCategory: {
-    validate: {
-      payload: CategorySpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("dashboard-view", { title: "Category error", errors: error.details }).takeover().code(400);
-      },
-    },
-
-    handler: async function (request, h) {
-      const loggedInUser = request.auth.credentials;
-      const categories = await db.categoryStore.getUserCategories(loggedInUser._id);
-      // 'if' condition to determine image and 'notes to show according to the 'title' selected
-      let image = "";
-      let notes = "";
-      // eslint-disable-next-line prefer-destructuring
-      let title = request.payload.title;
-      if (title === "Restaurants") {
-        image = "https://i.ibb.co/gZjF0ppp/jerk-pasta-recipe.png";
-        notes = "All restaurants you would like to dine or you already had the pleasure to be in can be added and listed here. Just a handy note for your next trip.";
-      } else if (title === "Museums") {
-        image = "https://i.ibb.co/HD39FR6p/man-2590655-big.jpg";
-        notes = "This is the category in which all worldwide famous museums or art galleries you wish to visit or you lready visited can be added to.";
-      } else if (title === "Beaches") {
-        image = "https://i.ibb.co/LhrJWjcb/coast-7366616.jpg";
-        notes = "There are surely so many beaches you would like to sunbath in and relish the sweet marine breeze caressing your skin. Why not list them all here?";
-      } else {
-        image = "https://i.ibb.co/pjbvydw1/parks.jpg";
-        notes = "Sometimes, there is no better thing to do than slipping in your running shoes for a jog in the park. Which park are gonna go next though?";
-      }
-      const newCategory = {
-        userid: loggedInUser._id,
-        title: title,
-        notes: notes,
-        image: image,
-      };
-
-      /** Checking on whether the category title already exists. This app will only allow the user to add
-       * 4 categories in its 'basic' version.
-       */
-
-      let exTitle = "";
-      // eslint-disable-next-line prefer-const
-      let existingTitle = [];
-      categories.forEach((category) => {
-        exTitle = category.title;
-        console.log("Existing title", exTitle);
-        existingTitle.push(exTitle);
-      });
-      let existingTitleNow = "";
-      for (let i = 0; i < existingTitle.length; i += 1) {
-        existingTitleNow = existingTitle[i];
-        if (existingTitle[i] === title) {
-          title = null;
-          return h.redirect("/dashboard");
-        }
-      }
-      await db.categoryStore.addCategory(newCategory);
-      return h.redirect("/dashboard");
-    },
-  },
-
-```
-
-In a nutshell, we first iterate through the categories to retrieve the category data ('title' in our case) and we push it to a list we named 'existingTitle'. We, then, iterate through this list to check whether we find the title just inputted by the user. If there is one already, the title gets assigned a 'null' value and it won't be added to the dashboard.
-
-Additionally, the list of categories will always be sorted by alphabetic order in the dashboard, as per the below function fom the **something-analytics.js** file:
-
-```
-// This method is used to sort categories by alphabetical order https://www.youtube.com/watch?v=CTHhlx25X-U
-  getSortedCategories(categories) {
-    const sortedCategories = categories.sort((a, b) => a.title.localeCompare(b.title));
-    return sortedCategories;
-  },
-
-```
-
-The below lines show the CategorySpec const in the **joi-schemas.js** file
-
-```
-export const CategorySpec = Joi.object()
-  .keys({
-    title: Joi.string().example("Museums").required(),
-    userid: IdSpec,
-    notes: Joi.string().min(20).max(1000).example("Here I will be adding all restaurants I would like to try out..."),
-    image: Joi.string(),
-    placemarks: PlacemarkArraySpec,
-  })
-  .label("Category");
-
-export const CategorySpecPlus = CategorySpec.keys({
-  _id: IdSpec,
-  __v: Joi.number(),
-}).label("CategoryPlus");
-
-export const CategoryArraySpec = Joi.array().items(CategorySpecPlus).label("CategoryArray");
-
-```
-
-A category can also be deleted if needed.
-
-Once the user is ready, they can click on the 'folder' icon and start adding placemarks.
-
-The dashboard view is routed via the below lines in **web-routes.js**:
-
-```
-{ method: "GET", path: "/dashboard", config: dashboardController.index },
-{ method: "POST", path: "/dashboard/addcategory", config: dashboardController.addCategory },
-{ method: "GET", path: "/dashboard/deletecategory/{id}", config: dashboardController.deleteCategory },
-
-```
-
-### Source attribution
-
-- https://bulma.io/documentation/form/
-
-## Category page
-
-The Category view is the page where the user lands on when clicking on the 'folder' icon at the botttom of a category in the dahboard page:
-
-![alt text](image-39.png)
-
-On top of the page, the user will see a banner whose background color and image are customized according to the type of category. Ex.:
-
-![alt text](image-14.png)
-
-This particular feature has been achieved via 2 functions set up in the **category-analytics.js** file:
-
-```
- getImageCode(category) {
-    if (category) {
-      let imageCode = null;
-      for (let i = 0; i < 1; i += 1) {
-        if (category.title === "Restaurants") {
-          imageCode = "https://i.ibb.co/qL14ZG2g/mossel-dish-7724006-1280.jpg";
-        } else if (category.title === "Museums") {
-          imageCode = "https://i.ibb.co/C5hpYTW3/man-2590655-1280.jpg";
-        } else if (category.title === "Beaches") {
-          imageCode = "https://i.ibb.co/1YHM8FHt/coast-7366616-1280.jpg";
-        } else if (category.title === "Parks") {
-          imageCode = "https://i.ibb.co/jPnk3WxG/autumn-3731094-1280.jpg";
-        }
-      }
-      return imageCode;
-    }
-    return null;
-  },
-
-  getBackgroundColor(category) {
-    if (category) {
-      let backgroundColor = "";
-      for (let i = 0; i < 1; i += 1) {
-        if (category.title === "Restaurants") {
-          backgroundColor = "title box has-text-centered has-background-grey-dark has-text-white";
-        } else if (category.title === "Museums") {
-          backgroundColor = "title box has-text-centered has-background-black-bis has-text-white";
-        } else if (category.title === "Beaches") {
-          backgroundColor = "title box has-text-centered has-background-grey-light has-text-white";
-        } else if (category.title === "Parks") {
-          backgroundColor = "title box has-text-centered has-background-grey-darker has-text-white";
-        }
-      }
-      return backgroundColor;
-    }
-    return null;
-  },
-
-```
-
-The 'getImageCode(category)' function will set the image into the banner based upon the category title selected by the user (namely Restaurants, Beaches, Museums, Beaches). The images are all stored in the ImgBB free image hosting site [https://imgbb.com/](https://imgbb.com/).
-
-The background color of the banner is set by the the 'getBackgroundColor(category)' function.
-
-The 'index' route in the **category-controller.js** will handle the view of the category page, and it is in there that the 'imageCode', and 'backgroundColor' are retrieved from the **category-analytics.js** to, then, be shown on the category page:
-
-```
-index: {
-    handler: async function (request, h) {
-      const category = await db.categoryStore.getCategoryById(request.params.id);
-      const imageCode = categoryAnalytics.getImageCode(category);
-      const backgroundColor = categoryAnalytics.getBackgroundColor(category);
-      ...
-
-```
-
-Moving down to the bottom of the page, above the footer, the user will be presented with a form to fill out in order to start adding up their placemarks. As soon as the user submits the placemark details, the action property in the form will 'post' them:
-
-```
-<form class="box" action="/category/{{category._id}}/addplacemark" method="POST">
-
-```
-
-The 'addPlacemark' route in the **category-controller.js** will handle the placemark creation and addition. The payload will be made of the 'PlacemarkSpec' data retrieved from the **joi-schemas.js** file:
-
-```
-export const PlacemarkSpec = Joi.object()
-  .keys({
-    title: Joi.string().min(3).max(30).example("El Parque del Buen Retiro").required(),
-    lat: Joi.number().max(100).example(40.41541290283203).required(),
-    long: Joi.number().max(100).example(-3.684231996536255).required(),
-    address: Joi.string().min(3).max(150).example("Plaza de la Independencia, 728001").required(),
-    country: Joi.string().min(3).max(30).example("Spain").required(),
-    phone: Joi.number().example(89672435).required(),
-    website: Joi.string().example("https://bit.ly/3bGwJUlrequired").required(),
-    visited: Joi.string().min(2).max(3).example("Yes").required(),
-    description: Joi.string()
-      .min(100)
-      .max(250)
-      .example(
-        "Covering over 125 hectares and comprising more than 15,000 trees, El Retiro Park–recently named a UNESCO World Heritage Site–is a green oasis in the heart of the city. And more!!!"
-      )
-      .required(),
-    categoryid: IdSpec,
-  })
-  .label("Placemark");
-
-export const updatedPlacemarkSpec = {
-  title: Joi.string().min(3).max(30).required(),
-  lat: Joi.number().max(100).required(),
-  long: Joi.number().max(100).required(),
-  address: Joi.string().min(3).max(150).required(),
-  country: Joi.string().min(3).max(30).required(),
-  phone: Joi.number().required(),
-  website: Joi.string().required(),
-  visited: Joi.string().min(2).max(3).required(),
-  description: Joi.string().min(100).max(250),
-};
-
-export const PlacemarkSpecPlus = PlacemarkSpec.keys({
-  _id: IdSpec,
-  __v: Joi.number(),
-}).label("PlacemarkPlus");
-
-export const PlacemarkArraySpec = Joi.array().items(PlacemarkSpecPlus).label("PlacemarkArray");
-
-```
-
-We, then, retrieve the 'id' of the category where the placemark is being added, and request the payload of each placemark field the user added via the form:
-
-```
-  addPlacemark: {
-    validate: {
-      payload: PlacemarkSpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("category-view", { title: "Add placemark error", errors: error.details }).takeover().code(400);
-      },
-    },
-    handler: async function (request, h) {
-      // We are retrieving/extracting the category
-      const category = await db.categoryStore.getCategoryById(request.params.id);
-      const newPlacemark = {
-        /** The inputted data from the form will get here (payload),
-         * and we stick them to a placemark object, and
-         * finally we add the placemark to the database (placemarkStore) via the category
-         * with its specific 'id' */
-        title: request.payload.title,
-        lat: Number(request.payload.lat),
-        long: Number(request.payload.long),
-        address: request.payload.address,
-        country: request.payload.country,
-        phone: Number(request.payload.phone),
-        website: request.payload.website,
-        visited: request.payload.visited,
-        description: request.payload.description,
-      };
-      await db.placemarkStore.addPlacemark(category._id, newPlacemark);
-      return h.redirect(`/category/${category._id}`);
-    },
-  },
-
-```
-
-The 'addPlacemark' function in the placemarkStore file will, at this point, take up the task of adding the newly created placemark to the store. Ex. **placemark-mongo-store.js** below:
-
-```
-async addPlacemark(categoryId, placemark) {
-    try {
-      placemark.categoryid = categoryId;
-      const newplacemark = new Placemark(placemark);
-      const placemarkObj = await newplacemark.save();
-      return this.getPlacemarkById(placemarkObj._id);
-    } catch (error) {
-      console.error("Error adding placemark:", error);
-      throw error;
-    }
-  },
-
-```
-
-As the categoryId, and placemark are passed along as parameters, a new object 'newPlacemark' is created, and saved in the MongoDB store, and it will return a new placemark 'id'. The same type of logic will apply to the other placemarks stores (json and mem).
-
-The **list-placemarks.hbs** is the the file that determines the layout of the placemarks, and it is made of a Bulma card. It also iterates the placemarks array via the '#each' helper in order to show all placemarks on the category page.
-
-These are the routes to add and view placemarks:
-
-```
-{ method: "GET", path: "/category/{id}", config: categoryController.index },
-  { method: "POST", path: "/category/{id}/addplacemark", config: categoryController.addPlacemark },
-
-```
-
-Right down into the footer of the placemark card, two icons will enable the user to update or delete the placemark:
-
-![alt text](image-15.png)
-
-```
-<footer class="card-footer">
-    <a href="/category/{{../category._id}}/editplacemark/{{_id}}" class="button card-footer-item">
-    <span class="icon is-small">
-    <i class="fas fa-solid fa-edit"></i>
-    </span>
-    </a>
-    <a href="/category/{{../category._id}}/deleteplacemark/{{_id}}" class="button card-footer-item">
-    <span class="icon is-small">
-    <i class="fas fa-solid fa-trash"></i>
-    </span>
-    </a>
-  </footer>
-
-```
-
-The updatePlacemark route is in the **placemark-controller.js** file, and gets evoked by the form action in **edit-placemark.hbs** :
-
-```
-<form class="box" action="/category/{{category._id}}/updateplacemark/{{placemark._id}}" method="POST">
-
-```
-
-Therefore, upon clicking on the placemark update icon, the user lands on a new route/page inside the placemark itself:
-
-```
-  { method: "GET", path: "/category/{categoryid}/editplacemark/{placemarkid}", config: placemarkController.index },
-  { method: "POST", path: "/category/{categoryid}/updateplacemark/{placemarkid}", config: placemarkController.updatePlacemark },
-```
-
-It will, then, be redirected back to the category page once the updates are submitted:
-
-```
-from the placemark-controller.jd file
-....
-
-updatePlacemark: {
-    validate: {
-      payload: updatedPlacemarkSpec,
-      options: { abortEarly: false },
-      failAction: function (request, h, error) {
-        return h.view("placemark-view", { title: "Update placemark details error", errors: error.details }).takeover().code(400);
-      },
-    },
-    handler: async function (request, h) {
-      const categoryId = request.params.categoryid;
-      const category = await db.categoryStore.getCategoryById(categoryId);
-      const placemarkId = request.params.placemarkid;
-      const placemark = await db.placemarkStore.getPlacemarkById(placemarkId);
-      const updatedTitle = request.payload.title;
-      const updatedLat = request.payload.lat;
-      const updatedLong = request.payload.long;
-      const updatedAddress = request.payload.address;
-      const updatedCountry = request.payload.country;
-      const updatedPhone = request.payload.phone;
-      const updatedWebsite = request.payload.website;
-      const updatedVisited = request.payload.visited;
-      const updatedDescription = request.payload.description;
-      const updatedPlacemark = {
-        title: updatedTitle,
-        lat: updatedLat,
-        long: updatedLong,
-        address: updatedAddress,
-        country: updatedCountry,
-        phone: updatedPhone,
-        website: updatedWebsite,
-        visited: updatedVisited,
-        description: updatedDescription,
-        _id: placemark._id,
-      };
-      await db.placemarkStore.updatePlacemark(placemark, updatedPlacemark);
-      return h.redirect(`/category/${categoryId}`);
-    },
-  },
-
-```
-
-Another feature added to the category page is the one that lets the user add an image to the category page. Its widget, generated by the partial **category-image.hbs** is positioned right below the form used to add placemarks:
-
-![alt text](image-16.png)
-
-However, the Bulma upload file component in [https://bulma.io/documentation/form/file/](https://bulma.io/documentation/form/file/) provides a script which shows an empty image before an image gets uploaded. I found it not as a great user experience, and consulted ChatGPT [https://chatgpt.com/](https://chatgpt.com/) to enhance the script to the extent that now the image card no longer shows the empty image icon when no image is uploaded.
-
-```
-<script>
-  /** If you want to prevent displaying the placeholder image when no image is uploaded,
-  and ensure that it only shows once an image is selected or already uploaded, here’s a
-  new approach: Steps to Implement
-  Hide the image element completely if no image exists.
-  Only show the image once it's uploaded or if it already exists.
-  We'll conditionally render the image using server-side logic (e.g., using a templating engine)
-  and then hide it or show a preview based on whether a file is selected.*/
-
-  /** Solution
-  We will start by hiding the image element by default and show it once there is an actual image
-  to display. You can do this using JavaScript to dynamically check for an image and toggle
-  its visibility. */
-
-    const fileInput = document.querySelector(".file-input");
-    const categoryImage = document.getElementById("category-image");
-    const fileNameDisplay = document.querySelector(".file-name");
-
-    // Display image if it already exists when page loads
-    if (categoryImage.src && categoryImage.src !== "") {
-      categoryImage.style.display = "block";  // Show the image if it has a valid src
     }
 
-    fileInput.onchange = () => {
-      if (fileInput.files.length > 0) {
-        const fileName = fileInput.files[0].name;
-        fileNameDisplay.textContent = fileName;
-
-        // Show the image preview immediately after selection
-        const reader = new FileReader();
-        reader.onload = () => {
-          categoryImage.src = reader.result; // Set the image source to the file
-          categoryImage.style.display = 'block';  // Show the image
-        };
-        reader.readAsDataURL(fileInput.files[0]); // Read the selected file as a Data URL
-      }
-    };
-</script>
+    fetchSession();
+  }, [authenticate]);
 
 ```
 
-![alt text](image-17.png)
-No image.
-
-![alt text](image-18.png)
-
-Image uploaded.
-
-The uploadImage and deleteImage handlers are in the **category-controller.js** file:
-
-```
-uploadImage: {
-    handler: async function (request, h) {
-      try {
-        const category = await db.categoryStore.getCategoryById(request.params.id);
-        const file = request.payload.imagefile;
-        if (Object.keys(file).length > 0) {
-          const url = await imageStore.uploadImage(request.payload.imagefile);
-          category.img = url;
-          await db.categoryStore.updateCategory(category);
-        }
-        return h.redirect(`/category/${category._id}`);
-      } catch (err) {
-        console.log(err);
-        return h.redirect("/");
-      }
-    },
-    payload: {
-      multipart: true,
-      output: "data",
-      maxBytes: 209715200,
-      parse: true,
-    },
-  },
-
-  deleteImage: {
-    handler: async function (request, h) {
-      try {
-        const category = await db.categoryStore.getCategoryById(request.params.id);
-        if (category.img) {
-          await imageStore.deleteImage(category.img);
-          category.img = null;
-          await db.categoryStore.updateCategory(category);
-        }
-        return h.redirect(`/category/${category._id}`);
-      } catch (err) {
-        console.log("Error during image deletion:", err);
-        return h.redirect(`/category/${category._id}`); // Redirect even in case of error
-      }
-    },
-  },
-```
-
-The functions updateImage() and deleteImage() are called in from the **image-store.js** file from which the images will be uploaded or deleted into the [Cloudinary](https://console.cloudinary.com/) account of the app administrator.
-
-These are the routes used to upload or delete an image in the category page:
-
-```
-  { method: "POST", path: "/category/{id}/uploadimage", config: categoryController.uploadImage },
-  { method: "GET", path: "/category/{id}/deleteimage", config: categoryController.deleteImage },
-
-```
-
-As **category.js** file also shows a field for the image 'img',
-
-```
-  const categorySchema = new Schema({
-  title: String,
-  notes: String,
-  img: String,
-  image: String,
-  userid: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-  },
-});
-
-```
-
-once an image has been added, the updateCategory function in **category-mongo-store.js** will ensure that the img field will pop up in the categoryStore:
-
-```
-async updateCategory(updatedCategory) {
-    const category = await Category.findOne({ _id: updatedCategory._id });
-    category.title = updatedCategory.title;
-    category.img = updatedCategory.img;
-    await category.save();
-  },
-```
+The signout function. instead, handles logging out the user via Supabase, clearing the token, and navigating them back to the home page:
 
 ![alt text](image-20.png)
 
-### Category page Analytics
+Finally, the provider wraps all children components, making the authentication data and methods available throughout the app:
 
-This section is a 4 column box with some analytics of the placemarks in the category.
+```
+ return (
+    <AuthContext.Provider
+      value={{
+        token,
+        user,
+        authenticate,
+        signout,
+      }}
+    >
+      {props.children}
+    </AuthContext.Provider>
+  );
+};
 
-![alt text](image-37.png)
-
-The user will have a simple report with the total number of placemarks added, the number of those already visited, those yet to be visited, the distance measured in km of the furthest placemark as well as that of the nearest one, and finally, a count of those that are 'local' versus those that are situated abroad.
-
-It is worth spending a few lines now on the functions created to achieve the placemarks analytics report, which are listed into the **category-analytics.js** and into the **category-controller.js** files.
+export default AuthContextProvider;
 
 ```
 
-countPlacemarks(category) {
-    if (category.placemarks) {
-      let placemarkSum = 0;
-      for (let i = 0; i < category.placemarks.length; i += 1) {
-        placemarkSum += 1;
-      }
-      return placemarkSum;
-    }
-  },
-
-```
-
-The countPlacemarks() is a basic one to count the total number of placemarks in the category by simply iterating through the placemarks length and adding 1 for each of them to the variable 'placemarkSum'.
-
-```
-
- // eslint-disable-next-line consistent-return
-  getYesCounting(category) {
-    if (category.placemarks) {
-      const yes = [];
-      const no = [];
-      let visit = "";
-      let yesNoIcon = "";
-      // Loop through all placemarks in the category
-      for (let i = 0; i < category.placemarks.length; i += 1) {
-        visit = category.placemarks[i].visited;
-        if (visit === "No") {
-          yesNoIcon = "no";
-          no.push(yesNoIcon);
-        } else if (visit === "Yes") {
-          yesNoIcon = "yes";
-          yes.push(yesNoIcon);
-        } else {
-          yesNoIcon = null;
-        }
-      }
-      const yesCounting = yes.length;
-      return yesCounting;
-    }
-  },
-
-  // eslint-disable-next-line consistent-return
-  getNoCounting(category) {
-    if (category.placemarks) {
-      const yes = [];
-      const no = [];
-      let visit = "";
-      let yesNoIcon = "";
-      // Loop through all placemarks in the category
-      for (let i = 0; i < category.placemarks.length; i += 1) {
-        visit = category.placemarks[i].visited;
-        if (visit === "No") {
-          yesNoIcon = "no";
-          no.push(yesNoIcon);
-        } else if (visit === "Yes") {
-          yesNoIcon = "yes";
-          yes.push(yesNoIcon);
-        } else {
-          yesNoIcon = null;
-        }
-      }
-      const noCounting = no.length;
-      return noCounting;
-    }
-  },
-
-```
-
-getYesCounting() and getNoCounting() functions will count the placemarks that have already been visited versus those that have yet to be. In a nutshell, the logic followed here is create a couple of lists, one for 'yes' and one for 'no', then iterate through all placemarks, and assign values to the variable 'visit'. If 'visit' gets assigned the value 'no', then, this value is 'pushed' to the 'no' list and viceversa. In the end, the 'no' or 'yes' lists will be counted by appending 'length' and, then, will be 'returned'.
-
-The below function instead will calculate the 'furthest' and 'closest' placemarks, and it is embedded into the 'index' route in the **category-controller.js**:
-
-```
-
-      /* --------- The below section calculates the distance between the user's and the furthest and closets placemark locations ----- */
-
-      // https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
-      const lat1 = userDetails.userLat;
-      const long1 = userDetails.userLong;
-      const toRadians = (degrees) => degrees * (Math.PI / 180);
-      const R = 6371; // Radius of the Earth in km
-      // eslint-disable-next-line prefer-const
-      let long2 = 0;
-      // eslint-disable-next-line prefer-const
-      let lat2 = 0;
-      let a = 0;
-      let c = 0;
-      let dLat = 0;
-      let dLong = 0;
-      let title = "";
-      let country = "";
-      // eslint-disable-next-line prefer-const, no-new-object
-      let allDistances = [];
-      let distance = 0;
-      if (category.placemarks) {
-        for (let i = 0; i < category.placemarks.length; i += 1) {
-          long2 = category.placemarks[i].long;
-          lat2 = category.placemarks[i].lat;
-          title = category.placemarks[i].title;
-          country = category.placemarks[i].country;
-          dLat = toRadians(lat2 - lat1);
-          dLong = toRadians(long2 - long1);
-          // eslint-disable-next-line no-const-assign
-          a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
-          c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          distance = R * c;
-          allDistances.push(distance);
-        }
-      }
-      // https://www.delftstack.com/howto/javascript/javascript-round-to-2-decimal-places/
-      let resultMax = Math.max(...allDistances);
-      console.log("MaxDist", allDistances);
-      if (resultMax === -Infinity) {
-        resultMax = 0;
-      } else {
-        const maxRounded = resultMax.toFixed(2);
-        resultMax = `${maxRounded} km away`;
-      }
-
-      let resultMin = Math.min(...allDistances);
-      console.log("MinDist", allDistances);
-      if (resultMin === Infinity) {
-        resultMin = 0;
-      } else {
-        const minRounded = resultMin.toFixed(2);
-        resultMin = `${minRounded} km away`;
-      }
-
-```
-
-This section was built on the following source [https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates](https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates), and adjusted to fit for the PlaceMark app purposes. We are basically retrieving the userLat and userLong variable values from the user account. Then, there is an iteration through the placemarks, and a range of calculations will enable us to achieve the 'distance' value, which will, in turn, get pushed to a list called minDistance or maxDistance, based upon which function we are in. At this point, the 'Math.min()' or 'Math.max()' functions will pull the min or max distance, which will ultimately get returned.
-
-The below function will count the number of local, abroad placemarks, and assign icons :
-
-```
-  /* --- Setting variables for counting abroad and local counts and icons ----*/
-
-      let localTravelIcon = "";
-      let abroadTravelIcon = "";
-      // eslint-disable-next-line prefer-const
-      let local = [];
-      // eslint-disable-next-line prefer-const
-      let abroad = [];
-      let localCounting = "";
-      let abroadCounting = "";
-      let localIcon = "";
-      let abroadIcon = "";
-      let destination = "";
-      // Loop through all placemarks in the category
-      for (let i = 0; i < category.placemarks.length; i += 1) {
-        destination = category.placemarks[i].country;
-        destination = destination.toLowerCase().trim();
-        // eslint-disable-next-line prefer-const
-        let userCountry = userDetails.country.toLowerCase().trim();
-        if (destination === userCountry) {
-          // eslint-disable-next-line quotes
-          localIcon = "https://i.ibb.co/Q7J1t5jt/102-lokasimanusia-mini.jpg";
-          localCounting = "Yes";
-          local.push(localCounting);
-          localTravelIcon = "fas fa-solid fa-car";
-        } else {
-          abroadIcon = "https://i.ibb.co/mVhwZKmD/international-mini-1.png";
-          abroadCounting = "No";
-          abroad.push(abroadCounting);
-          abroadTravelIcon = "fas fa-solid fa-plane";
-        }
-      }
-      localCounting = local.length;
-      abroadCounting = abroad.length;
-
-```
-
-All of these functions follow the same logic as previously set out, essentially. Below is the whole 'index' route in the **category-controller.js** file
-
-```
-index: {
-    handler: async function (request, h) {
-      const loggedInUser = request.auth.credentials;
-      const userDetails = await db.userStore.getUserById(loggedInUser._id);
-      const category = await db.categoryStore.getCategoryById(request.params.id);
-      const imageCode = categoryAnalytics.getImageCode(category);
-      const backgroundColor = categoryAnalytics.getBackgroundColor(category);
-      const placemarkSum = categoryAnalytics.countPlacemarks(category);
-      const yesCounting = categoryAnalytics.getYesCounting(category);
-      const noCounting = categoryAnalytics.getNoCounting(category);
-
-      /* --- Setting variables for counting abroad and local counts and icons ----*/
-
-      let localTravelIcon = "";
-      let abroadTravelIcon = "";
-      // eslint-disable-next-line prefer-const
-      let local = [];
-      // eslint-disable-next-line prefer-const
-      let abroad = [];
-      let localCounting = "";
-      let abroadCounting = "";
-      let localIcon = "";
-      let abroadIcon = "";
-      let destination = "";
-      // Loop through all placemarks in the category
-      for (let i = 0; i < category.placemarks.length; i += 1) {
-        destination = category.placemarks[i].country;
-        destination = destination.toLowerCase().trim();
-        // eslint-disable-next-line prefer-const
-        let userCountry = userDetails.country.toLowerCase().trim();
-        if (destination === userCountry) {
-          // eslint-disable-next-line quotes
-          localIcon = "https://i.ibb.co/Q7J1t5jt/102-lokasimanusia-mini.jpg";
-          localCounting = "Yes";
-          local.push(localCounting);
-          localTravelIcon = "fas fa-solid fa-car";
-        } else {
-          abroadIcon = "https://i.ibb.co/mVhwZKmD/international-mini-1.png";
-          abroadCounting = "No";
-          abroad.push(abroadCounting);
-          abroadTravelIcon = "fas fa-solid fa-plane";
-        }
-      }
-      localCounting = local.length;
-      abroadCounting = abroad.length;
-
-      /* --------- The below section calculates the distance between the user's and the furthest and closets placemark locations ----- */
-
-      // https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
-      const lat1 = userDetails.userLat;
-      const long1 = userDetails.userLong;
-      const toRadians = (degrees) => degrees * (Math.PI / 180);
-      const R = 6371; // Radius of the Earth in km
-      // eslint-disable-next-line prefer-const
-      let long2 = 0;
-      // eslint-disable-next-line prefer-const
-      let lat2 = 0;
-      let a = 0;
-      let c = 0;
-      let dLat = 0;
-      let dLong = 0;
-      let title = "";
-      let country = "";
-      // eslint-disable-next-line prefer-const, no-new-object
-      let allDistances = [];
-      let distance = 0;
-      if (category.placemarks) {
-        for (let i = 0; i < category.placemarks.length; i += 1) {
-          long2 = category.placemarks[i].long;
-          lat2 = category.placemarks[i].lat;
-          title = category.placemarks[i].title;
-          country = category.placemarks[i].country;
-          dLat = toRadians(lat2 - lat1);
-          dLong = toRadians(long2 - long1);
-          // eslint-disable-next-line no-const-assign
-          a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
-          c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          distance = R * c;
-          allDistances.push(distance);
-          // This is just for comparison of the values between the above method with the module 'geolib' https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
-          const dist = getDistance({ latitude: lat1, longitude: long1 }, { latitude: lat2, longitude: long2 }) / 1000;
-          console.log(dist);
-        }
-      }
-      // https://www.delftstack.com/howto/javascript/javascript-round-to-2-decimal-places/
-      let resultMax = Math.max(...allDistances);
-      console.log("MaxDist", allDistances);
-      if (resultMax === -Infinity) {
-        resultMax = 0;
-      } else {
-        const maxRounded = resultMax.toFixed(2);
-        resultMax = `${maxRounded} km away`;
-      }
-
-      let resultMin = Math.min(...allDistances);
-      console.log("MinDist", allDistances);
-      if (resultMin === -Infinity) {
-        resultMin = 0;
-      } else {
-        const minRounded = resultMin.toFixed(2);
-        resultMin = `${minRounded} km away`;
-      }
-
-      // We are showing/passing the category in the view
-      const viewData = {
-        title: `Placemark ${category.title}`,
-        category: category,
-        imageCode: imageCode,
-        backgroundColor: backgroundColor,
-        placemarkSum: placemarkSum,
-        yesCounting: yesCounting,
-        noCounting: noCounting,
-        localTravelIcon: localTravelIcon,
-        abroadTravelIcon: abroadTravelIcon,
-        localCounting: localCounting,
-        abroadCounting: abroadCounting,
-        localIcon: localIcon,
-        abroadIcon: abroadIcon,
-        resultMax: resultMax,
-        resultMin: resultMin,
-      };
-      // category-view.hbs is returned
-      return h.view("category-view", viewData);
-    },
-  },
-```
-
-### Bugs and defects
-
-The method above used to calculate the distance is not always perfectly accurate, and may be sligthly off, as far as I can see by crossing the given results with what the search engines usually return for the same queries. However, I also did try other methods, and all of them return the same distances as the above method.
+This architecture ensures secure, consistent user session management, and exercises a pivotal role for the back-end user data persistence, which will be further discussed down this document.
 
 ### Source attribution
 
-- https://cloudinary.com/
-- https://www.freepik.com/
-- https://imgbb.com/
-- https://www.youtube.com/watch?v=CTHhlx25X-U
-- https://stackoverflow.com/questions/18883601/function-to-calculate-distance-between-two-coordinates
-- https://www.w3schools.com/howto/howto_js_remove_decimals.asp
-- https://bulma.io/documentation/form/file/
-- https://chatgpt.com/
+- https://react.i18next.com/latest/usetranslation-hook
+- https://react.dev/reference/react/useCallback
+- https://supabase.com/docs/reference/javascript/auth-setsession
+- https://supabase.com/docs/reference/javascript/auth-getsession
+- https://github.com/orgs/supabase/discussions/32783
+- https://supabase.com/docs/reference/javascript/auth-signout
 
-## Placemark page
+## Sign up page
 
-The purpose of this landing page is just to provide some more info about the placemark selected. A user will land to this page after clicking on a placemark title on the category-view page.
-
-![alt text](image-21.png)
-
-Handlebars in the **placemark.hbs** file will help us convey some of the information already shown on the category placemark card:
-
-```
- <p class="title has-text-centered is-2 pt-4 pb-2">
-              #instaPlaceMark {{titleShort}}!
-            </p>
-            <p class="subtitle has-text-centered mb-6">
-              InstaMark your instaPlaces
-            </p>
-          </div>
-        </div>
-      </div>
-      <main class="columns box">
-        <section class="column is-8 m-2">
-          <h4>{{titleShort}}, {{country}}</h4>
-          <p>
-            {{description}} Find out more on <a href="{{website}}" target="_blank" class="has-text-grey">{{website}}</a>.
-          </p>
-          <p>Hey! To get to {{titleShort}}, you need to travel by {{travelMeans}}, and it is {{distance}}.</p>
-          <p>{{youShouldVisit}}{{titleShort}}!</p>
-          <div class="buttons pt-3">
-            <a href="{{website}}" target="_blank" class="has-text-grey">
-            <button class="button is-info has-text-white">Find out more</button>
-            </a>
-          </div>
-        </section>
-        <section class="column is-4 ">
-          <figure class="image is-264x264 m-auto">
-            <img src="https://i.ibb.co/M66kktn/travel.jpg" alt="Travel signs" style="border-radius: 10px;" border="0">
-          </figure>
-        </section>
-      </main>
-      <section class="section">
-        <div class="container">
-          <h5 class="has-text-centered">@{{titleShort}}</h5>
-
-
-```
-
-However, there is also an attempt to enrich the user experience by providing some additional information using some functions in the **category-analytics.js** and **placemarks-controller.js** file:
-
-```
- /* --- This section will determine the means of transport to show based upon the user's location --- */
-      let travelMeans = "";
-      let destination = "";
-      if (placemark) {
-        destination = placemark.country;
-        destination = destination.toLowerCase().trim();
-        // eslint-disable-next-line prefer-const
-        let userCountry = userDetails.country.toLowerCase().trim();
-        if (destination === userCountry) {
-          travelMeans = "car, bus, or train";
-        } else {
-          travelMeans = "plane";
-        }
-      }
-```
-
-placemark-controller.js
-
-```
-
-// eslint-disable-next-line consistent-return
-getYouShouldVisit(placemark) {
-  let youShouldVisit = "";
-  let visit = "";
-  if (placemark) {
-    visit = placemark.visited;
-    if (visit === "No") {
-      youShouldVisit = "What are you waiting for? Time to pay a visit to ";
-    } else {
-      youShouldVisit = "Although you have already been there, it is never a bad idea to visit again the ";
-    }
-  }
-  return youShouldVisit;
-},
-```
-
-category-analytics.js
-
-![alt text](image-22.png)
-![alt text](image-23.png)
-
-As one can see above, this banner content will suggest the travel means the user might need to travel to the destination based upon whether they are located in the user's country or abroad. While traveling to a destination within the user's country borders can be done by bus, car or train, if the destination is abroad, the user gets the advice of getting on a plane. Also, if the destination has not been visited yet, a sentence at the bottom will encourage the user to go.
-
-Particularly interesting is the feature that enables us to get the distance between the user's and the destination location, whose code is embedded in the 'placemark' handler into the **placemark-controller.js** file:
-
-```
- placemark: {
-    handler: async function (request, h) {
-      const categoryId = request.params.id;
-      const placemarkId = request.params.placemarkid;
-      const category = await db.categoryStore.getCategoryById(categoryId);
-      const placemark = await db.placemarkStore.getPlacemarkById(placemarkId);
-      const travelMeans = categoryAnalytics.getTravelMeans(placemark);
-      const youShouldVisit = categoryAnalytics.getYouShouldVisit(placemark);
-
-      /* --------- The below section calculates the distance between the user's and the placemark location ----- */
-      const lat1 = category.userLat;
-      const long1 = category.userLong;
-      const toRadians = (degrees) => degrees * (Math.PI / 180);
-      const R = 6371; // Radius of the Earth in
-      // eslint-disable-next-line prefer-const
-      let long2 = 0;
-      // eslint-disable-next-line prefer-const
-      let lat2 = 0;
-      let a = 0;
-      let c = 0;
-      let dLat = 0;
-      let dLong = 0;
-      let title = "";
-      let country = "";
-      // eslint-disable-next-line prefer-const, no-new-object
-      let distance = 0;
-      if (category.placemarks) {
-        for (let i = 0; i < category.placemarks.length; i += 1) {
-          long2 = placemark.long;
-          lat2 = placemark.lat;
-          title = placemark.title;
-          country = placemark.country;
-          dLat = toRadians(lat2 - lat1);
-          dLong = toRadians(long2 - long1);
-          // eslint-disable-next-line no-const-assign
-          a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLong / 2) * Math.sin(dLong / 2);
-          c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          distance = R * c;
-        }
-      }
-      // https://stackoverflow.com/questions/3163070/javascript-displaying-a-float-to-2-decimal-places
-      distance = Number(distance).toFixed(2);
-      if (distance === -Infinity) {
-        distance = 0;
-      } else {
-        distance = `${distance} km away`;
-      }
-      /* ----------------------------------------------------  */
-
-      const viewData = {
-        title: ` ${placemark.title} | #instaPlaceMark!`,
-        titleShort: placemark.title,
-        lat: placemark.lat,
-        long: placemark.long,
-        address: placemark.address,
-        country: placemark.country,
-        website: placemark.website,
-        description: placemark.description,
-        categoryId: categoryId,
-        placemarkId: placemarkId,
-        travelMeans: travelMeans,
-        youShouldVisit: youShouldVisit,
-        distance: distance,
-      };
-      return h.view("placemark", viewData);
-    },
-  },
-
-```
-
-As far as the images shown in the banner and grid, they are just placeholders since the intention here is to further develop this section for the next assignment, and, maybe, have images dynamically showing up for each placemark.
-
-The weather widget on top of the page is noteworthy too. The idea would be that the user might want to take a quick peek of the current weather conditions in the destination they aim to visit:
+The **signUpPage.tsx** creates a user registration page leveraging Supabase for the backend authentication, as already mentioned in the **AuthContext.tsx** section above.
 
 ![alt text](image-24.png)
 
-This is a widget I am bringing in from the SETU Computer Systems and Network module final assignment in https://instapi.glitch.me/, and it is based on JavaScript Fetch API. To get the weather widget up and running, I educated myself through this guide https://medium.com/@ravipatel.it/a-comprehensive-guide-to-fetching-weather-data-using-javascript-fetch-api-13133d0bc2e6, and adjusted the code to serve the purposes of the PlaceMark app:
+It first initializes state with useState to track values for first name, last name, email, and password, as well as a boolean nameError to manage validation:
 
 ```
- <script>
-    // https://medium.com/@ravipatel.it/a-comprehensive-guide-to-fetching-weather-data-using-javascript-fetch-api-13133d0bc2e6
+const [firstName, setFirstName] = useState("");
+const [lastName, setLastName] = useState("");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
+const navigate = useNavigate();
+const [nameError, setNameError] = useState(false);
 
-    const API_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-    const BASE_URL = 'https://api.openweathermap.org/data/2.5/';
+```
 
+At this point, we wanted to input a function to handle ('handleSignUp') the data inputted by the user, but with the caveat of first checking if any of the inputted fields were empty. To that end, we used the trim() function to avoid any whitespace and ensure that the fields are indeed filled.
+If empty, it sets the nameError state to true and exits early to prevent sign-up.
+Otherwise, it clears the error by setting nameError to false and continues the process:
 
-    async function getWeather() {
-      const city = document.getElementById('cityInput').value;
-      if (!city) {
-        alert('Please enter a city name.');
-        return;
-      }
+![alt text](image-21.png)
 
-      try {
-        // Fetch current weather
-        const weatherResponse = await fetch(`${BASE_URL}weather?q=${city}&appid=${API_KEY}&units=metric&units`);
-        const weatherData = await weatherResponse.json();
-        displayCurrentWeather(weatherData);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        alert('Failed to fetch weather data.');
-      }
+If the inputs are valid, the useState hooks will be updated and the 'e.target.value' on the 'onChange' listener will grab the inputs, and setFirstName(), setLastName() and so on, whereas the 'onClick={handleSignUp}' on the form button will push the inputted data to the Supabase backend:
+
+```
+Ex.
+...
+ <TextField
+              fullWidth
+              required
+              id="outlined-required"
+              label={t("first_name")}
+              margin="normal"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              error={nameError}
+              helperText={nameError ? t("first_name_text") : ""}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <PersonIcon />
+                  </InputAdornment>
+                ),
+              }}
+            />
+            ...
+
+             <Button
+              variant="contained"
+              // color="primary"
+              fullWidth
+              sx={{
+                mt: 3,
+                bgcolor: "#8E4585",
+                color: "#ffffff",
+              }}
+              onClick={handleSignUp}
+            >
+              {t("sign_up")}
+            </Button>
+            <Button
+              onClick={() => navigate("/login")}
+              sx={{
+                color: "#8E4585",
+              }}
+            >
+              {t("account_exist")}
+            </Button>
+```
+
+We're calling Supabase's signUp() function to create a new user with the inputs email and password.
+Inside options.data, we send extra metadata like first_name and last_name, which Supabase stores in the user profile.
+If the signup succeeds, data holds the user/session info. If anything goes wrong, error will contain the error details:
+
+```
+    // Call Supabase signUp
+    // https://supabase.com/docs/guides/auth/managing-user-data
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName,
+        },
+      },
+    });
+
+    if (error) {
+      console.error("Error signing up:", error.message);
+      // Optionally display this error to the user
+      return;
     }
-      function displayCurrentWeather(data) {
-        const weatherBody = document.getElementById('weatherBody');
-        weatherBody.innerHTML = `
-
-           <div class="column has-text-centered is-4">
-             <p class="has-text-weight-bold"> City </p>
-             <p>${data.name}</p>
-           </div>
-           <div class="column has-text-centered is-4">
-             <p class="has-text-weight-bold"> Temperature </p>
-             <p>${data.main.temp}°C</p>
-           </div>
-           <div class="column has-text-centered is-4">
-             <p class="has-text-weight-bold"> Condition </p>
-             <p>${data.weather[0].description}</p>
-           </div>
-        `;
-      }
-
-      function displayForecast(data) {
-        const forecastBody = document.getElementById('forecastBody');
-        forecastBody.innerHTML = '';
-
-        // Forecast data comes in 3-hour intervals, so we'll filter to get daily forecasts
-        const dailyForecasts = data.list.filter(item => item.dt_txt.includes('12:00:00'));
-        dailyForecasts.forEach(forecast => {
-          const date = new Date(forecast.dt_txt).toLocaleDateString();
-        });
-      }
-  </script>
-
 ```
 
-The widget may be further developed for the next assignment.
+In this file, we have also introduced the use of useEffect() hook to set the browser title dynamically based on the selected language:
 
-Finally, this is the route that enables the placemark page to show:
+![alt text](image-22.png)
 
-```
- { method: "GET", path: "/category/{id}/placemark/{placemarkid}", config: placemarkController.placemark },
-```
+This is replicated across all pages.
 
 ### Source attribution
 
-- https://medium.com/@ravipatel.it/a-comprehensive-guide-to-fetching-weather-data-using-javascript-fetch-api-13133d0bc2e6
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://muhimasri.com/blogs/mui-validation/
+- https://supabase.com/docs/guides/auth/managing-user-data
+- https://mui.com/material-ui/api/input-adornment/
 
-## TDD (Test-driven development)
-
-This app development has been guided by the TDD principles, hence, any feature development has been tested, and, where needed, the code has been refactored.
-
-The strategy used was that of, first of all, using two supporting components to allow us to run unit tests:
-
-- https://mochajs.org/
-- https://www.chaijs.com/
-
-We created a 'test/model' folder hierarchy in which we have added the below testing files:
-
-- **category-model-test.js**
-- **placemark-model-test.js**
-- **user-model-test.js**
-
-To feed the app with testing data, the **fixture.js** file was created with dummy content for users, categories, and placemarks.
-
-At this point, whenever the command `npm run test` is run on the terminal to test via 'Chai', a report of the tests will be delivered:
+## Log in page
 
 ![alt text](image-25.png)
 
-4 tests are failing because of the fact that the app is not running at the moment.
+The **loginPage.tsx** uses useState hook to manage form inputs such as email, password, and error states:
 
-If the Mocha Test Explorer plugin is installed, and the tests are run via the lab icon on VsCode, then all tests should pass (I am using the 'Mongo DB' database):
+```
+ // useSate() hooks for storing user input from the login form.
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
+```
+
+The rationale behind creating separate errors was to trigger a targeted response to handle empty field errors, so that if the email text filed was empty, it would trigger the 'emailError' only, and vice versa.
+
+The useStae() hook for:
+
+```
+const [loginError, setLoginError] = useState("");
+```
+
+would be triggered to handle incorrect data inputted by the user.
+
+When the user clicks the login button, the login function validates email and password fields, marking errors if empty.
+If errors exist ('hasError'), it sets a translated login error message and exits early. To do that, we first created a 'hasError' boolean variable which would be 'true' or 'false' based upon whether the text fileds are empty (to ensure a sanitized input we use the trim() which removes any whitespac).
+In the end, if 'hasError' turns out 'true', the loginError kicks in:
+
+```
+const login = async () => {
+    // Create a boolean variable which indicates whether the error exists or not
+    let hasError = false;
+    // The email field can't be empty
+    if (email.trim() === "") {
+      setEmailError(true);
+      hasError = true;
+    } else {
+      setEmailError(false);
+    }
+
+    // The password field can't be empty
+    if (password.trim() === "") {
+      setPasswordError(true);
+      hasError = true;
+    } else {
+      setPasswordError(false);
+    }
+
+    // Error message
+    if (hasError) {
+      setLoginError(t("incorrect_credentials"));
+    }
+```
+
+if no error is detected, the credentials are pushed to Supabase using signInWithPassword(), after the 'onChange listener detects the useStae hook state change and grabs the new email and password values in the text field tags:
+
+```
+Ex.
+onChange={(e) => setEmail(e.target.value)}
+
+```
+
+If Supabase returns an error, it logs and displays it, but if the login is successful, it clears errors and calls the authenticate function from context:
+
+![alt text](image-23.png)
+
+This updates the global auth state with the user and session.
+Finally, it redirects the user to the home page using navigate("/").
+
+Of course, the very first step was to actually extract the 'authenticate' function from the AuthContext using React's 'useContext' hook.
+If 'useContext(AuthContext)' returns 'null' or 'undefined', it safely falls back to an empty object '({})', which averts an error during destructuring:
+
+```
+ const { authenticate } = useContext(AuthContext) || {};
+
+```
+
+The form is responsive and accessible, and the navigate hook redirects users after login or to the signup page.
+
+### Source attribution
+
+- https://v5-0-6.mui.com/components/text-fields/
+- https://www.php.cn/faq/1796604601.html
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://muhimasri.com/blogs/mui-validation/
+- https://supabase.com/docs/reference/javascript/auth-signinwithpassword
+
+## homePage.tsx
+
+The **HomePage.tsx** page is the main landing page for the movie app, which replaces the 'discover movies' which was moved down the 'Movie Lists' dropdown menu.
 
 ![alt text](image-26.png)
 
-### MongoDB, Robo 3T, Mongoose
+It uses the i18n translation hook to support multiple languages and sets the document title dynamically based on the current language, as all pages, and components where it applies.
 
-To connect MongoDb (https://www.mongodb.org) database service to the PlaceMark app, we are using the Robo 3T app https://robomongo.org. At that point the Mongoose library has been installed `npm install mongoose`, and imported into the mongo models files :
-
-- user.js
-- user-mongo-store.js
-- category.js
-- category-mongo-store.js
-- placemark.js
-- placemark-mongo-store.js
-
-The Mongo connection has, then, been defined in the '.env' file using the below strings (the first one, which is commented out, is created for the MongoDB connection, whereas the second connects Atlas (https://cloud.mongodb.com/)):
+It is worth to zero in on the section on the top, which is basically a sort of hero component, which features a randomly selected video from the first 20 ones fetch through the below API function in the **tmdb-api.ts** file:
 
 ```
-# db=mongodb://127.0.0.1:27017/placemark?directConnection=true
+/**
+ * Fetches the video trailer of a movie.
+ * /**
+ * Fetches the video trailer of a movie.
+ * https://developer.themoviedb.org/reference/movie-videos
+ * 'id' is the ID of the movie and language fetches the language of the video trailer
+ */
+export const getMovieVideos = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/${id}/videos?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get movie videos. Response status: ${response.status}`
+        );
+      }
+      return response.json();
+    })
+    .then((json) => json.results) // extract the "results" array
+    .catch((error) => {
+      throw error;
+    });
+};
 
-db=mongodb+srv://latinxxxxxxx:xxxxxxxxxx@cluster0.u8y0d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+
+```
+
+The hero video component is the following:
+
+```
+const HeroVideoSection = ({
+  movie,
+  videoKey,
+}: {
+  movie: BaseMovieProps;
+  videoKey?: string;
+}) => (
+  <Card sx={{ position: "relative", height: "70vh" }}>
+    {videoKey ? (
+      // https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
+      <CardMedia
+        component="iframe"
+        src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&loop=1&playlist=${videoKey}`}
+        title={movie.title}
+        sx={{ width: "100%", height: "100%", border: "none" }}
+        allow="autoplay; encrypted-media"
+        allowFullScreen
+      />
+    ) : (
+      <CardMedia
+        component="img"
+        image={`${IMAGE_BASE}${movie.poster_path}`}
+        alt={movie.title}
+        title={movie.title}
+        sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+    )}
+
+    {/* Movie Title Overlay box */}
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: "10%",
+        right: "1%",
+        color: "white",
+        backgroundColor: "rgba(0,0,0,0.5)",
+        padding: "1rem",
+        borderRadius: "8px",
+        minWidth: "20%",
+      }}
+    >
+      <Typography variant="h4">{movie.title}</Typography>
+    </Box>
+  </Card>
+);
 
 ```
 
-Finally, the **connect.js** file was created to establish a connection to the database, and logging errors to the console.
-The **db.js** is also updated to introduce an option to connect to mongo if selected.
-
-### Source attribution
-
-- https://robomongo.org
-- http://mongoosejs.com/
-- https://cloud.mongodb.com/
-- https://mochajs.org/
-- https://www.chaijs.com/
-
-### REST API
-
-As we wanted to expose our app to APIs, we first installed the boom module `npm install @hapi/boom` to make it retiring HTTP code more convenient
-(https://hapi.dev/module/boom). Then, in order to create the API for the PlaceMark app, the below modules were created:
-
-- api-routes.js: a set of routes to service the api
-- users-api.js: implementation of the User API
-- category-api.js: implementation of the Category API
-- placemark-api.js: implementation of the Placemark API
-
-Next step was to create a set of API file tests in the 'test/api' folder:
-
-- category-api-test.js
-- placemark-api-test.js
-- user-api-test.js
-- placemark-service.js
-
-Additionally, as we needed a HTTP Client Library, 'axios' was installed (https://axios-http.com/docs/intro) and imported into the **placemark-service.js** file, which is the encapsulation to access the api:
+It renders a large visual section using a Card component. If a videoKey is provided, it embeds a YouTube video that autoplays, is muted, and loops:
 
 ```
-import axios from "axios";
+ src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&loop=1&playlist=${videoKey}`}
+```
 
-import { serviceUrl } from "../fixtures.js";
+If not, it falls back to displaying the movie's poster image.
 
-export const placemarkService = {
-  placemarkUrl: serviceUrl,
-
-  async createUser(user) {
-    const res = await axios.post(`${this.placemarkUrl}/api/users`, user);
-    return res.data;
-  },
+```
+const IMAGE_BASE = "https://image.tmdb.org/t/p/w500";
 ...
 
-```
-
-As we are processing these API tests over HTTP, they require that the application be running (`npm run start`).
-
-However, to make the development experience a little more convenient, 'Nodemon' (https://github.com/remy/nodemon) was used to avoid having to restart the server every time a change made was to its implementation.
-
-### Source attribution
-
-- https://hapi.dev/module/boom
-- https://axios-http.com/docs/intro
-- https://github.com/remy/nodemon
-
-### OpenAPI
-
-To document the API, the route chosen was that of following a widely accepted standard:
-
-- https://www.openapis.org/
-
-However, the tool used is Swagger (https://swagger.io/), which is an OpenAPI specification.
-
-In order, then, to create the metadata to document our API to support Swagger/OpenAPI standards, the hapi-swagger plugin https://github.com/glennjones/hapi-swagger was used.
-
-At that point, the HAPI endpoints were annotated with all information needed, and, appropriate metadata conformant with Swagger/OpenAPI got generated.
-
-To ensure this all works, the Vision and Inert plugins were installed too:
-
-- https://hapi.dev/module/inert
-- https://www.npmjs.com/package/@hapi/vision
-
-Without going into further details, once the annotations were added to the **user-api.js**, **category-api.js**, and **placemrk-api.js** files (user-api.js example below of the 'create' action):
+) : (
+     <CardMedia
+       component="img"
+       image={`${IMAGE_BASE}${movie.poster_path}`}
+       alt={movie.title}
+       title={movie.title}
+       sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+     />
+   )}
 
 ```
-  create: {
-    auth: false,
-    handler: async function(request, h) {
-      try {
-        const user = await db.userStore.addUser(request.payload);
-        if (user) {
-          return h.response(user).code(201);
-        }
-        return Boom.badImplementation("error creating user");
-      } catch (err) {
-        return Boom.serverUnavailable("Database Error");
-      }
-    },
-    tags: ["api"],
-    description: "Create a User",
-    notes: "Returns the newly created user",
-    validate: { payload: UserSpec, failAction: validationError },
-    response: { schema: UserSpec, failAction: validationError },
-  },
+
+Additionally, a semi-transparent overlay at the bottom right displays the movie title:
+
+```
+ {/* Movie Title Overlay box */}
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: "10%",
+        right: "1%",
+        color: "white",
+        backgroundColor: "rgba(0,0,0,0.5)",
+        padding: "1rem",
+        borderRadius: "8px",
+        minWidth: "20%",
+      }}
+    >
+      <Typography variant="h4">{movie.title}</Typography>
+    </Box>
 ```
 
-the Swagger documentation would finally display for the user, category, and placemark endpoints, and would be available for testing on a local server (ex. http://localhost:3000/documentation):
+The YouTube 'videoKey' useState hook will help us construct the YouTube video URL for embedding the trailer in an iframe tag.
+
+![alt text](image-27.png)
+
+At this point, we will use 'useQuery' from React Query to fetch movies based on the current page and language, while preserving previous data during transitions:
 
 ![alt text](image-28.png)
 
-### Source attribution
-
-- https://www.openapis.org/
-- https://spec.openapis.org/oas/latest.html
-- https://swagger.io/
-- https://swagger.io/tools/swagger-codegen/
-- https://swagger.io/tools/swaggerhub/
-- https://support.smartbear.com/swaggerhub/docs/about.html
-- https://app.swaggerhub.com/search
-- https://openweathermap.org/
-- https://openweathermap.org/current
-- https://app.swaggerhub.com/search?query=openweathermap&sort=BEST_MATCH&order=DESC
-- https://app.swaggerhub.com/apis/IdRatherBeWriting/open-weather_map_api/2.5.1#/
-- https://hapi.dev/module/inert
-- https://www.npmjs.com/package/@hapi/vision
-- https://github.com/glennjones/hapi-swagger
-
-### JSON Web Token (JWT)
-
-The PlaceMark app also features a JSON Web Tokens (JWT), which provides a mechanism to authenticate users, validate identities, and secure a safe communication between clients, and servers, staving off any unathorized access.
-
-To that end, the **jwt-utils.js** was created into the 'api' folder to make a set of utilities available for encoding, decoding and validating tokens, while the JWT system was initialized by importing and registering it into the **server.js**.
-
-Additionally, the **api-routers.js** file had to be enriched with the following route:
+Below, we can observe the API use to fetch movies from the TMDB movie datastore in the **tmdb-api.ts** file:
 
 ```
-  { method: "POST", path: "/api/users/authenticate", config: userApi.authenticate },
-```
+export const getMovies = (page: number, language = "en-US") => {
+  return fetch(
+    /**  To retrieve page by page for pagination, we added the 'page' parameter, so that,
+     * whenever a page is selecetd, the API will show movies belonging to that
+     * specific page
+     * https://www.themoviedb.org/talk/5e23977c8f26bc0011777a02?
+     */
 
-A new action was, then, created into the **user-api.js** file:
-
-```
-import { createToken } from "./jwt-utils.js";
-...
-
-  authenticate: {
-    auth: false,
-    handler: async function (request, h) {
-      try {
-        const user = await db.userStore.getUserByEmail(request.payload.email);
-        if (!user) {
-          return Boom.unauthorized("User not found");
-        }
-        if (user.password !== request.payload.password) {
-          return Boom.unauthorized("Invalid password");
-        }
-        const token = createToken(user);
-        return h.response({ success: true, token: token }).code(201);
-      } catch (err) {
-        return Boom.serverUnavailable("Database Error");
-      }
-    },
-  },
-
-```
-
-Hence, as per the above code, if there is a matching user, a token gets created and returned.
-
-The **placemark-service.js** was also extended to include the new methods to authenticate a user:
-
-```
-  async authenticate(user) {
-    const response = await axios.post(`${this.playtimeUrl}/api/users/authenticate`, user);
-    axios.defaults.headers.common["Authorization"] = "Bearer " + response.data.token;
-    return response.data;
-  },
-
-  async clearAuth() {
-    axios.defaults.headers.common["Authorization"] = "";
-  }
-```
-
-These methods set the appropriate HTTP parameters to include accessing the endpoint with a valid user as well as the token header for all axios requests, until clearAuth() is called.
-
-The **auth-api-test.js** was, then, created for the user testing.
-
-Finally, the authorization strategy was changed in all **xxx-api.js** files for all routes, except for 'create', and 'authenticate' in the **user-api.js** file, otherwise there would be no endpoints for registration and authentication (Ex. 'find' action below):
-
-```
- find: {
-    auth: {
-      strategy: "jwt",
-    },
-    handler: async function (request, h) {
-      try {
-        const users = await db.userStore.getAllUsers();
-    ....
-```
-
-At this point, because almost all routes are secured due to the above authorization strategy, a change was needed into the **server.js** **swaggerOptions** const to add some additional parameters:
-
-```
-...
-const swaggerOptions = {
-  info: {
-    title: "Placemark API",
-    version: "0.1",
-  },
-  securityDefinitions: {
-    jwt: {
-      type: "apiKey",
-      name: "Authorization",
-      in: "header",
-    },
-  },
-  security: [{ jwt: [] }],
+    `https://api.themoviedb.org/3/discover/movie?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}&include_adult=false&page=${page}`
+  )
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch movies. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
 };
-...
+
 ```
 
-which, ultimately, led up to an 'Authorize' button to appear on the Swagger Placemark documentation:
+Once the movies are fetched, a useEffect hook runs to select a random movie from the results:
+
+```
+ const [randomMovie, setRandomMovie] = useState<BaseMovieProps | null>(null);
+ ...
+
+ useEffect(() => {
+    const fetchData = async () => {
+
+      if (data?.results?.length) {
+
+        const randomFunction = Math.floor(Math.random() * data.results.length);
+        const randomMovie = data.results[randomFunction];
+
+        setRandomMovie(randomMovie);
+
+
+```
+
+This random movie is then saved to local state for use in the below steps:
+
+```
+const videos = await getMovieVideos(randomMovie.id);
+
+       const trailer = videos.find(
+         (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"
+       );
+
+       setVideoKey(trailer?.key);
+     }
+```
+
+This code fetches all videos related to a selected movie using its ID ('const videos'). It then searches the results to find the first video that is both a "Trailer" and hosted on "YouTube". If such a trailer exists, its key is stored in state using the setVideoKey.
+This is possible as we had previously set up the VideoTrailer interface in the **types/interfaces.ts** file, which defines the shape of a video object with its fields:
+
+```
+/**
+ * https://developer.themoviedb.org/reference/movie-videos
+ */
+export interface VideoTrailer {
+  key: string;
+  site: string;
+  type: string;
+}
+```
+
+The HeroVideo component will finally be rendered in the return if the random movie id exists:
 
 ![alt text](image-29.png)
 
-At this point, once a new user is created in our Swagger documentation http://localhost:3000/documentation#/api/postApiUsers,
+The page layout includes a header with an icon and main title 'MoviesApp All you ever wanted to know about Movies!', followed by three carousels showing different movie categories.
+Each carousel is a horizontally scrollable list of movie cards that can be clicked to trigger a handler. Let's dive into the 'Discover Movies' carousel as an example:
+
+```
+const MovieCarouselDiscover = ({
+  title,
+  movies,
+  onCardClick,
+}: {
+  title: string;
+  movies: BaseMovieProps[];
+  // We pass the BaseMovieProp to the onCardClick function
+  onCardClick: (movie: BaseMovieProps) => void;
+}) => {
+  /**
+   * useRef is a hook useRef that associates a DOM element with it, in this case a <div>
+   * It is basically used to manipulate the DOM element, and, it is initially set to null
+   * until the component mounts.
+   * After the component mounts and React renders the DOM node with ref={scrollRef}:
+   * https://atomizedobjects.com/blog/react/how-to-use-useref-in-react/
+   * https://medium.com/@juvitasaini/useref-understand-with-scroll-example-75ad7139557b
+   * https://tj.ie/scrollable-container-controls-with-react-hooks/?
+   */
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Programmatically scrolls the referenced div left or right by 80% of its visible width.
+   * The parameter 'dir' is a string that indicates the direction of the scroll.
+   */
+  const scroll = (dir: "left" | "right") => {
+    /**
+     * The '.current' property holds a reference to the actual DOM element, once React assigns it
+     */
+    if (scrollRef.current) {
+      /**
+       * Calculate how far to scroll.
+       * This uses 80% of the current width of the container to create a responsive scroll effect.
+       * 'ClientWidth' returns the width of an HTML element including padding in pixels,
+       * but does not include margin, border and scrollbar width.
+       * https://www.geeksforgeeks.org/css/offsetwidth-clientwidth-scrollwidth-and-height-respectively-in-css/
+       */
+      const scrollAmount = scrollRef.current.clientWidth * 0.955;
+
+      /**
+       * Scroll the container horizontally using scrollBy().
+       * If the direction is "left", scroll by a negative value.
+       * If the direction is "right", scroll by a positive value.
+       * The scroll behavior is set to "smooth" for animated scrolling.
+       * https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?
+       * https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?#behavior
+       */
+      scrollRef.current.scrollBy({
+        // If dir is left scroll negatively, otherwise positively
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+  return (
+    <Box sx={{ position: "relative", my: 4, px: "3%" }}>
+      {/* We use MUI's <Link> component combined with React Router's <Link>
+         via the `component` prop to enable client-side navigation using the `to` prop.
+         This was used as a solution to the issue with the link to Homepage also
+         logging out the user
+         * https://mui.com/material-ui/guides/routing/#link
+         */}
+      <Link
+        component={RouterLink}
+        to="/movies/discover"
+        sx={{
+          // Spread the base fab styles defined earlier
+          ...styles.header,
+          // https://mui.com/system/getting-started/the-sx-prop/?
+          "&:hover": {
+            color: "#ffe6f0",
+          },
+        }}
+        rel="noopener"
+      >
+        <Typography variant="h5" sx={{ mb: 2, pl: 2, fontSize: "200%" }}>
+          {title}
+        </Typography>
+      </Link>
+
+      {/* Arrows for scrolling */}
+
+      <Arrow direction="left" clickFunction={() => scroll("left")} />
+
+      <Box
+        ref={scrollRef}
+        sx={{
+          display: "flex",
+          overflowX: "auto",
+          scrollbarWidth: "none",
+          // CSS pseudo-element affects the style of an element's scrollbar when it has scrollable overflow.
+          // In this case, we do not want to have a scrollbar showing
+          // https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
+          "&::-webkit-scrollbar": { display: "none" },
+          gap: 2,
+          px: 2,
+        }}
+      >
+        {movies.map((movie) => (
+          <Card
+            key={movie.id}
+            // We apply appropriate width based on the device size to make the cards responsive
+            // https://medium.com/%40mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
+            sx={{
+              width: {
+                xs: "100%",
+                sm: "48%",
+                md: "32%",
+                lg: "20%",
+              },
+              flex: "0 0 auto",
+              borderRadius: "10px",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+              // The transition will kick in at a reasonable speed
+              // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+              transition: "transform 0.3s ease, box-shadow 0.3s ease",
+              // https://mui.com/system/getting-started/the-sx-prop/
+              "&:hover": {
+                // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+                // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+                transform: "scale(1.05)",
+                // we cahne the box Shadow property values to make it more prominent on hovering
+                boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+                // This property will make the card stick out with a sort of the 3D effect
+                zIndex: 10,
+                cursor: "pointer",
+              },
+            }}
+          >
+            <Link
+              component={RouterLink}
+              to={`/movies/${movie.id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <CardActionArea onClick={() => onCardClick(movie)}>
+                <CardMedia
+                  component="img"
+                  image={
+                    // If the poster_path exists, than we use the full URL ${IMAGE_BASE}${movie.poster_path},
+                    // otherwise, it is undefined
+                    movie.poster_path
+                      ? `${IMAGE_BASE}${movie.poster_path}`
+                      : undefined
+                  }
+                  alt={movie.title}
+                  title={movie.title}
+                  sx={{ height: "90%" }}
+                />
+                <CardContent
+                  sx={{ display: "flex", alignItems: "center", height: "10%" }}
+                >
+                  <Typography
+                    variant="body1"
+                    sx={{
+                      fontSize: "140%",
+                    }}
+                    noWrap
+                  >
+                    {movie.title}
+                  </Typography>
+                </CardContent>
+              </CardActionArea>
+            </Link>
+          </Card>
+        ))}
+      </Box>
+      <Arrow direction="right" clickFunction={() => scroll("right")} />
+    </Box>
+  );
+};
+```
+
+We defined a component named 'MovieCarouselDiscover' which accepts an object with three props:
+
+- title: a string used as the section header.
+- movies: an array of BaseMovieProps objects representing movie data.
+- onCardClick: a callback function triggered when a movie card is clicked; it receives a single movie object.
+
+Each card in the carousel will be leveraging the function getMovies() in the **tmdb-api.ts** file, as above shown and used in the useQuery hook. Hence, we will be 'mapping' the 'movies' array to fetch each 'movie.id' of the 20 movies shown in the first page (the carousel includes 20 cards):
 
 ![alt text](image-30.png)
 
-we could then use the created token to authorize the rest of the Swagger tests:
+Because we have set thw width to 20% on large screens 'lg', we will be able to see between 4 and more cards on desktop view depending on the size of the screen, but certainly not all 20 ones. Therefore, we needed a way to scroll through and be able to view all 20 cards, and we resolve to use [useRef](https://react.dev/reference/react/useRef):
+
+```
+const scrollRef = useRef<HTMLDivElement>(null);
+
+  /**
+   * Programmatically scrolls the referenced div left or right by 80% of its visible width.
+   * The parameter 'dir' is a string that indicates the direction of the scroll.
+   */
+  const scroll = (dir: "left" | "right") => {
+    /**
+     * The '.current' property holds a reference to the actual DOM element, once React assigns it
+     */
+    if (scrollRef.current) {
+      /**
+       * Calculate how far to scroll.
+       * This uses 95.5% of the current width of the container to create a responsive scroll effect.
+       * 'ClientWidth' returns the width of an HTML element including padding in pixels,
+       * but does not include margin, border and scrollbar width.
+       * https://www.geeksforgeeks.org/css/offsetwidth-clientwidth-scrollwidth-and-height-respectively-in-css/
+       */
+      const scrollAmount = scrollRef.current.clientWidth * 0.955;
+
+      /**
+       * Scroll the container horizontally using scrollBy().
+       * If the direction is "left", scroll by a negative value.
+       * If the direction is "right", scroll by a positive value.
+       * The scroll behavior is set to "smooth" for animated scrolling.
+       * https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?
+       * https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?#behavior
+       */
+      scrollRef.current.scrollBy({
+        // If dir is left scroll negatively, otherwise positively
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+```
+
+The above lines of code create a reference to a div element using useRef hook, initializing it as null. Once the component mounts, React assigns the actual DOM node to scrollRef.current.
+The scroll function is defined to take a direction ("left" or "right") and programmatically scroll the referenced div. It basically calculates how far to scroll based on 95.5% of the container's visible width using clientWidth, ensuring the scroll behavior adapts to different screen sizes.
+Finally, it uses scrollBy to move the container horizontally in the specified direction with smooth animation.
 
 ![alt text](image-31.png)
 
-The tests were, then, successful (Ex. below):
+After rendering the left arrow (**arrow/index.tsx**), the code sets up a '<Box>' component that acts as the scrollable container for the movie cards. This Box is connected to 'scrollRef', allowing it to be scrolled using the previously defined 'scroll()' function.
 
-![alt text](image-33.png)
+Inside the sx prop, the container is styled with 'display:"flex"' to ensure that its children are horizontally aligned, while 'overflowX: "auto"' enables horizontal scrolling when content overflows the container. scrollbarWidth: "none" hides scrollbars on FireFox, which would really be unpleasant to an aesthetically-sensitive eye, and the &::-webkit-scrollbar rule hides scrollbars in WebKit browsers like Chrome and Safari.
 
-### Bug, defects
+```
+...
+const [discoverMovies, setDiscoverMovies] = useState<BaseMovieProps[]>([]);
+...
 
-Unfortunately, the create category does show a 503 error, which I was unable to resolve:
+// We create a const discover and fetch the movies via the API function
+const discover = await getMovies(page, lang);
+setDiscoverMovies(discover.results);
+
+...
+ <MovieCarouselDiscover
+        title={t("discover_movies")}
+        movies={discoverMovies}
+        onCardClick={function (): void {
+          throw new Error("Function not implemented.");
+        }}
+      />
+...
+
+```
+
+At this point, what was left to do was create a useState hook set the discovery movies array, fetch a list of movies for the 'Discover Movies' from the API function 'getMovies(page, lang)' in the **tmdb-api.ts** file, then, store the results array in state using setDiscoverMovies.
+This state is, in turn, passed into the <MovieCarouselDiscover /> component as the movies prop.
+The 'onCardClick' function is currently a placeholder, but the card itself is clickable and lands the user onto the movie details page.
+
+All of the above logic, of course, can in turn be applied to the upcomingMovies and nowPlaying movies carousels by fetching the respective movie objects via the 'getUpcomingMovies()', and 'getNowPlayingMovies()' in **tmdb-api.ts**.
+
+Finally, a note about the BaseMovieProps interface used in the homePage and throughout the app, which can be found in the **types/interfaces.ts**:
+
+```
+export interface BaseMovieProps {
+  title: string;
+  budget?: number;
+  homepage?: string | undefined;
+  id: number | string;
+  imdb_id?: string;
+  original_language?: string;
+  overview?: string;
+  release_date?: string;
+  vote_average?: number;
+  popularity?: number;
+  poster_path?: string;
+  tagline?: string;
+  runtime?: number;
+  revenue?: number;
+  vote_count?: number;
+  favourite?: boolean;
+  genre_ids?: number[];
+}
+```
+
+### Arrow
+
+It is noteworthy to take a quick look at the component **arrow/index.tsx**, which defines a reusable Arrow for the above carousel navigation.
+It uses Material UI icons 'ChevronLeft' and 'ChevronRight' to visually represent left or right arrows. The component takes two props, which are 'direction' and 'clickFunction':
+
+```
+interface ArrowProps {
+  direction: "left" | "right";
+  clickFunction: () => void;
+}
+```
+
+Based on the direction, it dynamically selects the appropriate icon.
+
+```
+const icon = direction === "left" ? <ChevronLeft /> : <ChevronRight />;
+
+```
+
+It also styles the arrow with absolute positioning, so it appears centered vertically on the container edge (left or right):
 
 ![alt text](image-32.png)
 
+As far as '[direction]: 0' goes, the square brackets [] allow us to use a variable as a key in the object. Hence, we are using 'direction' from 'ArrowProps', so that it dynamicallyapplies either `left: 0` or `right: 0` based on the set direction.
+
 ### Source attribution
 
-- https://github.com/dwyl/hapi-auth-jwt2
-- https://github.com/auth0/node-jsonwebtoken
+- https://mui.com/material-ui/api/card-media/
+- https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
+- https://image.tmdb.org/t/p/w500
+- https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
+- https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
+- https://www.stornaway.io/youtube-url-parameters-time-autoplay-loop-controls-language-interactive-video/?
+- https://stackoverflow.com/questions/13041088/getting-an-embedded-youtube-video-to-auto-play-and-loop?
+- https://developers.google.com/youtube/player_parameters?utm_source=chatgpt.com
+- https://atomizedobjects.com/blog/react/how-to-use-useref-in-react/
+- https://medium.com/@juvitasaini/useref-understand-with-scroll-example-75ad7139557b
+- https://tj.ie/scrollable-container-controls-with-react-hooks/?
+- https://www.geeksforgeeks.org/css/offsetwidth-clientwidth-scrollwidth-and-height-respectively-in-css/
+- https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?
+- https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollBy?#behavior
+- https://mui.com/material-ui/guides/routing/#link
+- https://mui.com/system/getting-started/the-sx-prop/?
+- https://medium.com/@mahdidarzi1024/understanding-frontend-breakpoints-and-why-muis-defaults-are-perfectly-fine-04f6f52476cd?
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+- https://developer.mozilla.org/en-US/docs/Web/CSS/::-webkit-scrollbar
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+- https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/floor
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/random#examples
+- https://dev.to/kanaga_vimala_66acce9cf6e/understanding-mathrandom-mathfloor-and-arrays-in-javascript-mkl
+- https://github.com/grantholle/moviedb-promise/blob/main/README.md?
+- https://developer.themoviedb.org/reference/movie-videos
+- https://www.themoviedb.org/talk/62db7e45ea84c7004fc5a8c7?
+- https://tvc.mintlify.app/api-reference/endpoint/movies/videos
+- https://www.w3schools.com/Css/css_positioning.asp
+- https://www.freecodecamp.org/news/how-to-set-dynamic-object-properties-using-computed-property-names/?
+- https://stackoverflow.com/questions/46184458/transform-translate-50-50
+- https://daily-dev-tips.com/posts/delay-your-css-animations-to-make-them-cleaner/
+- https://blog.karenying.com/posts/adding-transitions-to-a-react-carousel-with-material-ui
 
-## Mongo database on Cloud Atlas
-
-The PlaceMark app has been connected to the Mongo database on Cloud Atlas, which is in sync with the Robo T3 database:
-
-Ex.
-
-![Alt](image-34.png)
-
-**Robo T3** user 'Homer Simpson'
-
-![alt text](image-35.png)
-
-**Cloud Atlas** user 'Homer Simpson'
+=========== TO BE CONTINUED ==================
 
 ## Bugs and defects
 

@@ -54,6 +54,9 @@ const HeroVideoSection = ({
       // https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
       <CardMedia
         component="iframe"
+        // https://www.stornaway.io/youtube-url-parameters-time-autoplay-loop-controls-language-interactive-video/?
+        // https://stackoverflow.com/questions/13041088/getting-an-embedded-youtube-video-to-auto-play-and-loop?
+        // https://developers.google.com/youtube/player_parameters?utm_source=chatgpt.com
         src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&loop=1&playlist=${videoKey}`}
         title={movie.title}
         sx={{ width: "100%", height: "100%", border: "none" }}
@@ -125,7 +128,7 @@ const MovieCarouselDiscover = ({
     if (scrollRef.current) {
       /**
        * Calculate how far to scroll.
-       * This uses 80% of the current width of the container to create a responsive scroll effect.
+       * This uses 95.5% of the current width of the container to create a responsive scroll effect.
        * 'ClientWidth' returns the width of an HTML element including padding in pixels,
        * but does not include margin, border and scrollbar width.
        * https://www.geeksforgeeks.org/css/offsetwidth-clientwidth-scrollwidth-and-height-respectively-in-css/
@@ -664,7 +667,7 @@ const HomePage: React.FC = () => {
   >([]);
 
   // Fetch movies with React Query
-  // The below code has bee slighly adjusted as per
+  // The below code has been slighly adjusted as per
   // https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
   const { data, error, isLoading, isError } = useQuery(
     ["homePage", page, lang],
@@ -709,7 +712,7 @@ const HomePage: React.FC = () => {
         const upcoming = await getUpcomingMovies(page, lang);
         setUpcomingMovies(upcoming.results);
 
-        // We create a const upcoming and fetch the movies via the API function
+        // We create a const nowPlaying and fetch the movies via the API function
         const nowPlayingMovies = await getNowPlayingMovies(page, lang); // We create a const upcoming and fetch the movies via the API function
         setNowPlayingMovies(nowPlayingMovies.results);
 
@@ -725,6 +728,7 @@ const HomePage: React.FC = () => {
          * We then find() the specific video trailer
          * https://developer.themoviedb.org/reference/movie-videos
          * https://www.themoviedb.org/talk/62db7e45ea84c7004fc5a8c7?
+         * https://tvc.mintlify.app/api-reference/endpoint/movies/videos
          */
         const trailer = videos.find(
           (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"

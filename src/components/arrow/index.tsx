@@ -24,7 +24,7 @@ const Arrow: React.FC<ArrowProps> = ({ direction, clickFunction }) => {
         top: "50%",
         /**
          * The square brackets [] allow us to use a variable as a key in the object.
-         * Hence, we are using 'direction' from 'ArroeProps', so that it dynamically
+         * Hence, we are using 'direction' from 'ArrowProps', so that it dynamically
          * applies either `left: 0` or `right: 0` based on the direction
          * https://www.freecodecamp.org/news/how-to-set-dynamic-object-properties-using-computed-property-names/?
          *
