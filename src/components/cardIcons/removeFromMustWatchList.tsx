@@ -1,8 +1,8 @@
 import React, { MouseEvent, useContext } from "react";
 import IconButton from "@mui/material/IconButton";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { MoviesContext } from "../../contexts/moviesContext";
 import { BaseMovieProps } from "../../types/interfaces";
+import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 
 const RemoveFromMustWatchListIcon: React.FC<BaseMovieProps> = (movie) => {
   const context = useContext(MoviesContext);
@@ -10,15 +10,20 @@ const RemoveFromMustWatchListIcon: React.FC<BaseMovieProps> = (movie) => {
   const onUserRequest = (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     console.log("Remove clicked for:", movie.id);
-    context.removeFromFavourites(movie);
+    context.removeFromMustWatchList(movie);
   };
-
   return (
     <IconButton
       aria-label="remove from Must Watch List"
       onClick={onUserRequest}
+      style={{ paddingRight: 8 }}
     >
-      <DeleteIcon sx={{ color: "#8E4585" }} fontSize="large" />
+      <HighlightOffIcon
+        style={{
+          fontSize: "28px",
+          color: "red",
+        }}
+      />
     </IconButton>
   );
 };

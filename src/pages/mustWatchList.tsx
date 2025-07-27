@@ -5,8 +5,8 @@ import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import { MoviesContext } from "../contexts/moviesContext";
 import { BaseMovieProps } from "../types/interfaces";
 // https://materialui.co/icon/highlight-off
-import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import { Box, IconButton } from "@mui/material";
+// import HighlightOffIcon from "@mui/icons-material/HighlightOff";
+import { Box } from "@mui/material";
 // Import filter logic and UI
 import useFiltering from "../hooks/useFiltering";
 import MovieFilterUI, {
@@ -17,6 +17,7 @@ import MovieFilterUI, {
 import { useTranslation } from "react-i18next";
 // import i18n from "../i18n/i18n";
 import { getMovie } from "../api/tmdb-api";
+import RemoveFromMustWatchListIcon from "../components/cardIcons/removeFromMustWatchList";
 
 // Initial filter configuration for title
 const titleFiltering = {
@@ -40,7 +41,7 @@ const releaseFiltering = {
 };
 
 const MustWatchListPage: React.FC = () => {
-  /** 
+  /**
        * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
        If undefined or empty, fallback to 'en-US'
        */
@@ -63,7 +64,7 @@ const MustWatchListPage: React.FC = () => {
   }, [t]);
 
   // Access global must-watch list and remove function from context
-  const { mustWatchList, removeFromMustWatchList } = useContext(MoviesContext);
+  const { mustWatchList } = useContext(MoviesContext);
 
   /**
    * This React state hook declares a new state called 'localizedList', which is empty at first,
@@ -250,20 +251,7 @@ const MustWatchListPage: React.FC = () => {
                 color: "green", // Set icon color to green
               }}
             />
-
-            {/* Button to remove the movie from the must-watch list */}
-            <IconButton
-              size="small"
-              onClick={() => removeFromMustWatchList(movie)}
-              style={{ paddingRight: 8 }}
-            >
-              <HighlightOffIcon
-                style={{
-                  fontSize: "28px",
-                  color: "red",
-                }}
-              />
-            </IconButton>
+            <RemoveFromMustWatchListIcon {...movie} />
           </Box>
         )}
       />

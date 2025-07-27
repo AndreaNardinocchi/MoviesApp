@@ -1193,7 +1193,7 @@ const styles = {
 
 Apart from the borderRadius, and boxShadow properties which help make the card 'stick out' even more, we have added the transition, and transform properties on hover to make the card kinda 'bulge out':
 
-<video controls src="20250727-1608-40.3287147.mp4" title="Title"></video>
+[Watch the video](./20250727-1608-40.3287147.mp4)
 
 ### Source attribution
 
@@ -1202,6 +1202,315 @@ Apart from the borderRadius, and boxShadow properties which help make the card '
 - https://react.i18next.com/latest/usetranslation-hook
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+
+## Upcoming Movies page
+
+The **upcomingMoviesPage.tsx** page displays upcoming movies with filtering, sorting, and pagination, just like the 'Discover Movies' page. It uses the same template **templateMovieListPage/index.tsx** as well.
+It uses useContext hook to access the 'must watch' movie list
+
+```
+// Access the mustWatchList and addToMustWatchList function from context
+  const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
+```
+
+and a custom filtering hook to apply filters like title, genre, and release year, just like all the rest of the pages (we will get deep into it later with a dedicated chapter).
+
+The useQuery hook from React Query fetches movie data from the TMDB API below in **tmdb-api.ts**:
+
+```
+export const getUpcomingMovies = (page: number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/upcoming?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}&page=${page}`
+  )
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch movies. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+```
+
+and manages loading and error states.
+
+![alt text](image-43.png)
+
+As it can be observed above, the interface props we are leveraging is 'UpcomingMoviesResponse' in **types/interfaces.ts** which does encompass fields such as 'total_pages' and 'page', which are essential for pagination purposes, as we have seen in the 'Discover Movies' page too:
+
+```
+export interface UpcomingMoviesResponse {
+  page: number;
+  total_pages: number;
+  results: BaseMovieProps[];
+}
+```
+
+The 'lang' variable conveys 'i18n.language', which is the language selected in the language switcher by the user, which will dtermine the language of the data fetched by the getUpcomingMovies() API function.
+
+The biggest difference between this file and **discoverPage.tsx** is that we have not created a component ad hoc to add to must watch list as **cardIcons/addToFavourites.tsx**.
+This means that we are managing the logic of adding the movie to the 'must watch' list straight into the 'Upcoming Movies' page itself:
+
+```
+...
+
+ <PageTemplate
+        // title="Upcoming Movies"
+        title={t("upcoming_movies")}
+        /**
+         * It passes the list of movies to display.
+         * If movies is truthy (i.e., data has been loaded and is available),
+         * it will be passed as-is. If movies is falsy
+         * (i.e., still undefined or null during loading),
+         * then it will pass an empty array [] instead.
+         */
+        movies={sortedDisplayedMovies} // Show filtered list
+        action={(movie: BaseMovieProps) => {
+          // Check if the movie is already in the must-watch list
+          const isInMustWatch = mustWatchList.some((m) => m.id === movie.id);
+
+          console.log("Sort Order:", sortOrder);
+
+          // Add the movie to the must-watch list if not already there
+          const handleClick = () => {
+            if (!isInMustWatch) {
+              addToMustWatchList(movie);
+            }
+          };
+
+          return (
+            <>
+              {/* Overlay green icon if movie is already in must-watch list */}
+              {isInMustWatch && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    zIndex: 10,
+                  }}
+                >
+                  <PlaylistAddIcon
+                    style={{
+                      fontSize: 28,
+                      color: "green",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Add-to-must-watch icon (greyed out if already added) */}
+              <PlaylistAddIcon
+                style={{
+                  marginLeft: "4%",
+                  marginRight: "4%",
+                  verticalAlign: "middle",
+                  fontSize: "30px",
+                  cursor: isInMustWatch ? "default" : "pointer",
+                  opacity: isInMustWatch ? 0.5 : 1,
+                }}
+                onClick={handleClick}
+              />
+            </>
+          );
+        }}
+      />
+
+...
+
+```
+
+We could have definitely pursued the same route as for 'favourites', but we left the code as is now for illustrative purposes.
+
+### Source attribution
+
+- https://mui.com/material-ui/react-pagination/
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+- https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+- https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+
+### Add to favourites
+
+The **cardIcons/addToFavourites.tsx** component accesses the 'MoviesContext' to use the addToFavourites() function.
+
+```
+...
+ const onUserSelect = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    context.addToFavourites(movie);
+  };
+...
+```
+
+When the user clicks the icon **favouriteMoviesPage.tsx**, it triggers 'onUserSelect', which adds the movie to favorites.
+The component renders a styled FavoriteIcon inside an IconButton, and uses BaseMovieProps as props to ensure the movie data fetching.
+The only change made in here has been the color of the icon itself:
+
+```
+  <FavoriteIcon
+        //  color="inherit"
+        sx={{ color: "#8E4585" }}
+        fontSize="large"
+      />
+```
+
+![alt text](image-44.png)
+
+### Remove from favourites
+
+The **cardIcons/removeFromFavourites.tsx** component accesses the 'MoviesContext' to use the removeFromFavourites() function.
+
+```
+...
+  const onUserRequest = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    context.removeFromFavourites(movie);
+  };
+...
+```
+
+When the user clicks the delete icon in the **favouriteMoviesPage.tsx**, it triggers 'onUserSelect', which removes the movie from 'favourites'.
+The component renders a styled DeleteIcon inside an IconButton, and uses BaseMovieProps as props to ensure the movie data removal.
+The only change made in here has been the color of the icon itself:
+
+```
+  <IconButton aria-label="remove from favorites" onClick={onUserRequest}>
+      <DeleteIcon sx={{ color: "#8E4585" }} fontSize="large" />
+    </IconButton>
+```
+
+![alt text](image-45.png)
+
+### Remove from must Watch list
+
+The **cardIcons/removeFromMustWatchList.tsx** component accesses the 'MoviesContext' to use the removeFromFavourites() function.
+
+```
+...
+    const onUserRequest = (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    console.log("Remove clicked for:", movie.id);
+    context.removeFromMustWatchList(movie);
+  };
+...
+```
+
+When the user clicks the delete icon in the **mustWatchList.tsx**, it triggers 'onUserSelect', which removes the movie from 'must watch' list.
+The component renders a styled HighlightOffIcon inside an IconButton, and uses BaseMovieProps as props to ensure the movie data removal.
+
+```
+ <IconButton
+      aria-label="remove from Must Watch List"
+      onClick={onUserRequest}
+      style={{ paddingRight: 8 }}
+    >
+      <HighlightOffIcon
+        style={{
+          fontSize: "28px",
+          color: "red",
+        }}
+      />
+    </IconButton>
+```
+
+![alt text](image-46.png)
+
+## Now Playing page
+
+The **nowPlayingMoviesPage.tsx** displays 'now playing' movies using the TMDB's API getNowPlayingMovies() in **tmdb-api.ts** with filtering, sorting, and pagination, just like the 'Discover Movies' page. It uses the same template **templateMovieListPage/index.tsx** as well.
+It uses useContext hook to access the 'must watch' movie list
+
+```
+...
+ // Access the mustWatchList and addToMustWatchList function from context
+  const { addToMustWatchList, mustWatchList } = useContext(MoviesContext);
+...
+```
+
+and a custom filtering hook to apply filters like title, genre, and release year, just like all the rest of the pages (we will get deep into it later with a dedicated chapter).
+
+The useQuery hook from React Query fetches movie data from the TMDB API below in **tmdb-api.ts**:
+
+```
+...
+
+/**
+ * Fetches the list of movies that are now playing in theaters.
+ * https://developer.themoviedb.org/reference/movie-now-playing-list
+ */
+export const getNowPlayingMovies = (page: number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/now_playing?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}&page=${page}`
+  )
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch movies. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+...
+```
+
+and manages loading and error states.
+
+![alt text](image-47.png)
+
+As it can be observed above, the interface props we are leveraging is 'NowPlayingMoviesResponse' in **types/interfaces.ts** which does encompass fields such as 'total_pages' and 'page', which are essential for pagination purposes, as we have seen in the 'Discover Movies' page too:
+
+```
+export interface NowPlayingMoviesResponse {
+  page: number;
+  total_pages: number;
+  results: BaseMovieProps[];
+}
+```
+
+The 'lang' variable conveys 'i18n.language', which is the language selected in the language switcher by the user, which will determine the language of the data fetched by the getUpcomingMovies() API function.
+
+It imports essential libraries, including React, React Query, Material UI, and context for global movie state. Filtering logic is implemented using a custom useFiltering hook with default filters for title, genre, and release year. The useQuery hook asynchronously fetches paginated movie data in the selected language. The movie list is filtered and sorted based on user input, and the PageTemplate component handles rendering of individual movie cards. A PlaylistAddIcon appears for movies, allowing users to add them to a must-watch list. Pagination and filtering UI are included for navigation and refinement. The component also dynamically updates the browser title based on the current language. The useEffect hook logs updates to the must-watch list. Styling and conditional rendering ensure user-friendly behavior. The full list updates with localization and supports multiple languages through react-i18next.
+
+and manages loading and error states.
+
+![alt text](image-43.png)
+
+As it can be observed above, the interface props we are leveraging is 'UpcomingMoviesResponse' in **types/interfaces.ts** which does encompass fields such as 'total_pages' and 'page', which are essential for pagination purposes, as we have seen in the 'Discover Movies' page too:
+
+```
+export interface UpcomingMoviesResponse {
+  page: number;
+  total_pages: number;
+  results: BaseMovieProps[];
+}
+```
+
+The 'lang' variable conveys 'i18n.language', which is the language selected in the language switcher by the user, which will determine the language of the data fetched by the getNowPlayingMovies() API function.
+
+The rest of the code structure of this page is very similar to the 'upcoming movie' page indeed.
+
+### Source attribution
+
+- https://mui.com/material-ui/react-pagination/
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+- https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date
 
 =========== TO BE CONTINUED ==================
 
