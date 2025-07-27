@@ -105,20 +105,13 @@ export interface GenreData {
   }[];
 }
 
+// https://developer.themoviedb.org/reference/discover-movie
 export interface DiscoverMovies {
   page: number;
   total_pages: number;
   total_results: number;
   results: BaseMovieProps[];
 }
-
-// export interface Review {
-//   author: string;
-//   content: string;
-//   agree: boolean;
-//   rating: number;
-//   movieId: number;
-// }
 
 export interface MovieImage {
   file_path: string;

@@ -987,6 +987,222 @@ As far as '[direction]: 0' goes, the square brackets [] allow us to use a variab
 - https://daily-dev-tips.com/posts/delay-your-css-animations-to-make-them-cleaner/
 - https://blog.karenying.com/posts/adding-transitions-to-a-react-carousel-with-material-ui
 
+## Discover Movies page
+
+This page displays a paginated, filterable list of movies retrieved from the TMDB API getMovies() in the **tmdb-api.ts** file:
+
+![alt text](image-33.png)
+
+It uses useState hooks to manage local state for pagination and sorting, and useEffect to update the page title based on the selected language. The current language is determined using the useTranslation hook from react-i18next, just like on the rest of the pages:
+
+```
+const { i18n } = useTranslation();
+
+const lang = i18n.language || "en-US";
+
+```
+
+The useState(1) hook sets the initial page number to 1 so the first set of movie results is shown by default. The useQuery hook then runs the getMovies() function using the current page, and lang as query parameters. React Query tracks these parameters, and automatically refetches data if either value changes:
+
+![alt text](image-34.png)
+
+In a nutshell, if the 'page' number, or the 'lang' value change, useQuery will re-fetch the data which will refrsh the page which will display a new set of 20 movies (for instance from page 13 if selected), and movie data in Spanish (if the user switch to ES on the language switcher):
+
+![alt text](image-35.png)
+
+The 'keepPreviousData: true' option ensures that the old page's data is kept visible while the new data loads, making the pagination feel smoother. The response provides data, error, isLoading, and isError to handle loading and error states in the UI.
+
+At the very bottom of the page, we have set up a sticky pagination item, which is nothing more than a Material UI component called 'Pagination, which will render our pagination feature:
+
+![alt text](image-36.png)
+
+To ensure the retrieval of all pages, we needed to create a new interface DiscoverMovies in **types/interfaces.ts**, which sort of extends the BaseMovieProps to include the below fields:
+
+```
+export interface DiscoverMovies {
+  page: number;
+  total_pages: number;
+  total_results: number;
+  results: BaseMovieProps[];
+}
+
+```
+
+'onChange' listens for a change event, such as when a user clicks a different page number. Then, The event handler receives two arguments:
+
+- the first argument is unused, so it's ignored with \_.
+- value is the second argument, representing the selected page number.
+  'setPage(value)', hence, updates the state for page, triggering a re-render with the new data on the page.
+
+Finally, the Discover Movies page hinges on a page template component using three main props:
+
+- 'title'
+- 'movies' prop provides the list of movies to display, which are already sorted
+- 'action' prop, which is a function that takes a movie and returns an 'AddToFavouritesIcon' component for that movie. This allows each movie card to display a button to add it to favourites
+
+```
+     <PageTemplate
+        // title="Discover Movies"
+        title={t("discover_movies")}
+        movies={sortedDisplayedMovies}
+        // movies={paginatedMovies}
+        action={(movie: BaseMovieProps) => {
+          return <AddToFavouritesIcon {...movie} />;
+        }}
+      />
+```
+
+The 'filtering' and 'sorting' logic, just like the pagintion one, apply to several pages, and will be discussed in a separate chpater of this README.md document.
+
+However, the next subchapters will briefly hash out the use of the **templateMovieListPage/index.tsx** utilized on the Dicover Movies page, and others.
+
+### Source attribution
+
+- https://mui.com/material-ui/react-pagination/
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+- https://tanstack.com/query/latest/docs/framework/react/guides/paginated-queries?from=reactQueryV3
+- https://upmostly.com/tutorials/how-to-build-a-pagination-component-with-react-query
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+- https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date
+- https://mui.com/material-ui/react-pagination/#controlled-pagination
+
+### Template Movie List Page
+
+This component (**templateMovieListPage/index.tsx**) is built out as a reusable layout for movie list pages. It receives movies, title, and action as props.
+The layout includes a header, which is no longer inside the grid as given at the beginning of the project, and a styled grid container to structure the content.
+The MovieList component is nested inside the grid for responsive layout.
+Styles are applied via the sx prop to control padding, background, and layout spacing. Paddings and minimum height have been added later to confer a nice, and more elevated touch to the landing pages:
+
+```
+const styles = {
+  root: {
+    backgroundColor: "#bfbfbf",
+    paddingRight: "1%",
+    paddingLeft: "1%",
+    paddingBottom: "2%",
+    paddingTop: "1%",
+    minHeight: "50vh",
+  },
+};
+```
+
+### Header Movie list
+
+This component in **headerMovieList/index.tsx** has been targeted for minor, and aesthetic changes in terms of padding and text alignment of the title as well as of the color of the arrows, which reflects the chosen style throughout the app:
+
+```
+  <ArrowBackIcon sx={{ color: "#8E4585" }} fontSize="large" />
+      </IconButton>
+
+      <Typography
+        variant="h4"
+        component="h3"
+        style={{
+          paddingLeft: "2%",
+          paddingRight: "2%",
+          textAlign: "center",
+        }}
+      >
+        {title}
+      </Typography>
+      <IconButton aria-label="go forward">
+        <ArrowForwardIcon sx={{ color: "#8E4585" }} fontSize="large" />
+      </IconButton>
+```
+
+### Movie card
+
+The **movieCard/index.tsx** component imports essential React hooks like useContext, useEffect, and useState to manage local state, and access global context values.
+It also uses components like Card, CardHeader, and CardMedia to create a responsive and interactive movie card layout.
+Just like the pages and most of the components, useTranslation() hook from react-i18next allows the component to support multiple languages and dynamic translation.
+
+The below React hook uses the useContext hook to access values provided by the 'MoviesContext', which stores shared state across components, such as the list of favourite movies and the must-watch list.
+
+```
+  const { favourites, mustWatchList } = useContext(MoviesContext);
+```
+
+By destructuring 'favourites', and 'mustWatchList', the component can directly use these arrays.
+If we drill down on the arrays, we find out that 'favourites' holds an array of movie IDs that the user has marked as favourites, by simply clicking on the 'favourite' icon ('<FavoriteIcon />').
+
+![alt text](image-37.png)
+
+This holds true on the 'Discover Movies page at least since, as far as the 'upcomingMovies' and 'nowPlaying', we have actually opted for the use of the 'mustWatch' icon only.
+
+![alt text](image-38.png)
+
+When it comes to the 'mustWatch', this is instead an object that the user chooses.
+Therefore, for React to be able to check whether a movie is in the 'favourite' or/and in the 'mustWatch' list, we need to use 2 different methods:
+
+```
+  const isFavourite = favourites.includes(Number(movie.id));
+
+  const isInMustWatchList = mustWatchList.some((m) => m.id === movie.id);
+```
+
+As far as 'favourites', we use includes(), which is a function that checks whether the current movie id exists in the favourite list, which is an array of movies IDs.
+'mustWatch' wise, we use some(), which checks if at least one element in an array meets a condition, and returns true or false. We do it by iterating through the list of movie objects.
+
+However, since a movie might be included in more than one list, there might be the case that we will be able to see a movie tagged for both 'favourites' and mustWatch' list.
+
+![alt text](image-39.png)
+
+![alt text](image-42.png)
+
+Additionally, the card will show icons to add a movie review for the favourite movies,
+
+![alt text](image-40.png)
+
+but also for the mustWatch movies:
+
+![alt text](image-41.png)
+
+mustWatchList contains full movie objects that the user has added to their must-watch queue.
+
+'MoviesContext' provides access to lists like favourites and mustWatchList, letting the card conditionally show icons using includes() and some(), as above-metioned.
+Movie details like title, poster, release date, and rating are displayed dynamically, and clicking the action button or link navigates to a detailed movie page.
+
+An interesting feature we have added to spice up our card rendering has been some changes we have made on the CSS front:
+
+```
+...
+const styles = {
+  card: {
+    maxWidth: 345, // Card width to keep layout consistent in grid
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    // The transition will kick in at a reasonable speed
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    "&:hover": {
+      // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+      transform: "scale(1.05)",
+      // we change the box Shadow property values to make it more prominent on hovering
+      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+      // This property will make the card stick out with a sort of the 3D effect
+      cursor: "pointer",
+    },
+  },
+
+  ...
+
+```
+
+Apart from the borderRadius, and boxShadow properties which help make the card 'stick out' even more, we have added the transition, and transform properties on hover to make the card kinda 'bulge out':
+
+<video controls src="20250727-1608-40.3287147.mp4" title="Title"></video>
+
+### Source attribution
+
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+- https://react.i18next.com/latest/usetranslation-hook
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+
 =========== TO BE CONTINUED ==================
 
 ## Bugs and defects

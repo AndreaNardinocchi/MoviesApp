@@ -183,6 +183,7 @@ const DiscoverMoviesPage: React.FC = () => {
         size="large"
         count={data?.total_pages || 1}
         page={page}
+        // https://mui.com/material-ui/react-pagination/#controlled-pagination
         onChange={(_, value) => setPage(value)}
         sx={{
           position: "sticky",

@@ -644,7 +644,7 @@ const HomePage: React.FC = () => {
    */
   const [videoKey, setVideoKey] = useState<string>();
   /**
-   * This useState hook here set the discovery movies array, and  it will be populated after
+   * This useState hook here set the discovery movies array, and it will be populated after
    * calling the `getMovies()` API. The `BaseMovieProps[]` type ensures that each movie
    * object in the array follows the expected movie data.
    */
