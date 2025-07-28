@@ -8,6 +8,7 @@ import { getMovieImages } from "../../api/tmdb-api";
 import { MovieDetailsProps } from "../../types/interfaces";
 import { MovieImage } from "../../types/interfaces";
 import { Box } from "@mui/material";
+
 // Inline styles for image tiles
 const styles = {
   gridListTile: {
@@ -55,7 +56,7 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
         .catch((err) => console.error("Failed to fetch movie images", err));
     }
   }, [movie, overrideImages]); // Dependency array ensures effect runs only when `movie.id` or `overrideImages` changes
-
+  console.log("TemplateMoviePage poster_path:", movie.poster_path);
   // TSX layout of the page
   return (
     <>
@@ -79,19 +80,35 @@ const TemplateMoviePage: React.FC<TemplateMoviePageProps> = ({
                 borderRadius: 2,
               }}
             >
-              {/* Map over the images array and render each image */}
-              {images.slice(0, 10).map((image: MovieImage) => (
-                <ImageListItem
-                  key={image.file_path}
-                  sx={styles.gridListTile}
-                  cols={1}
-                >
+              {images.length > 0 ? (
+                // If images exist , display up to 10 of them
+                images.slice(0, 10).map((image: MovieImage) => (
+                  <ImageListItem
+                    key={image.file_path}
+                    sx={styles.gridListTile}
+                    cols={1}
+                  >
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500/${image.file_path}`}
+                      alt="Movie still"
+                    />
+                  </ImageListItem>
+                ))
+              ) : /**
+               * If there are no images, use the poster_path.
+               * This ensures that something is displayed in the left column,
+               * especially when `getMovieImages()` returns an empty array.
+               */
+              movie.poster_path ? (
+                <ImageListItem sx={styles.gridListTile}>
                   <img
-                    src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
-                    alt={"Image alternative"}
+                    src={`https://image.tmdb.org/t/p/w500/${movie.poster_path}`}
+                    alt="Movie poster"
                   />
                 </ImageListItem>
-              ))}
+              ) : (
+                <p></p>
+              )}
             </ImageList>
           </Grid>
 

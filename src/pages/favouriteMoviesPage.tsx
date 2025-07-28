@@ -66,6 +66,7 @@ const FavouriteMoviesPage: React.FC = () => {
   const [sortOrder, setSortOrder] = useState("desc");
 
   const { favourites: movieIds } = useContext(MoviesContext);
+
   const { filterValues, setFilterValues, filterFunction } = useFiltering([
     titleFiltering,
     genreFiltering,

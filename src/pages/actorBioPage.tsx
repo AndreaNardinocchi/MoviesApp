@@ -177,7 +177,10 @@ const ActorBioPage: React.FC = () => {
     release_date: "",
     vote_average: 0,
     popularity: 0,
-    poster_path: firstImage ? firstImage.file_path : undefined, // Actor image as poster
+    // poster_path: firstImage ? firstImage.file_path : undefined, // Actor image as poster
+    poster_path: firstImage
+      ? `https://image.tmdb.org/t/p/w500${firstImage.file_path}`
+      : undefined,
     tagline: "",
     runtime: 0,
     revenue: 0,

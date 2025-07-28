@@ -72,7 +72,7 @@ const MustWatchListPage: React.FC = () => {
    * We need localizedList because mustWatchList (from context) stores the original movies in the language
    * they were selected in the upcomingMovies page.
    * Once we switch language, we want to fetch an updated version of the mustWatchList, which means
-   * an updated verssion of each movie, and store the updated movies in the local state, namely the 'localizedList'.
+   * an updated version of each movie, and store the updated movies in the local state, namely the 'localizedList'.
    */
   const [localizedList, setLocalizedList] = useState<BaseMovieProps[]>([]);
 
@@ -102,7 +102,7 @@ const MustWatchListPage: React.FC = () => {
       const updated = [];
       /**
        * This executes a loop that operates on a sequence of values sourced from an iterable object,
-       * which is in this case the iterable object is 'mustWatchList', whose variable is 'movie'
+       * which in this case the iterable object is 'mustWatchList', whose variable is 'movie'
        * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
        */
       for (const movie of mustWatchList) {

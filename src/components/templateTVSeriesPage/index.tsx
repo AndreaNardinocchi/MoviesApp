@@ -78,19 +78,36 @@ const TemplateTVSeriesPage: React.FC<TemplateTVSeriesPageProps> = ({
                 borderRadius: 2,
               }}
             >
-              {/* Map over the images array and render each image */}
-              {images.map((image) => (
-                <ImageListItem
-                  key={image.file_path}
-                  sx={styles.gridListTile}
-                  cols={1}
-                >
+              {images.length > 0 ? (
+                // If images exist , display up to 10 of them
+                images.slice(0, 10).map((image: MovieImage) => (
+                  <ImageListItem
+                    key={image.file_path}
+                    sx={styles.gridListTile}
+                    cols={1}
+                  >
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500/${image.file_path}`}
+                      alt="Movie still"
+                    />
+                  </ImageListItem>
+                ))
+              ) : /**
+               * If there are no images, use the poster_path.
+               * This ensures that something is displayed in the left column,
+               * especially when ` getTVSeriesImages()` returns an empty array.
+               */
+              series.poster_path ? (
+                <ImageListItem sx={styles.gridListTile}>
                   <img
-                    src={`https://image.tmdb.org/t/p/w500/${image.file_path}`} // Construct full image URL
-                    alt={"Image alternative"}
+                    src={`https://image.tmdb.org/t/p/w500/${series.poster_path}`}
+                    alt="Movie poster"
                   />
                 </ImageListItem>
-              ))}
+              ) : (
+                // ❌ Final fallback: Nothing to display
+                <p>No image available</p>
+              )}
             </ImageList>
           </Grid>
 

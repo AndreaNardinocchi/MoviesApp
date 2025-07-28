@@ -1494,6 +1494,235 @@ The rest of the code structure of this page is very similar to the 'upcoming mov
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 - https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date
 
+## Must Watch List page
+
+The **mustWatchList.tsx** page displays a personalized list of must-watch movies. It retrieves the list from both TMDB APIs getUpcomingMovies() and getNowPlayingMovies() in the **tmdb-api.ts** file when a user click on the 'PlaylistAddIcon'. At that point, the above-mentioned icon will display right on top of the clicked card,
+
+![alt text](image-50.png)
+
+(example from the Movie card that shows the code to dispaly the icon on the card header)
+
+![alt text](image-53.png)
+
+which will, then, be displaying on the 'Movie Watch List' page (the logic that handles the addition or removal of a movie from a list is handled by the **context/moviesContext.tsx** file and will be discussed in a dedicated chapter.):
+
+```
+ // Access global must-watch list and remove function from context
+  const { mustWatchList } = useContext(MoviesContext);
+```
+
+The page uses a useEffect hook to fetch the translated movie details whenever the language or must-watch list change. To achieve that, we first create a localizedList state hook, just like the one below, which is set to as an empty array:
+
+```
+const [localizedList, setLocalizedList] = useState<BaseMovieProps[]>([]);
+```
+
+This variable will eventually hold a list of movies, each updated with the correct language based upon the one selected by the user. The reason for this is that the original mustWatchList comes from 'moviesContext', and contains movies in the language they were originally from the 'Upcoming Movies' or from the 'Now Playing' page. However, if the user changes the language later, those movies will not automatically get translated, so we need a separate localized copy.
+
+Additionally, the boolean state hook is called loading to keep track of whether data is being fetched:
+
+```
+ const [loading, setLoading] = useState(true);
+```
+
+Therefore, the useEffect hook runs every time the 'mustWatchList' or the selected language changes.
+Inside this hook, an asynchronous function called 'fetchLocalized' will be responsible for updating each movie in the list with its translated data:
+
+```
+...
+useEffect(() => {
+    /**
+     * Define an async function to fetch localized data for each movie in the mustWatch list.
+     */
+    const fetchLocalized = async () => {
+      /**
+       * Create an array to hold the updated movie objects
+       */
+      const updated = [];
+      /**
+       * This executes a loop that operates on a sequence of values sourced from an iterable object,
+       * which in this case the iterable object is 'mustWatchList', whose variable is 'movie'
+       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+       */
+      for (const movie of mustWatchList) {
+        /**
+         * Call the getMovie() API to get full movie data as localized.
+         * This includes translated title, overview, poster, etc.
+         */
+        const data = await getMovie(movie.id, lang);
+        /**
+         * Push the new movie object to the array
+         * localizedList
+         */
+        updated.push({
+          /**
+           * ...movie is the 'spreaded' to copy all existing data of the movie object.
+           * After spreading, we can add or overwrite specific properties, like title, overview, poster path,
+           * release date, and vote average with new translated values.
+           * It creates a new object that keeps all old data except the ones we explicitly change.
+           */
+          ...movie,
+          title: data.title,
+          overview: data.overview,
+          poster_path: data.poster_path,
+          release_date: data.release_date,
+          vote_average: data.vote_average,
+          /**
+           * If the movie only has `genres` (array of { id, name }),
+           * extract the numeric genre_ids using optional chaining.
+           * If `genres` is missing or not an array, default to an empty array.
+           */
+          genre_ids: data.genres?.map((g: { id: number }) => g.id) || [],
+        });
+      }
+      /**
+       * Save the updated list of localized movie data to state,
+       * so the UI can render it with the correct language.
+       */
+      setLocalizedList(updated);
+      setLoading(false); // Mark as finished loading
+    };
+    ...
+```
+
+The empty array 'updated' will store the new localized movie objects.
+The function then loops through each movie in mustWatchList using a 'for...of' loop, and, for every movie, it calls the getMovie API, which fetches the full movie data in the current language.
+
+```
+ const data = await getMovie(movie.id, lang);
+```
+
+Once the data is returned, a new object is created by spreading the original movie’s data, and overriding specific fields like 'title', 'overview', 'poster_path', 'release_date', and 'vote_average' with their localized versions (in-language version).
+
+Additionally, if the fetched data includes a list of genres, the function extracts just the genre , and stores them in the 'genre_ids' property. If genres are missing, an empty array is used instead.
+
+Each newly created movie object is added/pushed to the updated array, so that, in the end, once all movies have been added, the 'setLocalizedList' function is called with the updated array to store the new state.
+Last but not least, the setLoading(false) kicks in to indicate that the data fetching is complete, and the component can be re-rendered.
+
+See example of the page in Portuguese:
+
+![alt text](image-52.png)
+
+### Source attribution
+
+- https://materialui.co/icon/highlight-off
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/for...of
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+- https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date?
+
+## Favourites page
+
+The **favouriteMoviesPage.tsx** displays a personalized list of favourites movies. It retrieves the list from both TMDB APIs getMovies() in the **tmdb-api.ts** file when a user click on the 'FavoriteIcon' on a movie card in the 'Discover Movies' page. At that point, the above-mentioned icon will display right on top of the clicked card,
+
+![alt text](image-51.png)
+
+(example from the Movie card that shows the code to dispaly the icon on the card header)
+
+![alt text](image-53.png)
+
+The useContext hook accesses the favourites array from the global MoviesContext, which contains only the movie IDs:
+
+```
+  const { favourites: movieIds } = useContext(MoviesContext);
+```
+
+To get full movie details in the right language, it uses useQueries from React Query to send API requests using getMovie(movieId, lang):
+
+![alt text](image-54.png)
+
+Once the queries are completed, the results are mapped into 'allFavourites':
+
+```
+  /**
+   * Extract all movie data from the array of favourite queries.
+   * Each element is the `data` field from a React Query result object.
+   */
+  const allFavourites = favouriteMovieQueries.map((q) => q.data);
+```
+
+Each movie is then, 'normalized', so that all have a consistent 'genre_ids' format, just like for fields such as 'homepage', 'release_date', poster_path', and so on, which is not the case when we fetch a movie data via the getMovie() API:
+
+![alt text](image-55.png)
+
+We, hence, resolved working on the below block of code to 'normalize' each single movie data structure to include 'genre_ids' if it did exist:
+
+```
+...
+
+  /**
+   * Normalize all favourite movies into a consistent structure.
+   * This ensures that each movie has `genre_ids`, even if originally only `genres` was provided,
+   * and filters out any 'null/undefined' entries.
+   */
+  const normalizedMovies = allFavourites
+    .map((movie) => {
+      if (!movie) return null;
+
+      // If genre_ids already exist, return movie as is
+      if (movie.genre_ids) {
+        return movie;
+      }
+
+      /**
+       * If the movie only has `genres` (array of { id, name }),
+       * extract the numeric genre_ids using optional chaining.
+       * If `genres` is missing or not an array, default to an empty array.
+       * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+       */
+      const genre_ids = movie.genres?.map((g: { id: number }) => g.id) ?? [];
+
+      // Return a new movie object with genre_ids added
+      return {
+        ...movie,
+        genre_ids,
+      };
+    })
+    .filter(Boolean); // remove any null entries safely
+  /**
+   * PS* Boolean values are typically used in conditional testing, such as the condition for if...else and while statements,
+   * the conditional operator (? :), or the predicate return value of Array.prototype.filter().
+   * You would rarely need to explicitly convert something to a boolean value, as JavaScript does this automatically in
+   * boolean contexts, so you can use any value as if it's a boolean, based on its truthiness.
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+   */
+
+  // Apply filters (title, genre, release year) to the normalized movie list.
+  const displayedMovies = normalizedMovies
+    ? filterFunction(normalizedMovies)
+    : [];
+
+...
+```
+
+Therere, what we needed to do was to 'map' 'allFavourites' movies, and only return movies with the field 'genre_ids', whereas for those which didn't we 'manipulated' them by returning a new movie object (using the 'spread' operator and adding the genre_ids previously 'mapped' from 'movie.genres'). The 'filter(Boolean)' would then do away with null entries.
+
+![alt text](image-56.png)
+
+This block of code was necessary because the TMDB API returns different data structures depending on how movie data is fetched, and your app expects a consistent structure (genre_ids) for filtering and displaying movies.
+
+Inside the action prop of PageTemplate, each movie card is rendered with two interactive buttons: RemoveFromFavourites and WriteReview, allowing users to manage their list or write a review.
+
+![alt text](image-58.png)
+
+(Code snippet below)
+
+![alt text](image-57.png)
+
+The entire component rerenders whenever the favourites list or selected language changes, ensuring the data remains current and correctly translated.
+
+### Source attribution
+
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Optional_chaining
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
+- https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date
+
 =========== TO BE CONTINUED ==================
 
 ## Bugs and defects
@@ -1517,3 +1746,7 @@ Special thanks to John Rellis too as he transferred plenty of the knowledge in t
 And a big thank you to my fellow students for asking questions on our Slack channel from which I was able to capture useful bits for the project.
 
 Thank you all again!!!
+
+```
+
+```
