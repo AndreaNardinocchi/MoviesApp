@@ -162,13 +162,13 @@ const SiteHeader: React.FC = () => {
    */
   // List of menu options for mobile view (no dropdowns here)
   const mobileMenuOptions = [
-    { label: "Home", path: "/" },
-    { label: "Discover", path: "/movies/discover" },
-    { label: "Upcoming", path: "/movies/upcoming" },
-    { label: "MustWatch", path: "/movies/mustwatchlist" },
-    { label: "Now Playing", path: "/movies/nowplaying" },
-    { label: "Favorites", path: "/movies/favourites" },
-    { label: "TV Series", path: "/tvseries" },
+    { label: t("home"), path: "/" },
+    { label: t("discover_movies"), path: "/movies/discover" },
+    { label: t("upcoming_movies"), path: "/movies/upcoming" },
+    { label: t("mustwatch_movies"), path: "/movies/mustwatchlist" },
+    { label: t("now_playing"), path: "/movies/nowplaying" },
+    { label: t("favorites_movies"), path: "/movies/favourites" },
+    { label: t("tv_series"), path: "/tvseries" },
   ];
 
   /**

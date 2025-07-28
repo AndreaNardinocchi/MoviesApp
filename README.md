@@ -1482,24 +1482,6 @@ export interface NowPlayingMoviesResponse {
 
 The 'lang' variable conveys 'i18n.language', which is the language selected in the language switcher by the user, which will determine the language of the data fetched by the getUpcomingMovies() API function.
 
-It imports essential libraries, including React, React Query, Material UI, and context for global movie state. Filtering logic is implemented using a custom useFiltering hook with default filters for title, genre, and release year. The useQuery hook asynchronously fetches paginated movie data in the selected language. The movie list is filtered and sorted based on user input, and the PageTemplate component handles rendering of individual movie cards. A PlaylistAddIcon appears for movies, allowing users to add them to a must-watch list. Pagination and filtering UI are included for navigation and refinement. The component also dynamically updates the browser title based on the current language. The useEffect hook logs updates to the must-watch list. Styling and conditional rendering ensure user-friendly behavior. The full list updates with localization and supports multiple languages through react-i18next.
-
-and manages loading and error states.
-
-![alt text](image-43.png)
-
-As it can be observed above, the interface props we are leveraging is 'UpcomingMoviesResponse' in **types/interfaces.ts** which does encompass fields such as 'total_pages' and 'page', which are essential for pagination purposes, as we have seen in the 'Discover Movies' page too:
-
-```
-export interface UpcomingMoviesResponse {
-  page: number;
-  total_pages: number;
-  results: BaseMovieProps[];
-}
-```
-
-The 'lang' variable conveys 'i18n.language', which is the language selected in the language switcher by the user, which will determine the language of the data fetched by the getNowPlayingMovies() API function.
-
 The rest of the code structure of this page is very similar to the 'upcoming movie' page indeed.
 
 ### Source attribution
