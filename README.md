@@ -2207,6 +2207,116 @@ Apart from the borderRadius, and boxShadow properties which help make the card '
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
 - https://image.tmdb.org/t/p/w500
 
+## Movie Deatils page
+
+At the core, the **movieDetailsPage.tsx** page serves to fetch and render full details about a single movie, including its cast. The most critical part of the logic hinges on using 'useParams' to extract the movie ID from the route:
+
+```
+const { id } = useParams();
+```
+
+This ID becomes the anchor point for the rest of the data fetching flow. Without it, we woud not be able to fetch data of a specific movie when we click on the 'More Info' button on the movie card since the ID is passed to both API functions; getMovie(), and getMovieCredits().
+
+![alt text](image-68.png)
+
+![alt text](image-66.png)
+
+As a matter of fact, we have created an async function 'fetchMovieWithCast' which bundles the two API calls we will use to fetch the movie details, and the movie credits (cast). The spread operator on the movie object then copies all movie properties/fields to this a one, as per the 'MovieDeatilsProps' in **types/interfaces.ts**, and will attach the cast list:
+
+```
+export interface MovieDetailsProps extends BaseMovieProps {
+  genres: {
+    id: number;
+    name: string;
+  }[];
+  production_countries: {
+    iso_3166_1: string;
+    name: string;
+  }[];
+  /**
+   * List of cast members associated with the movie.
+   * We want to make the cast data available wherever we use the MovieDetailsProps —
+   * especially in components like TemplateMoviePage or detail views
+   * */
+  cast: CastMember[];
+  /**
+   * List of movie release years.
+   * https://developers.themoviedb.org/3/movies/get-movie-details
+   */
+  release: {
+    year: number;
+  }[];
+}
+
+```
+
+The API functions fetching data from the TMDB database are stored into the **tmdb-api.tsx** file:
+
+```
+/**
+ * Fetches detailed information about a specific movie from TMDb.
+ * The 'Language' string is used for localized results and its default is "en-US".
+ * https://developer.themoviedb.org/reference/movie-details
+ * https://www.themoviedb.org/talk/593fed45c3a36851f8002d83
+ */
+export const getMovie = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/${id}?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error(
+          `Failed to get movie data. Response status: ${response.status}`
+        );
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+```
+
+```
+/**
+ * Fetches the cast (actors) for a given movie ID from The Movie Database (TMDb) API.
+ * https://developer.themoviedb.org/reference/movie-credits
+ * 'id' is the ID of the movie (can be a string or number)
+ */
+export const getMovieCredits = (id: string | number) => {
+  // , language = "en-US")
+  return fetch(
+    `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  )
+    .then((res) => {
+      if (!res.ok) throw new Error("Failed to fetch movie credits");
+      return res.json();
+    })
+    .then((json) => json.cast) // Only return the cast (actors)
+    .catch((error) => {
+      throw error;
+    });
+};
+```
+
+We then run the actual query using React Query’s useQuery:
+
+![alt text](image-67.png)
+
+The query key ["movie", id, lang] is not just an ID label. It’s how React Query decides whether cached data is still valid. Including lang ensures that switching languages triggers a refetch. This is the useQuery structure we have used all along so far.
+
+The template used for this page is **templateMoviePage/index.tsx** component into which we embed the **movieDetails/index.tsx** components passing in the parameter '...movie' to populate the component with movie data.
+
+![alt text](image-69.png)
+
+### Source attribution
+
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+
 =========== TO BE CONTINUED ==================
 
 ## Bugs and defects
