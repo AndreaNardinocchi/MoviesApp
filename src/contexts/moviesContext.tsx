@@ -104,7 +104,7 @@ const MoviesContextProvider: React.FC<React.PropsWithChildren> = ({
       return;
     }
     /**
-     * We then insert the favourite movie  to supabase based upon the table structure
+     * We then insert the favourite movie to supabase based upon the table structure
      * we created in the supabase SQL Editor
      * https://supabase.com/docs/guides/auth/managing-user-data
      * https://supabase.com/docs/guides/database/postgres/row-level-security

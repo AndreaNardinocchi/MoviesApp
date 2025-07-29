@@ -7,5 +7,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
 
 /**
  * This taken from https://supabase.com/dashboard/project/mydashsboard,
+ * https://supabase.com/dashboard/project/{supabaseURL}/api
  * but, for security purposes, I use .env
  */

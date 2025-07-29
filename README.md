@@ -415,6 +415,358 @@ The form is responsive and accessible, and the navigate hook redirects users aft
 - https://muhimasri.com/blogs/mui-validation/
 - https://supabase.com/docs/reference/javascript/auth-signinwithpassword
 
+## supabaseClient file
+
+This file basically installs and sets up the Supabase TypeScript client in the MoviesApp project.
+The @supabase/supabase-js package is first installed using npm.
+
+```
+npm install @supabase/supabase-js
+```
+
+Then, 'createClient' is imported to initialize a Supabase client with a URL and an API key. These credentials are securely loaded from environment variables using import.meta.env.
+
+Finally, the configured Supabase client is exported for use throughout the app.
+
+### Source attributions
+
+- https://supabase.com/dashboard/project/mydashsboard,
+- https://supabase.com/dashboard/project/{supabaseURL}/api
+
+## moviesContext file
+
+This **contexts/movieContext.tsx** file defines a React context to manage our app movie data, such as 'favourites' and 'must watch' movies. It integrates with Supabase for persistent storage, allowing the app to sync user data between sessions and across devices. The context provides methods to add or remove movies from two separate lists: 'favourites' and 'must watch' lists. Additionally, It manages the add review feature.
+
+State is managed using React's useState.
+
+![alt text](image-61.png)
+
+and functions like useCallback ensure stable references for performance.
+
+```
+ // Function to add a movie to the favourites list, ensuring no duplicates.
+  // We extended the functon to 'insert' data to the 'supabase' database
+  const addToFavourites = useCallback(async (movie: BaseMovieProps) => {
+    setFavourites((prevFavourites) => {
+      const movieId = Number(movie.id); // Convert to number
+      if (!prevFavourites.includes(movieId)) {
+        console.log("Adding to favourites:", movieId);
+        return [...prevFavourites, movieId];
+      }
+      return prevFavourites;
+    });
+```
+
+When a user logs in, the user is authenticated and their stored data is fetched from Supabase.
+
+```
+/**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+```
+
+We then query the favourites SQL table we created in Supabase using .select() with filters: 'user_id' and 'movie_id'.
+The '.maybeSingle()' method ensures it returns a single row or null.
+If a matching record already exists, it logs a message and exits to avoid duplicating the entry.
+
+```
+/**
+     * This function will enable us to avoid duplicates. Essentially, we are
+     * 'selecting' the id of the movie addition, and checking 'user_id' and 'movie_id'
+     * to find the existing one and append maybeSingle() to Return data as a single object
+     * instead of an array of objects, meaning it won't get duplicated.
+     * https://supabase.com/docs/reference/javascript/maybesingle
+     *  */
+    const { data: exist, error: selectError } = await supabase
+      .from("favourites")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("movie_id", movie.id)
+      .maybeSingle();
+
+    if (selectError) {
+      console.error("Error checking existing favourite: ", selectError.message);
+      return;
+    }
+
+    if (exist) {
+      console.error(
+        "This movie already exists in your favourite movies list: ",
+        movie.title
+      );
+      return;
+    }
+```
+
+If no duplicate is found, it inserts a new row into the favourites table with the user ID, movie ID, title, and poster path.
+If insertion fails, it logs the error.
+If successful, it logs a success message confirming the movie was added to the user's favourites in the database.
+
+```
+/**
+     * We then insert the favourite movie to supabase based upon the table structure
+     * we created in the supabase SQL Editor
+     * https://supabase.com/docs/guides/auth/managing-user-data
+     * https://supabase.com/docs/guides/database/postgres/row-level-security
+     * https://supabase.com/docs/reference/javascript/insert
+     */
+    const { error } = await supabase.from("favourites").insert({
+      user_id: user.id,
+      movie_id: movie.id.toString(),
+      movie_title: movie.title,
+      poster_path: movie.poster_path,
+    });
+
+    if (error) {
+      console.error("No data inserted in Supabase: ", error.message);
+    }
+
+    console.log(
+      "Successfully added this movie to Supabase favourites: ",
+      movie.title
+    );
+  }, []);
+```
+
+In short, the function updates both local state and remote storage (Supabase), ensuring data consistency and avoiding duplicates.
+
+This is a screenshot of the 'favourites' SQL table created on Supabase, which we query:
+
+![alt text](image-62.png)
+
+The function 'fetchSupabaseFavouriteMovies' fetches the list of favourite movies for a given user from Supabase and does that by using filters such as the 'userId' to enure we are fetching data of that specific user:
+
+```
+/**
+   * Fetches the list of favourite movies for a given user from Supabase.
+   * useCallBack() lets us cache a function definition between re-renders.
+   *https://react.dev/reference/react/useCallback
+   */
+  const fetchSupabaseFavouriteMovies = useCallback(async (userId: string) => {
+    /**
+     * Use Supabase to query the "favourites" table
+     * where the "user_id" column matches the provided userId
+     * https://supabase.com/docs/reference/javascript/using-filters
+     */
+    const { data, error } = await supabase
+      .from("favourites")
+      .select()
+      .eq("user_id", userId);
+
+    // If error, we will get the below message
+    if (error) {
+      console.error("User not found", error.message);
+      return;
+    }
+     // If data is successfully returned, map through the movie to extract the movie_id value,
+    // and update the component's state const [favourites, setFavourites] = useState<number[]>([]);
+    if (data) {
+      // We amended this since we had declared the useState for the const favourites as an array of numbers
+      // Also, 'm' is a better label than 'movie', which is an object, but we are essentially fetchin a value from
+      // the supabase table row
+      // const ids = data.map((movie) => movie.movie_id);
+      const ids = data.map((m) => Number(m.movie_id));
+      setFavourites(ids);
+    }
+  }, []);
+
+```
+
+If 'data' is returned, we extarct the movie ids by 'mapping' the data for then set them up in the favourite list (updating the state hook).
+
+At this point, the following useEffect() hook will act out as a helper by enabling to load the user's favourite movies when the component mounts, so that any time the 'fetchSupabaseFavouriteMovies' function changes the 'favourites' are fetched:
+
+```
+/**
+   * useEffect here enables to load the user's favourite movies when the component mounts.
+   * Any time the `fetchSupabaseFavouriteMovies` function changes the favourites are fetched
+   */
+  useEffect(() => {
+    const loadUserFavourites = async () => {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+
+      if (userError || !user) {
+        console.error("User not found", userError?.message);
+        return;
+      }
+
+      fetchSupabaseFavouriteMovies(user?.id);
+    };
+
+    loadUserFavourites();
+```
+
+It is now that we need to set up a listener by calling 'supabase.auth.onAuthStateChange()' to listen for sign-in or sign-out events, so that If a user signs in, it fetches their favourites again using their session user ID. If a user signs out, it clears the local favourites list using setFavourites([]).
+
+```
+ /**
+     * This sets up a listener to detect changes in the authentication user state
+     * SIGNED_IN: Emitted each time a user session is confirmed or re-established, including on user sign in and when refocusing a tab.
+     * SIGNED_OUT: Emitted when the user signs out.
+     * https://supabase.com/docs/reference/javascript/auth-onauthstatechange
+     * */
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log(event, session);
+
+      if (event === "SIGNED_IN" && session) {
+        fetchSupabaseFavouriteMovies(session.user.id);
+      } else if (event === "SIGNED_OUT") {
+        setFavourites([]); // This will set the favourites list to empty
+      }
+    });
+
+    // Call unsubscribe to remove the callback NOT WORKING
+    // data.subscription.unsubscribe();
+
+    /**
+     * The above unsubscribe call was not correctly unsubscribing, and we were
+     * ending up showing the same favourites list regardless of the user logging in.
+     * Apparently, the correct logic is  return () => { // Cleanup logic };
+     * https://devchallenges.io/learn/4-frontend-libraries/side-effects-in-react
+     */
+
+    return () => {
+      data.subscription.unsubscribe();
+    };
+  }, [fetchSupabaseFavouriteMovies]); // dependency array
+
+```
+
+When the component is unmounted, the listener is unsubscribed using 'data.subscription.unsubscribe()' inside the return cleanup function.
+
+When ti comes to removing a favourite movie, the 'removeFromFavourites' function, the state updater 'setFavourites' is called with a function that filters out the 'movie.id' from the current favourites array.
+
+```
+  setFavourites((prevFavourites) =>
+      prevFavourites.filter((mId) => mId !== movie.id)
+    );
+    console.log("Removing from favourites:", movie.id);
+
+```
+
+This ensures that the UI immediately reflects the removal even before Supabase is updated.
+
+At that point, we retrive the currently authenticated user again via the 'supabase.auth.getUser()' function.
+
+```
+ /**
+     * We retrieve the user data from the supabase database
+     * https://supabase.com/docs/reference/javascript/auth-getuser
+     */
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+```
+
+Finally, a delete operation is performed on the favourites table, by filtering the deletion and matching both 'user_id', and 'movie_id' to ensure the correct record is removed.
+
+```
+/**
+     * We delete the favourite movie from supabase
+     * https://supabase.com/docs/reference/kotlin/delete
+     */
+    const { error } = await supabase
+      .from("favourites")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("movie_id", movie.id);
+
+    if (error) {
+      console.error("No data deleted from Supabase: ", error.message);
+    }
+
+    console.log(
+      "Successfully deleted this movie from Supabase favourites: ",
+      movie.title
+    );
+  }, []);
+```
+
+The 'must watch' list contexts functions follow the same exact logias the 'favourites' list. Howvere, it is worth pointing out a few differences.
+
+One of them is that 'mustWatchList' checks if a full movie object with that id already exists using .find():
+
+```
+setMustWatchList((prevMustWatchList) => {
+  const alreadyExists = prevMustWatchList.find((m) => m.id === movie.id);
+  if (!alreadyExists) {
+    return [...prevMustWatchList, movie];
+  }
+  return prevMustWatchList;
+});
+
+```
+
+Also, when fetching 'must watch' movies data, we also pull 'title' and 'poster_path', and reconstructs full objects, whereas 'favouties' only pulls 'movie_id'.
+
+```
+// If data is successfully returned, map through the movie to extract the movie_id value,
+    // and update the component's state const [mustWatchList, setMustWatchList] = useState<number[]>([]);
+    if (data) {
+      // We amended this since we had declared the useState for the const favourites as an array of numbers
+      // Also, 'm' is a better label than 'movie', which is an object, but we are essentially fetchin a value from
+      // the supabase table row
+      // const ids = data.map((m) => m.movie_id);
+      const movies = data.map((m) => ({
+        id: Number(m.movie_id),
+        title: m.movie_title,
+        poster_path: m.poster_path,
+      }));
+      setMustWatchList(movies);
+    }
+  }, []);
+
+```
+
+Finally, when removing a 'must watch' movie, we filter by full movie object (m.id) instead of by id (mId) as for the 'favourites' functions.
+
+```
+ setMustWatchList((prevMustWatchList) =>
+      prevMustWatchList.filter((m) => m.id !== movie.id)
+    );
+
+```
+
+This is the Supabase SQL table:
+
+![alt text](image-63.png)
+
+In a nutshell, thanks to this file, we are able to ensure data persistence on a user UI on the 'favourites' and 'must watch' lists.
+
+Screenshots of the Supabase data in each table:
+
+'Must Watch' list
+
+![alt text](image-64.png)
+
+'Favourites'
+
+![alt text](image-65.png)
+
+### Source attributions
+
+- https://supabase.com/docs/reference/javascript/auth-getuser
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/find
+- https://supabase.com/docs/reference/javascript/maybesingle
+- https://supabase.com/docs/guides/auth/managing-user-data
+- https://supabase.com/docs/guides/database/postgres/row-level-security
+- https://supabase.com/docs/reference/javascript/insert
+- https://react.dev/reference/react/useCallback
+- https://supabase.com/docs/reference/javascript/using-filters
+- https://supabase.com/docs/reference/javascript/auth-onauthstatechange
+- https://supabase.com/docs/reference/kotlin/delete
+- https://devchallenges.io/learn/4-frontend-libraries/side-effects-in-react
+
 ## homePage.tsx
 
 The **HomePage.tsx** page is the main landing page for the movie app, which replaces the 'discover movies' which was moved down the 'Movie Lists' dropdown menu.
@@ -1072,7 +1424,7 @@ However, the next subchapters will briefly hash out the use of the **templateMov
 
 This component (**templateMovieListPage/index.tsx**) is built out as a reusable layout for movie list pages. It receives movies, title, and action as props.
 The layout includes a header, which is no longer inside the grid as given at the beginning of the project, and a styled grid container to structure the content.
-The MovieList component is nested inside the grid for responsive layout.
+The 'MovieList' component is nested inside the grid for responsive layout.
 Styles are applied via the sx prop to control padding, background, and layout spacing. Paddings and minimum height have been added later to confer a nice, and more elevated touch to the landing pages:
 
 ```
@@ -1086,6 +1438,31 @@ const styles = {
     minHeight: "50vh",
   },
 };
+```
+
+### Movie List component
+
+The **movieList/index.tsx** component imports the 'movieCard' component and set a grid layout in which the Movie component will iterate and enable the rendering of all movie data fetched from the API function in the **tmdb-api.tsx** consumed on the specific page.
+The 'MovieList' functional component, in essence, receives movies and action as props based on the BaseMovieListProps interface. It, then, maps over the movies array, creating a Grid item for each movie, which contains a Movie component.
+Finally, it returns the array of movies in the form of movie cards:
+
+```
+import React from "react";
+import Movie from "../movieCard/";
+import Grid from "@mui/material/Grid";
+import { BaseMovieListProps } from "../../types/interfaces";
+
+const MovieList: React.FC<BaseMovieListProps> = ({ movies, action }) => {
+  const movieCards = movies.map((m) => (
+    <Grid key={m.id} item xs={12} sm={6} md={4} lg={3} xl={2}>
+      <Movie key={m.id} movie={m} action={action} />
+    </Grid>
+  ));
+  return movieCards;
+};
+
+export default MovieList;
+
 ```
 
 ### Header Movie list
@@ -1111,6 +1488,18 @@ This component in **headerMovieList/index.tsx** has been targeted for minor, and
         <ArrowForwardIcon sx={{ color: "#8E4585" }} fontSize="large" />
       </IconButton>
 ```
+
+This component is a great example of a reusable UI piece since it is completely independent of whether we use it for movies or TV series.
+
+The internal prop
+
+```
+interface HeaderProps {
+  title: string;
+}
+```
+
+ensures that the component is decoupled and reusable throghout the app.
 
 ### Movie card
 
@@ -1722,6 +2111,101 @@ The entire component rerenders whenever the favourites list or selected language
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort
 - https://stackoverflow.com/questions/74242074/sorting-array-of-objects-by-iso-date
+
+### Template TV Series list
+
+This component **templateMovieListPage/index.tsx** has been created as a copy of the 'templateMovieListPage', and adapted for TV series,
+in order to be used with the 'series' array in place of the 'movies' array.
+As a matter of fact, 'series' is fetched from the 'TVSeriesListPageTemplateProps' interface 'series: BaseTVSeriesProps[];' in the **types/interfaces.ts**.
+The TVSeriesList component is nested inside the grid for responsive layout.
+Styles are applied via the sx prop to control padding, background, and layout spacing. Paddings and minimum height have been added later to confer a nice, and more elevated touch to the landing pages:
+
+```
+const styles = {
+  root: {
+    backgroundColor: "#bfbfbf",
+    paddingRight: "1%",
+    paddingLeft: "1%",
+    paddingBottom: "2%",
+    paddingTop: "1%",
+    minHeight: "50vh",
+  },
+};
+```
+
+### TV Series List component
+
+The **TVSeriesList/index.tsx** component is a clone of the **movieList/index.tsx** imports the 'movieCard' component, and set a grid layout in which the TVSeriesCard component will iterate and enable the rendering of all TV series data fetched from the API function in the **tmdb-api.tsx** consumed on the specific page.
+The 'TVSeriesList' functional component, in essence, receive TVSeries and action as props based on the 'TVSeriesListProps' interface. It, then, maps over the 'series' array, creating a Grid item for each TV Series, which contains a 'TVSeries Card' component.
+Finally, it returns the array of series in the form of TVSeries cards:
+
+```
+import React from "react";
+import Grid from "@mui/material/Grid";
+import { TVSeriesListProps } from "../../types/interfaces";
+import TVSeriesCard from "../tvSeriesCard";
+
+// 'series' is fetched from the TVSeriesListProps interface 'series: BaseTVSeriesProps[];'
+const TVSeriesList: React.FC<TVSeriesListProps> = ({ series, action }) => {
+  const seriesCards = series.map((tv) => (
+    <Grid key={tv.id} item xs={12} sm={6} md={4} lg={3} xl={2}>
+      <TVSeriesCard series={tv} action={action} />
+    </Grid>
+  ));
+  return seriesCards;
+};
+
+export default TVSeriesList;
+
+```
+
+### Source attribution
+
+### TV Series card
+
+The **TVSeriesCard/index.tsx** does not use React hooks like useContext, useEffect, and useState to manage local state, and access global context values, as opposed to its clone **movieCard/index.tsx** since we have decided not to implement any 'favourites' or 'mustWatch' features for the TV Series list.
+
+However, it also uses components like Card, CardHeader, and CardMedia to create a responsive and interactive movie card layout.
+Just like the pages and most of the components, useTranslation() hook from react-i18next allows the component to support multiple languages and dynamic translation.
+
+The TVSeries card does have the same CSS features as added to the 'Movie card' to spice up the card rendering:
+
+```
+...
+cconst styles = {
+  card: {
+    maxWidth: 345, // Card width to keep layout consistent in grid
+    borderRadius: "10px",
+    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+    // The transition will kick in at a reasonable speed
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+    "&:hover": {
+      // The scale() CSS function defines a transformation that resizes an element on the 2D plane.
+      // https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+      transform: "scale(1.05)",
+      // we change the box Shadow property values to make it more prominent on hovering
+      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.3)",
+      // This property will make the card stick out with a sort of the 3D effect
+      cursor: "pointer",
+    },
+  },
+
+  ...
+
+```
+
+Apart from the borderRadius, and boxShadow properties which help make the card 'stick out' even more, we have added the transition, and transform properties on hover to make the card kinda 'bulge out':
+
+[Watch the video](./20250729-1442-05.9377567.mp4)
+
+### Source attribution
+
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transition
+- https://developer.mozilla.org/en-US/docs/Web/CSS/transform-function/scale
+- https://react.i18next.com/latest/usetranslation-hook
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+- https://image.tmdb.org/t/p/w500
 
 =========== TO BE CONTINUED ==================
 

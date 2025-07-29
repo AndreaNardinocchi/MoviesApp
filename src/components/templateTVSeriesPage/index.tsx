@@ -105,8 +105,7 @@ const TemplateTVSeriesPage: React.FC<TemplateTVSeriesPageProps> = ({
                   />
                 </ImageListItem>
               ) : (
-                // ❌ Final fallback: Nothing to display
-                <p>No image available</p>
+                <p></p>
               )}
             </ImageList>
           </Grid>

@@ -99,7 +99,7 @@ const TVSeriesCard: React.FC<TVSeriesCardProps> = ({ series, action }) => {
 
       <CardContent>
         <Grid container>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Typography
               variant="h6"
               component="p"
@@ -116,14 +116,14 @@ const TVSeriesCard: React.FC<TVSeriesCardProps> = ({ series, action }) => {
               {new Date(series.first_air_date).toLocaleDateString()}
             </Typography>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <Typography
               variant="h6"
               component="p"
               display="flex"
               alignItems="center"
             >
-              <StarRateIcon fontSize="small" sx={{ marginRight: 0.5 }} />
+              <StarRateIcon fontSize="small" />
               {series.vote_average}
             </Typography>
           </Grid>

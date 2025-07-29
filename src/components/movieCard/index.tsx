@@ -134,13 +134,13 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, action }) => {
       {/* Metadata: release date and average rating */}
       <CardContent>
         <Grid container>
-          <Grid item xs={6}>
+          <Grid item xs={8}>
             <Typography variant="h6" component="p">
               <CalendarIcon fontSize="small" /> {/* Calendar icon */}
               {movie.release_date}
             </Typography>
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <Typography variant="h6" component="p">
               <StarRateIcon fontSize="small" /> {/* Star icon */}
               {"  "} {movie.vote_average}{" "}
