@@ -2207,9 +2207,12 @@ Apart from the borderRadius, and boxShadow properties which help make the card '
 - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
 - https://image.tmdb.org/t/p/w500
 
-## Movie Deatils page
+## Movie Details page
 
-At the core, the **movieDetailsPage.tsx** page serves to fetch and render full details about a single movie, including its cast. The most critical part of the logic hinges on using 'useParams' to extract the movie ID from the route:
+At the core, the **movieDetailsPage.tsx** page serves to fetch and render full details about a single movie, including its cast.
+
+![alt text](image-70.png)
+The most critical part of the logic hinges on using 'useParams' to extract the movie ID from the route:
 
 ```
 const { id } = useParams();
@@ -2316,6 +2319,659 @@ The template used for this page is **templateMoviePage/index.tsx** component int
 ### Source attribution
 
 - https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react?
+
+### Movie Details component
+
+The **movieDetails/index.tsx** component accepts a movie object as a prop pulled from the 'MovieDetailsProps' interface in hte **types/interfaces.ts**
+
+```
+const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
+...
+
+```
+
+which will, then, be passed in the various components as properties to fetch the movie object data, as seen below
+
+```
+ {/* Overview Section */}
+      <Box sx={{ paddingTop: "4%" }}>
+        <Typography variant="h5" component="h3">
+          {t("overview")}
+        </Typography>
+      </Box>
+
+      <Typography variant="h6" component="p">
+        {movie.overview}
+      </Typography>
+```
+
+![alt text](image-71.png)
+
+The state variable 'videoKey' is used to store a YouTube trailer key, which gets fetched using getMovieVideos() in the **tmdb-api.tsx** file, exactly as we have seen in the **homePage.tsx** file, when the component mounts or when movie.id changes:
+
+```
+ const [videoKey, setVideoKey] = useState<string>();
+```
+
+We, then, create a functional component called 'HeroVideoSection', which takes a movie object and a videoKey string as props.
+
+```
+const HeroVideoSection = ({
+  movie,
+  videoKey,
+}: {
+  movie: BaseMovieProps;
+  videoKey?: string;
+}) => (
+
+```
+
+At this point, right inside a card component, we use a ternary operator to check if videoKey exists.
+
+```
+ <Card
+      sx={{
+        position: "relative",
+        height: "70vh",
+      }}
+    >
+      {videoKey ? (
+        // https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
+        <CardMedia
+          component="iframe"
+          src={`https://www.youtube.com/embed/${videoKey}?autoplay=1&mute=1&loop=1&playlist=${videoKey}`}
+          title={movie.title}
+          sx={{
+            width: "100%",
+            height: "100%",
+            border: "none",
+          }}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+        />
+      ) : (
+        <CardMedia
+          component="img"
+          image={`${IMAGE_BASE}${movie.poster_path}`}
+          alt={movie.title}
+          title={movie.title}
+          sx={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
+      )}
+```
+
+If it does, the CardMedia with component="iframe" to embed the trailer will autoplay, mute, and loop using YouTube parameters. If there's no trailer, it falls back to a static image using the poster path.
+
+We also use a Box component inside the Card, 'absolutely' positioned near the bottom right, with a semi-transparent background and padding for readability.
+
+```
+  {/* Movie Title Overlay box */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: "10%",
+          right: "1%",
+          color: "white",
+          backgroundColor: "rgba(0,0,0,0.5)",
+          padding: "1rem",
+          borderRadius: "8px",
+          minWidth: "20%",
+        }}
+      >
+        <Typography variant="h4">{movie.title}</Typography>
+      </Box>
+```
+
+At this point, we use useEffect() hook to perform data fetching after the component renders. It depends on movie.id, so it re-runs if the selected movie changes.
+Hence, we first define an async function inside it called 'fetchData', and soon afterwards we call the getMovieVideos function from the **tmdb-api.tsx** and pass the movie id in. This returns an array of video objects.
+
+```
+useEffect(() => {
+    const fetchData = async () => {
+      /**
+       * useEffect hook that runs a function as a 'side effect' after the component renders.
+       * Here, it runs when `movie.id` changes, and is used to fetch the corresponding trailer video.
+       */
+
+      /**
+       * Fetch the videos associated with the selected movie.
+       * https://developer.themoviedb.org/reference/movie-videos
+       * - Looks specifically for a "Trailer" hosted on "YouTube".
+       * - If found, stores the trailer's `key` in state to be embedded later.
+       */
+      const videos = await getMovieVideos(movie.id);
+
+      console.log("Videos: ", videos);
+
+      /**
+       * We then find() the specific video trailer.
+       * Only trailers hosted on YouTube are valid for embedding.
+       */
+      const trailer = videos.find(
+        (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"
+      );
+
+      console.log("Trailer: ", trailer);
+
+      // We then grab the trailer 'key', as per the 'VideoTrailer' interface.
+      // Could be undefined if no trailer is found, hence '?'
+      setVideoKey(trailer?.key);
+    };
+
+    // Call the async function
+    fetchData();
+  }, [movie.id]);
+
+```
+
+We use .find() to locate a video where type is "Trailer" and site is "YouTube", which is required for embedding.
+
+![alt text](image-72.png)
+
+![alt text](image-73.png)
+
+If a matching trailer is found, we extract its key, which is the YouTube video id, and update the state using setVideoKey. If not found, it sets undefined.
+
+Regarding the 'Cast' section, it is worth pointing out the steps followed to display the movie credits and how we made them clickable.
+We first safely verify that 'movie.cast' exists and is an array using 'Array.isArray()', and that it contains at least one item using '.length > 0'.
+
+![alt text](image-74.png)
+
+The next step is map through each actor in the cast array to render them individually.
+
+![alt text](image-75.png)
+
+Each actor is wrapped in a '<li>' element and assigned a unique key using actor.id.
+We also use React Router’s Link to make each actor clickable, leading to a detailed actor page. The state prop carries both the actor and movie data to the destination page.
+We finally display actor info using a Chip component
+Each actor is rendered inside a Material UI Chip, which is styled and set to be clickable, and a Box to wrap the actor’s name and character on mobile view.
+
+```
+{/*
+      To safely handle the movie.cast potentially being undefined or empty, we are using
+      Array.isArray to avoid '.length' checks on possibly undefined values.
+      It ensures it’s a valid array before accessing .length or using .map()
+      Only render cast list if it's a valid non-empty array.
+      https://www.geeksforgeeks.org/typescript-array-isarray-method/?utm_source=chatgpt.com
+      */}
+      {Array.isArray(movie.cast) && movie.cast.length > 0 ? (
+        <Paper component="ul" sx={styles.chipSet}>
+          {movie.cast.map((actor) => (
+            <li key={actor.id}>
+              <Link
+                to={`/movies/${movie.id}/actor/${actor.id}`} // URL path for the actor page
+                state={{ actor: actor, movie: movie }} // Pass actor and movie data as navigation state
+                style={{ textDecoration: "none" }} // Optional styling to remove underline from link
+              >
+                <Chip
+                  clickable
+                  label={
+                    <Box
+                      sx={{
+                        // Allows text to wrap onto multiple lines instead of staying on a single line
+                        // https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+                        whiteSpace: "normal",
+                        wordBreak: "break-word",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {`${actor.name} (${actor.character})`}
+                    </Box>
+                  }
+                  sx={{
+                    ...styles.chipLabel,
+                    py: 1, // vertical padding
+                    minHeight: "3rem", // force taller chip
+                  }}
+                />
+              </Link>
+            </li>
+          ))}
+        </Paper>
+      ) : (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ textAlign: "center", mt: 1 }}
+        >
+          No cast information available.
+        </Typography>
+      )}
+
+```
+
+### Source attribution
+
+- https://image.tmdb.org/t/p/w500
+- https://mad9022.github.io/W2022/modules/week5/api-fetch/#the-movie-db-review
+- https://stackoverflow.com/questions/63842284/autoplay-video-in-react-material-ui-cardmedia-component
+- https://developer.themoviedb.org/reference/movie-videos
+- https://www.geeksforgeeks.org/typescript-array-isarray-method/?utm_source=chatgpt.com
+- https://developer.mozilla.org/en-US/docs/Web/CSS/white-space
+- https://mui.com/system/getting-started/the-sx-prop/?
+
+### Movie Header component
+
+The **headerMovie/index.tsx** component displays the top section of a movie detail page, showing the movie title, tagline, and optional icons based on user preferences: 'favourites' and/or 'must-watch'.
+
+It uses Material UI components like Paper, Avatar, and IconButton for layout and styling.
+
+Soon after the component is defined and access the 'MovieDetailsProps' in the **types/interfaces.tsx**, we access the 'movieContext' to fetch the 'favourites' and 'must - watch' lists functions by descructuring and exctracing them:
+
+```
+ const context = useContext(MoviesContext);
+
+  // Destructure favourites and mustWatchList arrays from the context
+  const { favourites, mustWatchList } = context;
+
+```
+
+At that point, we check if any movie in the mustWatchList array, and in the 'favourites' one has the same id as the current one:
+
+```
+  // Check if the current movie is in the mustWatchList
+  // `.some()` checks if any movie in the list has the same id as the current one
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+  const isMustWatch = mustWatchList.some((m) => m.id === movie.id);
+
+  // Check if the current movie is in the favourites list (by id)
+  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+  const isFavourite = favourites.includes(Number(movie.id));
+
+```
+
+We, then, finally render the movie data in the header.
+
+These are snippets of the 'favourites' and 'must watch':
+
+```
+  {/* Show a red avatar with a heart icon if the movie is a favourite */}
+      {isFavourite && (
+        <Avatar sx={styles.avatar}>
+          <FavoriteIcon />
+        </Avatar>
+      )}
+
+      {/* Show a green avatar with a checklist icon if the movie is in must-watch list */}
+      {isMustWatch && (
+        <Avatar sx={{ backgroundColor: "rgb(0, 128, 0)" }}>
+          <PlaylistAddCheckIcon />
+        </Avatar>
+      )}
+```
+
+### Source attribution
+
+- https://materialui.co/icon/playlist-add-check
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/includes
+
+## Actor Bio Page
+
+The **actorBioPage.tsx** displays the actor biographical information, and a photo gallery of them.
+
+![alt text](image-78.png)
+
+It uses 'useParams' from react-router-dom to extract the 'actorId' and 'movieId' directly from the URL
+
+```
+const { movieId, actorId } = useParams() as {
+    movieId: string;
+    actorId: string;
+  };
+```
+
+since the page route is from **index.tsx** is the following
+
+```
+  <Route path="/movies/:movieId/actor/:actorId"
+  element={<ActorBioPage />}
+   />
+```
+
+Data fetching is handled through react-query via the useQuery hook, which allows asynchronous API calls to retrieve both the actor’s details and images:
+
+![alt text](image-76.png)
+
+![alt text](image-77.png)
+
+As it can be seen above, the API calls in the **tmdb-api.tsx** file are the following ones:
+
+```
+/**
+ * Fetches detailed information for an actor/person by ID from TMDb.
+ * https://developer.themoviedb.org/reference/person-details
+ * 'id' is the actor's person ID as a string.
+ */
+export const fetchActorDetails = async (id: string, language = "en-US") => {
+  const res = await fetch(
+    `https://api.themoviedb.org/3/person/${id}?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch actor details");
+  return res.json();
+};
+
+
+/**
+ * Fetches profile images for a person (actor) from TMDb.
+ *  https://developer.themoviedb.org/reference/person-images
+ * 'personId' is TMDb ID of the person.
+ */
+export const getPersonImages = async (personId: number) => {
+  const response = await fetch(
+    `https://api.themoviedb.org/3/person/${personId}/images?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }`
+  );
+  if (!response.ok) throw new Error("failed to fetch person images");
+  return response.json();
+};
+
+```
+
+The actor’s bio and photos are displayed using Material UI components within a shared layout provided by **templateMoviePage/index.tsx**.
+
+However, because 'TemplateMoviePage' expects a movie object (but we area showing data of an actor), a 'dummy placeholder interface' is constructed using the actor’s data.
+
+```
+/**
+   * A dummy movie object to pass to the template is needed in our ActorBioPage component because the page is built
+   * using the shared layout/template component <TemplateMoviePage />, which expects a valid movie object as a prop. This is to abyde by
+   * the DRY principle and not to create duplicated template when possible.
+   * Here, though, we are not using movie data, but the template still requires a movie prop of type MovieDetailsProps.
+   * After all, we still need to provide data that matches the structure of the templateMoviePage, although it is the actorBioPage we are showing here.
+   * Hence, a placeholder is created to satisfy the type and structural requirements of the TemplateMoviePage without feeding the page with any movie data.
+   * We will then be adding some <Typography /> to add actor bio data we need and <imageList /> and <ImageListIte /> to create the actor umages grid
+   */
+  const dummyMovie: MovieDetailsProps = {
+    id: 0,
+    title: actor?.name || "Actor Bio",
+    budget: 0,
+    homepage: undefined,
+    imdb_id: "",
+    original_language: "",
+    overview: "",
+    release_date: "",
+    vote_average: 0,
+    popularity: 0,
+    // poster_path: firstImage ? firstImage.file_path : undefined, // Actor image as poster
+    poster_path: firstImage
+      ? `https://image.tmdb.org/t/p/w500${firstImage.file_path}`
+      : undefined,
+    tagline: "",
+    runtime: 0,
+    revenue: 0,
+    vote_count: 0,
+    genres: [],
+    production_countries: [],
+    cast: [],
+    release: [],
+  };
+```
+
+The component also uses useState() hook to manage state for an image modal in the gallery.
+
+```
+ /**
+   * State to control image modal visibility
+   * modalOpen → controls if the image modal is shown
+   */
+  const [modalOpen, setModalOpen] = useState(false); // Every render would reset it back to false
+
+  /**
+   * currentIndex tracks the currently selected image index in the gallery
+   * If you didn’t use useState, React wouldn’t remember which image to show or whether the
+   * modal is open between renders.
+   * */
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+```
+
+The modalOpen state is a boolean that determines whether the image modal (a pop-up view of a larger image) is visible on the screen, and it starts as false, meaning the modal is initially hidden.
+When a user clicks on an image, setModalOpen(true) is called to show the modal.
+The currentIndex state, instead, tracks which image in the gallery is currently being displayed in the modal, hence, it starts at 0, which means that the first image will be shown initially.
+As the user navigates through the images using arrow buttons, setCurrentIndex() updates this index to display the correct image. In the end, this stateful logic ensures that users can open a modal, view and switch images smoothly, and then close the modal.
+
+However, since we want to use the first image amonst those fetched by the API call in getPersonImages() as a 'featured image', we create a new array called 'galleryImages' by slicing the original 'actorImages' array starting from the second element (index 1).
+
+```
+
+  // Extract actor profile images (array of image objects)
+  // https://search.r-project.org/CRAN/refmans/TMDb/html/person_images.html?
+  const actorImages = imagesData?.profiles || [];
+
+  // First image is used for the left image section of the template
+  const firstImage = actorImages.length > 0 ? actorImages[0] : undefined;
+
+  /**
+   * All other images will be shown in the photo gallery
+   * The .slice() method returns a shallow copy of a portion of an array into a new array object.
+   * https://www-igm.univ-mlv.fr/~forax/MDN/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice.html
+   * */
+  const galleryImages = actorImages.slice(1);
+
+```
+
+Hence, in the 'TemplateMoviePage' component, we pass two props: movie and overrideImages.
+
+```
+<TemplateMoviePage
+  movie={dummyMovie}
+  overrideImages={firstImage ? [firstImage] : []}
+>
+```
+
+TemplateMoviePageProps
+`movie={dummyMovie}` provides a mock or placeholder movie object to satisfy the component’s expected structure. Since the page is about an actor, not a movie, the real movie data is not relevant, but because 'TemplateMoviePage' is designed to always expect a movie prop we pass 'dummyMovie' to prevent errors and maintain layout consistency.
+
+`overrideImages={firstImage ? [firstImage] : []}` conditionally passes an array containing the actor's first image. If firstImage exists, this tells the template to use that image instead of a typical movie poster.
+
+The below code, instead, manages the image modal gallery In particular:
+
+- the 'openModal' function sets the currently selected image index and makes the modal visible.
+- the 'prevImage' and 'nextImage' functions let users navigate through images, wrapping around when reaching the start or end of the gallery to create a seamless carousel effect. - the 'closeModal' hides the modal by updating its visibility state.
+  Together, these functions control which image is shown and handle opening, navigating, and closing the modal gallery.
+
+```
+ // Opens the image modal and displays the selected image
+  // https://reactjsexample.com/a-lightweight-react-hook-for-modals-dialogs/
+  // https://react.dev/learn/state-a-components-memory
+  // https://thewebdev.info/2021/01/26/create-an-image-modal-with-react-and-javascript/
+  // https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
+  const openModal = (index: number) => {
+    setCurrentIndex(index); // Store the index of the clicked image so we can track which image is shown
+    setModalOpen(true); // Set the modal's visibility to true so it appears on screen
+  };
+
+  // Moves to the previous image in the gallery
+  // If currently at the first image, wrap around to the last
+  // https://www.freecodecamp.org/news/build-an-image-carousel-with-react-and-framer-motion
+  const prevImage = () => {
+    setCurrentIndex((prev) =>
+      prev === 0 ? galleryImages.length - 1 : prev - 1
+    );
+  };
+
+  // Moves to the next image in the gallery
+  // If currently at the last image, wrap around to the first
+  // https://www.freecodecamp.org/news/build-an-image-carousel-with-react-and-framer-motion
+  const nextImage = () => {
+    setCurrentIndex((prev) =>
+      prev === galleryImages.length - 1 ? 0 : prev + 1
+    );
+  };
+
+  // Closes the image modal
+  const closeModal = () => {
+    setModalOpen(false); // Hides the modal by updating its visibility state
+  };
+
+```
+
+if the actor does have images in the TMDB database, they will be showing in a Box inside the ImageListItem inside a Box whose display CSS property is set to 'grid', so that the images will be arranged in a responsive grid with 1-3 columns depending on screen size.
+Each image is clickable to open the modal, styled with rounded corners and proper sizing.
+
+```
+{galleryImages.length > 0 && (
+            <>
+              <Typography variant="h6" gutterBottom>
+                {t("photogallery")}
+              </Typography>
+              {/* Responsive image grid */}
+
+              <Box
+                sx={{
+                  // Use CSS Grid layout to arrange the imageList children component
+                  display: "grid",
+                  gap: 2,
+                  /**
+                   * Define the number and size of columns responsively.
+                   * '1fr' means one fraction of the available space, which is translated into
+                   * 1 column, and so on.
+                   * https://mui.com/system/getting-started/the-sx-prop/
+                   * https://mui.com/system/react-box/
+                   * https://mui.com/system/grid/
+                   */
+                  gridTemplateColumns: {
+                    xs: "1fr", // 1 column on mobile
+                    sm: "1fr 1fr", // 2 columns on tablets
+                    md: "1fr 1fr 1fr", // 3 columns on desktop
+                  },
+                }}
+              >
+                {galleryImages.map(
+                  (
+                    img: { file_path: React.Key | null | undefined },
+                    index: number
+                  ) => (
+                    <ImageListItem key={img.file_path}>
+                      <Box
+                        component="img"
+                        src={`https://image.tmdb.org/t/p/w300${img.file_path}`}
+                        alt={actor?.name}
+                        loading="lazy"
+                        onClick={() => openModal(index)}
+                        sx={{
+                          borderRadius: 2,
+                          cursor: "pointer",
+                          width: "100%",
+                          height: "auto", // Maintain aspect ratio
+                        }}
+                      />
+                    </ImageListItem>
+                  )
+                )}
+              </Box>
+            </>
+          )}
+```
+
+Clicking on a photo opens a modal (overlay) with a dark background, and displays the image in full-screen, with arrow buttons to navigate between images and a close button.
+
+```
+{/**
+           * Zoom modal for viewing images larger with arrow controls
+           * https://reactjsexample.com/a-lightweight-react-hook-for-modals-dialogs/
+           * https://react.dev/learn/state-a-components-memory
+           * https://thewebdev.info/2021/01/26/create-an-image-modal-with-react-and-javascript/
+           * https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
+           *
+           *  */}
+          {modalOpen && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                width: "100vw",
+                height: "100vh",
+                backgroundColor: "rgba(0,0,0,0.85)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: 1500,
+              }}
+            >
+              {/* Close modal button */}
+              <IconButton
+                onClick={closeModal}
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  color: "white",
+                }}
+                aria-label="close"
+              >
+                <CloseIcon fontSize="large" />
+              </IconButton>
+
+              {/* Previous image button */}
+              <IconButton
+                onClick={prevImage}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 20,
+                  color: "white",
+                }}
+                aria-label="previous"
+              >
+                <ArrowBackIosNewIcon fontSize="large" />
+              </IconButton>
+
+              {/* Fullscreen image display */}
+              <img
+                src={`https://image.tmdb.org/t/p/original${galleryImages[currentIndex].file_path}`}
+                alt={actor?.name}
+                style={{
+                  maxHeight: "100vh",
+                  maxWidth: "100vw",
+                }}
+              />
+
+              {/* Next image button */}
+              <IconButton
+                onClick={nextImage}
+                style={{
+                  position: "absolute",
+                  top: "50%",
+                  right: 20,
+                  color: "white",
+                }}
+                aria-label="next"
+              >
+                <ArrowForwardIosIcon fontSize="large" />
+              </IconButton>
+            </div>
+          )}
+        </>
+```
+
+The modal state is managed using useState to track which image is currently shown and whether the modal is open.
+
+At the top-right, an IconButton with a close icon triggers closeModal to hide the modal, whereas on the left and right sides, arrow buttons allow navigating backward and forward through the image list using 'prevImage' and 'nextImage'.
+In the center of the screen, an <img> tag displays the current image selected from 'galleryImages[currentIndex]'.
+The modal ensures the image fills the screen responsively using maxHeight and maxWidth and that it stays on top of other content with a high 'zIndex' and centers content using flex.
+Clicking the image itself does nothing, but the navigation and close icons provide full control.
+
+Last but not least, a sticky bottom navigation bar was added and stays visible at the bottom of the screen. It uses a responsive flex layout to space two links apart: one to go back and another to view the actor’s movie list.
+
+### Source attribution
+
+- https://react.i18next.com/latest/usetranslation-hook
+- https://reactrouter.com/en/main/hooks/use-location
+- https://reactrouter.com/en/main/hooks/use-navigate#passing-state
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://search.r-project.org/CRAN/refmans/TMDb/html/person_images.html
+- https://www-igm.univ-mlv.fr/~forax/MDN/developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice.html
+- https://reactjsexample.com/a-lightweight-react-hook-for-modals-dialogs/
+- https://react.dev/learn/state-a-components-memory
+- https://thewebdev.info/2021/01/26/create-an-image-modal-with-react-and-javascript/
+- https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
+- https://www.freecodecamp.org/news/build-an-image-carousel-with-react-and-framer-motion
 
 =========== TO BE CONTINUED ==================
 

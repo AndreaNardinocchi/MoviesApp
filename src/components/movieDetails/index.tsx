@@ -52,6 +52,13 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
 
+  console.log("Cast: ", movie.cast);
+
+  console.log(
+    "Actor ids: ",
+    movie.cast.map((actor) => actor.id)
+  );
+
   const [drawerOpen, setDrawerOpen] = useState(false); // New
 
   // In the end you will end up with a URL like https://image.tmdb.org/t/p/w500/kqjL17yufvn9OVLyXYpvtyrFfak.jpg.
@@ -138,6 +145,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
        */
       const videos = await getMovieVideos(movie.id);
 
+      console.log("Videos: ", videos);
+
       /**
        * We then find() the specific video trailer.
        * Only trailers hosted on YouTube are valid for embedding.
@@ -145,6 +154,8 @@ const MovieDetails: React.FC<MovieDetailsProps> = (movie) => {
       const trailer = videos.find(
         (v: VideoTrailer) => v.type === "Trailer" && v.site === "YouTube"
       );
+
+      console.log("Trailer: ", trailer);
 
       // We then grab the trailer 'key', as per the 'VideoTrailer' interface.
       // Could be undefined if no trailer is found, hence '?'

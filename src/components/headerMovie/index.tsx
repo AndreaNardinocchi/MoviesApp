@@ -29,12 +29,6 @@ const styles = {
 const MovieHeader: React.FC<MovieDetailsProps> = (movie) => {
   const context = useContext(MoviesContext);
 
-  if (!context) {
-    throw new Error(
-      "MoviesContext must be used within a MoviesContextProvider"
-    );
-  }
-
   // Destructure favourites and mustWatchList arrays from the context
   const { favourites, mustWatchList } = context;
 

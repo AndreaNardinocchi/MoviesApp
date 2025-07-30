@@ -75,7 +75,6 @@ const ActorBioPage: React.FC = () => {
    * - getPersonImages (This is an array of images)
    * Separate loading/error handling, as we want to show errors/loading independently for each
    * */
-
   // Fetch actor details from the API using the ID
   const {
     data: actor,
@@ -145,6 +144,7 @@ const ActorBioPage: React.FC = () => {
     );
 
   // Extract actor profile images (array of image objects)
+  // https://search.r-project.org/CRAN/refmans/TMDb/html/person_images.html?
   const actorImages = imagesData?.profiles || [];
 
   // First image is used for the left image section of the template
