@@ -28,7 +28,7 @@ import { Box, CssBaseline } from "@mui/material";
 // import Test from "./pages/homePage";
 import DiscoverMovies from "./pages/discoverPage";
 import HomePage from "./pages/homePage";
-import TVSeriesActorBioPage from "./pages/TVSerieActorBioPage";
+import TVSeriesActorBioPage from "./pages/TVSeriesActorBioPage";
 import ActorTVSeriesPage from "./pages/actorTVSeriesPage";
 
 // declare the query client (it will manage the cache in the browser):

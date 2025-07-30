@@ -2973,6 +2973,127 @@ Last but not least, a sticky bottom navigation bar was added and stays visible a
 - https://learnersbucket.com/examples/interview/create-a-lightbox-modal-image-gallery-in-reactjs/
 - https://www.freecodecamp.org/news/build-an-image-carousel-with-react-and-framer-motion
 
+## TV Series Actor Bio page
+
+The **TVSeriesActorBioPage.tsx** is a clone of the previous page which has been repurposed for the TV series data by fetching them through the API function getTVSeries() in the **tmdb-api.tsx** file.
+
+```
+/**
+ * This is cloned from getMovie function, modified to fetch TV series details instead of movies.
+ * https://developers.themoviedb.org/3/tv/get-tv-details
+ *
+ *  */
+export const getTVSeries = (id: string | number, language = "en-US") => {
+  console.log("Requested language:", language);
+  return fetch(
+    `https://api.themoviedb.org/3/tv/${id}?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  ).then((response) => {
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get TV series data. Response status: ${response.status}`
+      );
+    }
+    return response.json();
+  });
+};
+
+```
+
+This used in the below useQuery, which might appear redundant, as we do not really show TV series data on the TV series actor page.
+
+```
+  // Fetch TV series data using React Query's useQuery hook
+  useQuery(
+    ["tv", tvId, lang],
+    // Fetch the TV series id
+    () => getTVSeries(tvId, lang)
+  );
+
+```
+
+Howevr, if the user does click the back link on the sticky bar at the bottom of the page to go back to the TV series page (/tvseries/:tvId), the useQuery already has the data in its cache. That means it can render instantly without making another API request.
+
+This holds true in the Actor bio page too where we have the same type of useQuery for movies.
+
+## Actor Movies page
+
+The **actorMoviesPage.tsx** displays all movies associated with a specific actor, by retrieving them via the API function getActorMovies() in the **tmdb-api.tsx** file.
+
+```
+
+/**
+ * Fetches the movies an actor played.
+ * https://tmdbapis.metamanager.wiki/en/latest/_modules/tmdbapis/api3.html
+ * 'id' is the ID of the actor (can be a string or number)
+ */
+export const getActorMovies = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/person/${id}/movie_credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      console.log(json.cast);
+      return json.cast;
+    });
+};
+
+```
+
+![alt text](image-80.png)
+
+It fetches the actor's and movie ids from the URL using useParams.
+
+```
+// Extract the 'id' parameter from the URL using React Router's useParams hook
+  const { movieId, actorId } = useParams() as {
+    movieId: string;
+    actorId: string;
+  };
+```
+
+As a matter of fact, the route in the **index.tsx** for this page is the following:
+
+```
+<Route
+  path="/movies/:movieId/actor/:actorId/movies"
+  element={<ActorMoviesPage />}
+/>
+
+```
+
+We need the movie id mainly for navigation purposes, pretty much like in the **actorBioPage.tsx**, as we avail of a sticky bar at the very bottom of the page for navigation purposes.
+
+```
+<Link
+          to={`/movies/${movieId}/actor/${actorId}`}
+          style={{
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
+            textAlign: "right",
+          }}
+        >
+          ← {t("back_to_actor_page")} {actorDetails?.name}
+        </Link>
+      </Box>
+```
+
+![alt text](image-79.png)
+
+The code here uses React Query's useQuery hook to fetch and cache two sets of data: the actor’s movies and their personal details.
+
+![alt text](image-81.png)
+
+The first query fetches an array of movies the actor has appeared in. The useQuery hook takes a unique query key (["actorMovies", actorId, lang]) to track the result, and the function getActorMovies() that actually performs the API call using the 'actorId' and selected 'lang'.
+
+The second query fetches details about the actor, but it will only be used to extract the actor name used on the header, brower title, and on the sticky navigation bar at the bottom of the page.
+
+Finally, the template used on this page is the 'templateMovieListPage'
+
 =========== TO BE CONTINUED ==================
 
 ## Bugs and defects
