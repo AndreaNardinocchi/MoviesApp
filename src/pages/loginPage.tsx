@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import KeyIcon from "@mui/icons-material/Key";
 import EmailIcon from "@mui/icons-material/Email";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import i18n from "../i18n/i18n";
 import { supabase } from "../supabaseClient";
@@ -31,6 +31,8 @@ const LoginPage: React.FC = () => {
    */
   const { t } = useTranslation();
   console.log("Current language:", i18n.language);
+
+  const location = useLocation();
 
   /**
    * This is the browser title
@@ -113,7 +115,9 @@ const LoginPage: React.FC = () => {
       authenticate(data);
     }
 
-    navigate("/");
+    // navigate("/");
+
+    location;
   };
 
   return (

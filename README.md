@@ -326,6 +326,36 @@ This is replicated across all pages.
 - https://supabase.com/docs/guides/auth/managing-user-data
 - https://mui.com/material-ui/api/input-adornment/
 
+### Protected Routes
+
+The **routes/protectedRoutes.tsx** file is used to guard routes that require authentication.
+It uses useContext to access the AuthContext, which provides the current user's authentication token.
+
+```
+  const authContext = useContext(AuthContext);
+  const { token } = authContext || {};
+
+```
+
+The useLocation hook captures the current route so that after login, the user can be redirected back to their intended destination. However, we noticed that the useLocation() was more effective when used directly into the 'log in' page.
+
+The Navigate component handles the redirect to /login. If the token exists, the user is allowed to access the protected content.
+
+```
+ if (!token) {
+    return <Navigate to={"/login"} replace state={{ intent: location }} />;
+  }
+
+  return props.children;
+};
+```
+
+The component returns its children, which represent the protected route content. This ensures only authenticated users can access certain parts of the app.
+
+## Source attribution
+
+- https://tutors.dev/talk/full-stack-2-2024/topic-5/talk-3
+
 ## Log in page
 
 ![alt text](image-25.png)
@@ -343,7 +373,7 @@ The **loginPage.tsx** uses useState hook to manage form inputs such as email, pa
 
 The rationale behind creating separate errors was to trigger a targeted response to handle empty field errors, so that if the email text filed was empty, it would trigger the 'emailError' only, and vice versa.
 
-The useStae() hook for:
+The useState() hook for:
 
 ```
 const [loginError, setLoginError] = useState("");
@@ -3092,7 +3122,229 @@ The first query fetches an array of movies the actor has appeared in. The useQue
 
 The second query fetches details about the actor, but it will only be used to extract the actor name used on the header, brower title, and on the sticky navigation bar at the bottom of the page.
 
-Finally, the template used on this page is the 'templateMovieListPage'
+Finally, the template used on this page is the 'templateMovieListPage'.
+
+## Actor TV Series page
+
+The **actorTVSeriesPage.tsx** shares a similar structure with the **actorMoviesPage.tsx** file, and logic, as it was created as a clone of the latter.
+Hoever, a few little differences worthy to point out are the below ones:
+
+- 'ActorMoviesPage' fetches and displays movies using getActorMovies, while 'ActorTVSeriesPage' handles TV series using the getActorTVSeries function in the **tmdb-api.tsx** file.
+
+```
+/**
+ * Fetches the TV series an actor appeared in.
+ * 'id' refers to the actor's id.
+ * https://developer.themoviedb.org/reference/person-tv-credits
+ */
+export const getActorTVSeries = (id: string | number, language = "en-US") => {
+  return fetch(
+    `https://api.themoviedb.org/3/person/${id}/tv_credits?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=${language}`
+  )
+    .then((res) => res.json())
+    .then((json) => {
+      console.log(json.cast);
+      return json.cast; // This returns an array of TV series the actor was in
+    });
+};
+
+```
+
+- Each uses a different template, as we created the **templateTVSeriesPage.tsx** ad hoc to use for TVSeries data.
+- Filtering components are similar, but they differ on the data they fetch, but this will be discussed in a dedicated chapter.
+  . Additionally, only the movie page includes a feature to add items to favourites.
+
+## Movie Filter UI
+
+The **movieFilterUI/index.tsx** is a UI component that provides a floating 'Filter button s that users can open a side drawer upon clicking on it, where they can apply filters to a list of movies. It supports filtering by title, genre, release year, and sorting order.
+
+The actual filtering form is rendered inside a reusable FilterCard component.
+
+The main features added are:
+
+- useTranslation
+  The useTranslation hook from react-i18next is used to support translations on the website. This allows the UI to display translated labels like 'Filter'.
+- releaseFilter:
+  We added this new function 'releaseFilter' to filter movies by release year. It basically converts the selected year (as a string) to a number, and compares it to the year extracted from each movie's release_date.
+
+```
+/**
+ * This function filters movies by their release year.
+ * It returns true if the movie's release year matches the given year (value).
+ * If value is 0, it means "All years" and the function returns true for every movie.
+ * value: number is a parameter passed into the releaseFilter function, and
+ * it represents the year selected by the user to filter movies by release date
+ * However, this function was throwing an error when deploying in Vercel:
+ * Types of property 'value' are incompatible.
+ * Type 'number' is not assignable to type 'string'. src/pages/discoverPage.tsx(89,5): error TS2322:
+ * Type '{ name: string; value: number; condition: (movie: BaseMovieProps, value: number) => boolean; }'
+ * is not assignable to type 'Filter'.
+ * Hence, I changed the value to 'string', but then converted to number for comparison.
+ * useFiltering.ts
+ * interface Filter {
+ * name: string;
+ * value: string;
+ * condition: (item: any, value: string) => boolean;
+ * }
+ * */
+// eslint-disable-next-line react-refresh/only-export-components
+export const releaseFilter = (
+  movie: BaseMovieProps,
+  value: string
+  // The : boolean after the parameters means this function will always return a boolean value (true or false)
+  // https://www.typescriptlang.org/docs/handbook/2/functions.html#function-types
+): boolean => {
+  // Convert the value to a number for comparison
+  const year = Number(value);
+  // If value is 0, do not filter out any movies, but show them all
+  if (year === 0) return true;
+  // If the movie has no release date, exclude it and return it as false
+  else if (!movie.release_date) return false;
+  /**
+   * Extract the year from the movie's release_date string
+   * getFullYear() is a built-in JavaScript Date object method.
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+   */
+  const movieYear = new Date(movie.release_date).getFullYear();
+  // Return true only if the movie's release year equals the filtered year
+  return movieYear === year;
+};
+```
+
+- New props in MovieFilterUIProps:
+  'releaseFilter',and 'sortOrder' were added to the component props interface, enabling the filter UI to manage release year and sorting options.
+
+```
+interface MovieFilterUIProps {
+  onFilterValuesChange: (f: string, s: string) => void;
+  titleFilter: string;
+  genreFilter: string;
+  releaseFilter: number;
+  // Controls the sorting order of movies by release date.
+  sortOrder: string;
+}
+
+```
+
+- Passing the new props to the FilterCard:
+  The FilterCard component now receives releaseFilter and sortOrder as additional props, likely to allow filtering by release year and sorting directly from the drawer UI.
+
+![alt text](image-82.png)
+
+These changes enhance the component’s functionality with multilingual support, more filtering, and UI responsiveness/styling.
+
+### Source attribution
+
+- https://react.i18next.com/latest/usetranslation-hook
+- https://www.typescriptlang.org/docs/handbook/2/functions.html#function-types
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+- https://mui.com/system/getting-started/the-sx-prop
+
+## Filter Movie card
+
+This **filterMoviesCard/index.tsx** component now supports translated content via useTranslation() 'react-i18next' hook, dynamic genre fetching by language, as the getGenres() api function in the **tmdb-api.tsx** file has been extended to pass in the parameter 'lang',
+
+```
+export const getGenres = (language = "en-US") => {
+  return fetch(
+    "https://api.themoviedb.org/3/genre/movie/list?api_key=" +
+      import.meta.env.VITE_TMDB_KEY +
+      `&language=${language}`
+  )
+    .then((response) => {
+      if (!response.ok)
+        throw new Error(
+          `Unable to fetch genres. Response status: ${response.status}`
+        );
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+```
+
+![alt text](image-83.png)
+
+and adds 'release year' filtering, and sorting functionality in its 'FilterMoviesCardProps'.
+
+```
+export interface FilterMoviesCardProps {
+  onUserInput: (f: FilterOption, s: string) => void; // Add this line
+  titleFilter: string;
+  genreFilter: string;
+  releaseFilter: number;
+  sortOrder: string;
+}
+```
+
+We, then, get the current year using new Date().getFullYear().
+
+```
+/**
+   * Get the current year using the Date object
+   * `new Date()` creates a Date instance representing the current date and time.
+   * getFullYear()` extracts the full year as a 4-digit number .
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+   */
+  const currentYear = new Date().getFullYear();
+```
+
+The next is to generate an array of years from the current year down to 1950 using Array.from().
+For example, if the current year is 2025, the array will be: 2025, 2024, 2023, ..., 1950].
+This is used to populate a dropdown menu for filtering movies by release year.
+
+```
+  /**
+   * Create an array of years from currentYear down to 1950 (random year).
+   * The Array.from() static method creates a new, shallow-copied Array instance
+   * from an iterable or array-like object.
+   * The array will contain (currentYear - 1949) elements to include 1950.
+   * Example: if currentYear = 2025, then length = 2025 - 1949 = 76.
+   * The map function takes two arguments:
+   * `_` is the current value
+   * `i` is the current index in the array.
+   * For each index `i`, we subtract `i` from `currentYear` to get descending years.
+   * Example: i = 0 → 2025, i = 1 → 2024, ..., i = 75 → 1950
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#using_arrow_functions_and_array.from
+   * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#sequence_generator_range
+   */
+  const years: number[] = Array.from(
+    { length: currentYear - 1949 },
+    (_, i) => currentYear - i
+  );
+```
+
+We, then, craete a 'handle' for the releaseFilter
+
+```
+const handleReleaseYearChange = (e: SelectChangeEvent) => {
+    handleChange(e, "release", e.target.value);
+  };
+```
+
+When the user selects a different year, the 'SelectChangeEvent' is triggered, and passes the selected value to the 'handleChange' function, specifying that the filter type is 'release'.
+This allows the parent component to update its filter state accordingly.
+
+At this point, we need to ensure that the value insterted in the <Select> tag is a string (toString()), since that is what that components expects.
+
+![alt text](image-84.png)
+
+If 'releaseFilter' is 0 or undefined, it defaults to "0" which represents the "All" option (no filtering by year).
+We then pass in the 'handleReleaseYearChange' function which updates the filter state in the parent component using the 'release' filter type.
+Since the first item in the dropdown is 'All (translated), we pass the value '0' in as a number.
+
+```
+<MenuItem value={0}>
+```
+
+Selecting this sets the filter to "0", meaning 'show all movies'.
+Finally, we 'map' the years to dynamically render the dropdown options for each year from the current year down to 1950.
+
+![alt text](image-85.png)
 
 =========== TO BE CONTINUED ==================
 

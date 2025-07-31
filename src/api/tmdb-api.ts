@@ -222,9 +222,6 @@ export const getNowPlayingMovies = (page: number, language = "en-US") => {
       throw error;
     });
 };
-//     .then((res) => res.json())
-//     .then((json) => json.results); // Only return the movie list
-// };
 
 /**
  * Fetches a list of currently airing TV series from TMDb.
@@ -317,26 +314,6 @@ export const getTVSeries = (id: string | number, language = "en-US") => {
   });
 };
 
-// export const getTVSeries = (tv_id: string, language: string) => {
-//   return fetch(
-//     `https://api.themoviedb.org/3/tv/${tv_id}?api_key=${
-//       import.meta.env.VITE_TMDB_KEY
-//     }&language=pt-BR`
-//   ) // ${language}`
-//     .then((response) => {
-//       if (!response.ok) {
-//         throw new Error(
-//           `Failed to get TV series data. Response status: ${response.status}`
-//         );
-//       }
-//       console.log("TV Series Details:", response);
-//       return response.json();
-//     })
-//     .catch((error) => {
-//       throw error;
-//     });
-// };
-
 /**
  * Fetches the cast (actors) for a given TV series ID from The Movie Database (TMDb) API.
  * https://developers.themoviedb.org/3/tv/get-tv-credits
@@ -363,6 +340,7 @@ export const getTVSeriesCredits = (id: string | number) => {
  * Fetches the movies an actor played.
  * https://tmdbapis.metamanager.wiki/en/latest/_modules/tmdbapis/api3.html
  * 'id' is the ID of the actor (can be a string or number)
+ * https://developer.themoviedb.org/reference/person-movie-credits
  */
 export const getActorMovies = (id: string | number, language = "en-US") => {
   return fetch(
