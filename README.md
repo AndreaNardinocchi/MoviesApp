@@ -3346,6 +3346,266 @@ Finally, we 'map' the years to dynamically render the dropdown options for each 
 
 ![alt text](image-85.png)
 
+The 'sortOrder', instead, allows the user to choose how movies are sorted by 'release date' either oldest first (asc) or newest first (desc). Here's how it works step by step:
+
+It is passed as a prop from the parent component 'MovieFilterUI into FilterMoviesCard, as seen above, and it holds a string value: "asc" for ascending or "desc" for descending.
+Inside the second <Card>, there's a <Select> dropdown for sorting:
+
+```
+<FormControl sx={styles.formControl}>
+  <InputLabel id="sort-label">{t("sort_by_date")}</InputLabel>
+  <Select
+    labelId="sort-label"
+    id="sort-select"
+    value={sortOrder}
+    onChange={handleSortOrder}
+  >
+    <MenuItem value="asc">{t("oldest_first")}</MenuItem>
+    <MenuItem value="desc">{t("newest_first")}</MenuItem>
+  </Select>
+</FormControl>
+
+```
+
+When a user selects an option (asc or desc), it triggers:
+
+```
+const handleSortOrder = (e: SelectChangeEvent) => {
+  handleChange(e, "sort", e.target.value);
+};
+
+```
+
+This then calls the onUserInput() prop function passed from the parent, updating the filter state.
+Hence, the updated sortOrder value is used (in the parent component) to sort the movie list accordingly before rendering.
+
+### Source attribution
+
+- https://react.i18next.com/latest/usetranslation-hook
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getFullYear
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#using_arrow_functions_and_array.from
+- https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from#sequence_generator_range
+
+## Filtering and sorting features on each page
+
+These three constants below define the initial filter settings for the movie list.
+Each filter has a name to identify it, a default value that starts empty or at "0" (meaning no filter applied yet), and a condition (imported from 'MovieFilterUI') which is a function that knows how to check if a movie matches that filter.
+Specifically, 'titleFiltering' filters movies by their title, 'genreFiltering' by genre, and 'releaseFiltering' by release year, as seen in both 'movieFilterUI' and 'filterMoviesCard'.
+
+```
+const titleFiltering = {
+  name: "title",
+  value: "",
+  condition: titleFilter,
+};
+const genreFiltering = {
+  name: "genre",
+  value: "0",
+  condition: genreFilter,
+};
+
+// Define the default filter state for release filtering
+const releaseFiltering = {
+  name: "release",
+  value: "0",
+  condition: releaseFilter,
+};
+```
+
+We, then, create a useState hook called 'sortOrder' with an initial value of "desc", which means the movies will be sorted from newest to oldest by default.
+Then, we call the custom hook 'useFiltering' to manage the filters returning three things:
+
+- the current filter values (filterValues),
+- a function to update those values (setFilterValues),
+- and a filterFunction that applies all the filters to a list of movies.
+
+The filters it manages are the 'title', 'genre', and 'release' filters defined earlier.
+
+```
+ // Create the state for 'sortOrder' and set to newest first
+  const [sortOrder, setSortOrder] = useState("desc");
+
+  const { filterValues, setFilterValues, filterFunction } = useFiltering([
+    titleFiltering,
+    genreFiltering,
+    releaseFiltering,
+  ]);
+
+```
+
+When the user changes a filter or sorting option, the function 'changeFilterValues' is called with the type of change (type) and the new value (value).
+If the change is for sorting (type === "sort"), then, it updates the sortOrder state directly and immediately returns, skipping the rest of the function.
+This keeps sorting separate from the filters.
+
+```
+// Called when the user changes title, genre filter, release year, and sort
+  const changeFilterValues = (type: string, value: string) => {
+    if (type === "sort") {
+      /**
+       * Sort is managed by its own state sortOrder, not in the filterValues array.
+       * So we update the sort order separately and exit early to skip the rest of the filter logic.
+       * */
+      setSortOrder(value);
+      /**
+       * So, by returning early, we make sure only setSortOrder is called,
+       * and we avoid mistakenly trying to update filter state with an invalid type.
+       */
+      return;
+    }
+
+    const changedFilter = { name: type, value };
+    const updatedFilterSet =
+      /**
+       * If type === "title", update the first filter.
+       * Otherwise, if type === "genre", update the second filter.
+       * Otherwise, type === "release", update the third filter.
+       */
+      type === "title"
+        ? [changedFilter, filterValues[1], filterValues[2]]
+        : type === "genre"
+        ? [filterValues[0], changedFilter, filterValues[2]]
+        : [filterValues[0], filterValues[1], changedFilter];
+    setFilterValues(updatedFilterSet);
+  };
+
+```
+
+If the change is for one of the filters (title, genre, or release), it creates a new filter object with the updated value, then builds a new array of filters by replacing only the one that changed, keeping the others as they were.
+Finally, it updates the filter state with this new set of filters using 'setFilterValues'. This, in the end, ensures that only the relevant filter is updated each time.
+
+The 'filterFunction()' will be applied to the 'movies'
+
+```
+  // This is the ternary operator, which works like an inline if...else.
+  const movies = data ? data.results : [];
+  const displayedMovies = filterFunction(movies);
+
+```
+
+and passed in the 'templateMoviePage', so that thew new filtered movie array will be displayed on the page.
+
+```
+<PageTemplate
+        // title="Discover Movies"
+        title={t("discover_movies")}
+        movies={sortedDisplayedMovies}
+        // movies={paginatedMovies}
+        action={(movie: BaseMovieProps) => {
+          return <AddToFavouritesIcon {...movie} />;
+        }}
+      />
+```
+
+Howver, as it can be seen above, we first 'sort' the 'displayedMovies' array using the spread operator ([...]) to avoid changing the original array (we noticed that we were getting duplicated movies for some reason we were unable to explain before this step).
+Then, it sorts the copied list based on each movie’s release_date. If either movie lacks a release date, it skips comparing them.
+Otherwise, it uses localeCompare to sort the dates.
+If the sortOrder is "asc", it arranges movies from oldest to newest. If it’s "desc", it does the reverse—from newest to oldest.
+
+The final result, sortedDisplayedMovies, is the list of filtered and properly sorted movies ready to be displayed.
+
+Finally, we pass the current filter values (title, genre, release year) and the current sort order to the MovieFilterUI component.
+We also pass the function 'changeFilterValues' to call when the user changes any of the filters or sort option.
+
+This keeps everything in sync with the user's selections.
+
+```
+<MovieFilterUI
+        onFilterValuesChange={changeFilterValues}
+        titleFilter={filterValues[0].value}
+        genreFilter={filterValues[1].value}
+        // This is NOT a string, so we wrap it with a Number()
+        releaseFilter={Number(filterValues[2].value)}
+        sortOrder={sortOrder}
+      />
+```
+
+1. Filtering Setup
+   You have 3 filters defined:
+
+js
+Copy
+Edit
+const titleFiltering = { name: "title", value: "", condition: titleFilter };
+const genreFiltering = { name: "genre", value: "0", condition: genreFilter };
+const releaseFiltering = { name: "release", value: "0", condition: releaseFilter };
+These represent the filter criteria by title, genre, and release year.
+
+You use a custom hook useFiltering to manage filter state and logic:
+
+js
+Copy
+Edit
+const { filterValues, setFilterValues, filterFunction } = useFiltering([
+titleFiltering,
+genreFiltering,
+releaseFiltering,
+]);
+filterValues holds current filter values.
+
+setFilterValues updates them.
+
+filterFunction applies all filters to a list of movies.
+
+2. Handling Filter Changes
+   The function changeFilterValues is called when any filter or sorting option changes:
+
+js
+Copy
+Edit
+const changeFilterValues = (type: string, value: string) => {
+if (type === "sort") {
+setSortOrder(value);
+return;
+}
+
+const changedFilter = { name: type, value };
+const updatedFilterSet =
+type === "title"
+? [changedFilter, filterValues[1], filterValues[2]]
+: type === "genre"
+? [filterValues[0], changedFilter, filterValues[2]]
+: [filterValues[0], filterValues[1], changedFilter];
+
+setFilterValues(updatedFilterSet);
+};
+If the user changes the sort order, update sortOrder state only and exit early.
+
+Otherwise, update the relevant filter in the filterValues array.
+
+3. Filtering the Movies
+   Once you have the fetched movies (data.results), you apply filtering:
+
+js
+Copy
+Edit
+const movies = data ? data.results : [];
+const displayedMovies = filterFunction(movies);
+filterFunction is the logic from the custom hook that applies all filter conditions on the movies list and returns the filtered results.
+
+4. Sorting the Filtered Movies
+   After filtering, you sort the filtered movies based on the sortOrder state ("asc" or "desc"):
+
+js
+Copy
+Edit
+const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
+if (!a.release_date || !b.release_date) return 0;
+
+return sortOrder === "asc"
+? a.release_date.localeCompare(b.release_date)
+: b.release_date.localeCompare(a.release_date);
+});
+Important details:
+
+Use the spread operator [...displayedMovies] to make a shallow copy before sorting. This prevents mutating the original array.
+
+Sorting is based on movie release_date strings.
+
+If sortOrder is "asc", sort oldest movies first.
+
+If "desc", newest movies first.
+
 =========== TO BE CONTINUED ==================
 
 ## Bugs and defects

@@ -158,12 +158,12 @@ const FilterTVSeriesCard: React.FC<FilterTVSeriesCardProps> = ({
           </FormControl>
 
           <FormControl sx={styles.formControl}>
-            <InputLabel id="tv-release-year-label">
-              {t("release_year")}
+            <InputLabel id="tv-first-aired-date-label">
+              {t("first_aired_date")}
             </InputLabel>
             <Select
-              labelId="tv-release-year-label"
-              id="tv-release-year-select"
+              labelId="tv-first-aired-date-label"
+              id="tv-first-aired-date-select"
               // Ensure releaseFilter is defined before calling .toString(). Here's how you can safely handle it:
               value={releaseFilter ? releaseFilter.toString() : "0"}
               onChange={handleReleaseYearChange}
@@ -195,7 +195,9 @@ const FilterTVSeriesCard: React.FC<FilterTVSeriesCardProps> = ({
       When changed, it triggers the `handleSortOrder` function to update the parent state.
     */}
           <FormControl sx={styles.formControl}>
-            <InputLabel id="tv-sort-label">{t("sort_by_date")}</InputLabel>
+            <InputLabel id="tv-sort-label">
+              {t("sort_by_first_air_date")}
+            </InputLabel>
             <Select
               labelId="tv-sort-label"
               id="tv-sort-select"

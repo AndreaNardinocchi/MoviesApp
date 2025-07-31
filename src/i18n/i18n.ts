@@ -129,6 +129,8 @@ i18n
           actor_tvseries_header: "TV series Starring ",
           actor_tvseries_page_cta: "Actor TV series Page",
           jump_to_actor_tvseries_page: "Check the actor's TV series",
+          first_aired_date: "First Aired Year",
+          sort_by_first_air_date: "Sort by First Aired Date",
         },
       },
 
@@ -239,6 +241,8 @@ i18n
           actor_tvseries_header: "Series de TV protagonizadas por ",
           actor_tvseries_page_cta: "Página de series de TV del actor",
           jump_to_actor_tvseries_page: "Ver las series de TV del actor",
+          first_aired_date: "Año de estreno",
+          sort_by_first_air_date: "Ordenar por fecha de estreno",
         },
       },
 
@@ -347,6 +351,8 @@ i18n
           actor_tvseries_header: "Séries de TV estreladas por ",
           actor_tvseries_page_cta: "Página de séries de TV do ator",
           jump_to_actor_tvseries_page: "Ver as séries de TV do ator",
+          first_aired_date: "Ano de estreia",
+          sort_by_first_air_date: "Ordenar por data de estreia",
         },
       },
       it: {
@@ -454,6 +460,8 @@ i18n
           actor_tvseries_header: "Serie TV con protagonista ",
           actor_tvseries_page_cta: "Pagina delle serie TV dell'attore",
           jump_to_actor_tvseries_page: "Guarda le serie TV dell'attore",
+          first_aired_date: "Anno di prima messa in onda",
+          sort_by_first_air_date: "Ordina per data di messa in onda",
         },
       },
     },
