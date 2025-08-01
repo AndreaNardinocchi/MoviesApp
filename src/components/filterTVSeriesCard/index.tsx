@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from "react";
-import { GenreData } from "../../types/interfaces";
+import { FilterOption, GenreData } from "../../types/interfaces";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -17,7 +17,7 @@ import Spinner from "../spinner";
 import { useTranslation } from "react-i18next";
 
 interface FilterTVSeriesCardProps {
-  onUserInput: (f: string, s: string) => void;
+  onUserInput: (f: FilterOption, s: string) => void;
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;
@@ -100,7 +100,7 @@ const FilterTVSeriesCard: React.FC<FilterTVSeriesCardProps> = ({
 
   const handleChange = (
     e: SelectChangeEvent | ChangeEvent<HTMLInputElement>,
-    type: string,
+    type: FilterOption,
     value: string
   ) => {
     e.preventDefault();
