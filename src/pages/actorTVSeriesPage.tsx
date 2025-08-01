@@ -4,10 +4,7 @@ import { fetchActorDetails, getActorTVSeries } from "../api/tmdb-api";
 import { useQuery } from "react-query";
 import Spinner from "../components/spinner";
 // import AddToFavouritesIcon from "../components/cardIcons/addToFavourites";
-import {
-  FilterOption,
-  TVSeriesListPageTemplateProps,
-} from "../types/interfaces";
+import { TVSeriesListPageTemplateProps } from "../types/interfaces";
 import { useTranslation } from "react-i18next";
 import { Box } from "@mui/material";
 import TVSeriesFilterUI, {
@@ -133,7 +130,7 @@ const ActorTVSeriesPage: React.FC = () => {
   );
 
   // Called when the user changes title, genre filter, release year, and sort
-  const changeFilterValues = (type: FilterOption, value: string) => {
+  const changeFilterValues = (type: string, value: string) => {
     if (type === "sort") {
       /**
        * Sort is managed by its own state sortOrder, not in the filterValues array.

@@ -444,6 +444,8 @@ The form is responsive and accessible, and the navigate hook redirects users aft
 - https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
 - https://muhimasri.com/blogs/mui-validation/
 - https://supabase.com/docs/reference/javascript/auth-signinwithpassword
+- https://www.robinwieruch.de/react-router-authentication/?
+- https://www.reddit.com/r/reactjs/comments/uwx8h0/need_help_how_to_access_user_requested_route/
 
 ## supabaseClient file
 
@@ -3272,7 +3274,7 @@ and adds 'release year' filtering, and sorting functionality in its 'FilterMovie
 
 ```
 export interface FilterMoviesCardProps {
-  onUserInput: (f: FilterOption, s: string) => void; // Add this line
+  onUserInput: (f: string, s: string) => void; // Add this line
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;
@@ -3378,6 +3380,28 @@ const handleSortOrder = (e: SelectChangeEvent) => {
 
 This then calls the onUserInput() prop function passed from the parent, updating the filter state.
 Hence, the updated sortOrder value is used (in the parent component) to sort the movie list accordingly before rendering.
+
+Last but not least, we cloned both the 'filterMovieCard', and the 'MovieFilterUI' to create the **filterTVSeriesCard/index.tsx** and **TVSeriesFilterUI** which are essentially copies of them, and whose only difference is the fetched data source which is no longer 'movies' but 'series' pulled from the interface 'BaseTVSeriesProps' in the **tmdb-api.ts** file.
+
+```
+/**
+ * Represents the basic structure of a TV series item returned by the TMDb API.
+ * This interface defines only the core fields needed to display a TV series in a grid.
+ * Source: https://developer.themoviedb.org/reference/tv-series-details
+ */
+export interface BaseTVSeriesProps {
+  title: string;
+  id: number;
+  name: string;
+  // Short summary or description of the TV series storyline
+  overview: string;
+  poster_path: string;
+  first_air_date: string;
+  vote_average: number;
+  genre_ids: number[];
+}
+
+```
 
 ### Source attribution
 
@@ -3497,9 +3521,20 @@ and passed in the 'templateMoviePage', so that thew new filtered movie array wil
       />
 ```
 
-Howver, as it can be seen above, we first 'sort' the 'displayedMovies' array using the spread operator ([...]) to avoid changing the original array (we noticed that we were getting duplicated movies for some reason we were unable to explain before this step).
+However, as it can be seen above, we first 'sort' the 'displayedMovies' array using the spread operator ([...]) to avoid changing the original array (we noticed that we were getting duplicated movies for some reason we were unable to explain before this step).
 Then, it sorts the copied list based on each movie’s release_date. If either movie lacks a release date, it skips comparing them.
-Otherwise, it uses localeCompare to sort the dates.
+Otherwise, it uses the 'localeCompare()' function to sort the dates.
+
+```
+const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
+if (!a.release_date || !b.release_date) return 0;
+
+return sortOrder === "asc"
+? a.release_date.localeCompare(b.release_date)
+: b.release_date.localeCompare(a.release_date);
+});
+```
+
 If the sortOrder is "asc", it arranges movies from oldest to newest. If it’s "desc", it does the reverse—from newest to oldest.
 
 The final result, sortedDisplayedMovies, is the list of filtered and properly sorted movies ready to be displayed.
@@ -3520,91 +3555,100 @@ This keeps everything in sync with the user's selections.
       />
 ```
 
-1. Filtering Setup
-   You have 3 filters defined:
+The above logic has been applied to all pages in which the site shows a filter.
 
-js
-Copy
-Edit
-const titleFiltering = { name: "title", value: "", condition: titleFilter };
-const genreFiltering = { name: "genre", value: "0", condition: genreFilter };
-const releaseFiltering = { name: "release", value: "0", condition: releaseFilter };
-These represent the filter criteria by title, genre, and release year.
+## Movie Reviews
 
-You use a custom hook useFiltering to manage filter state and logic:
+The **movieReview.tsx** component has been sligthly changed since we have added the dynamic translations logic to it by importing 'useTranslations' from 'react-i18next' and leveraged the **i18n.ts** file for translations:
 
-js
-Copy
-Edit
-const { filterValues, setFilterValues, filterFunction } = useFiltering([
-titleFiltering,
-genreFiltering,
-releaseFiltering,
-]);
-filterValues holds current filter values.
+```
+ /**
+   * Get the current language from the i18n instance such as 'en-US', 'es-ES', and so on,
+   * If undefined or empty, fallback to 'en-US'
+   * */
+  const { i18n } = useTranslation();
 
-setFilterValues updates them.
+  const lang = i18n.language || "en-US";
 
-filterFunction applies all filters to a list of movies.
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  const { t } = useTranslation();
+  console.log("Current language:", i18n.language);
+```
 
-2. Handling Filter Changes
-   The function changeFilterValues is called when any filter or sorting option changes:
+Additionally, we changed the review fetching logic to also retrieve in-language reviews:
 
-js
-Copy
-Edit
-const changeFilterValues = (type: string, value: string) => {
-if (type === "sort") {
-setSortOrder(value);
-return;
-}
+```
+ getMovieReviews(movie.id, lang).then((apiReviews) => {
+  ....
+```
 
-const changedFilter = { name: type, value };
-const updatedFilterSet =
-type === "title"
-? [changedFilter, filterValues[1], filterValues[2]]
-: type === "genre"
-? [filterValues[0], changedFilter, filterValues[2]]
-: [filterValues[0], filterValues[1], changedFilter];
+We, then, also grappled with setting a localStorage string for a new user review, and retrieve it on the review drawer:
 
-setFilterValues(updatedFilterSet);
+```
+useEffect(() => {
+    /**
+     * As in the reviewForm we have set a reviewKey to the local storage,
+     * we are basically creating the const variable again, and passing the
+     * 'movie.id' parameter in, so that we can get the review of the movie details
+     * page
+     *  */
+    const reviewKey = `review_movie_${movie.id}`;
+    const localReview = localStorage.getItem(reviewKey);
+    /**
+     * The JSON.parse converts the stored JSON string into a real JavaScript object
+     * to be used on the page.
+     * We are essentially saying: if there is a localReview, let's 'objectify' it back,
+     * otherwise, if there is no localReview, this const variable is null
+     */
+    const parsedLocalReview = localReview ? JSON.parse(localReview) : null;
+
+    getMovieReviews(movie.id, lang).then((apiReviews) => {
+      /**
+       * Here, instead, we create a new variable all Reviews that includes the our
+       * parsedLocalReview + the apiReviews, which are 'spread' to ensure they are
+       * always in the background and not affected by our review addition.
+       * Of course, if no parsedLocalReview exists, the apiReviews will still show
+       */
+      const allReviews = parsedLocalReview
+        ? [...apiReviews, parsedLocalReview]
+        : apiReviews;
+
+      setReviews(allReviews);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+```
+
+What we do here is just to set a new key in the local storage when we add a new review via the **writeReview.tsx** file, create a const 'localReview' to 'get' it which will be retrieved in a readable format by 'parsing' it. Ultimately, the '...apiReviews' spread operator will ensure that the parsedLocalReview will be added to the old reviews creating a brand new object.
+
+We could have certainly followed up on this section and gone to the next level by availing of the Supabase back end for persistency, but we desisted due to time management constraints.
+
+![alt text](image-87.png)
+
+![alt text](image-86.png)
+
+Last but not least, we carried out a small styling change to ensure the review drawer be responsive.
+
+```
+const styles = {
+  table: {
+    minWidth: "100%",
+  },
 };
-If the user changes the sort order, update sortOrder state only and exit early.
+```
 
-Otherwise, update the relevant filter in the filterValues array.
+![alt text](image-88.png)
 
-3. Filtering the Movies
-   Once you have the fetched movies (data.results), you apply filtering:
+### Source attribution
 
-js
-Copy
-Edit
-const movies = data ? data.results : [];
-const displayedMovies = filterFunction(movies);
-filterFunction is the logic from the custom hook that applies all filter conditions on the movies list and returns the filtered results.
-
-4. Sorting the Filtered Movies
-   After filtering, you sort the filtered movies based on the sortOrder state ("asc" or "desc"):
-
-js
-Copy
-Edit
-const sortedDisplayedMovies = [...displayedMovies].sort((a, b) => {
-if (!a.release_date || !b.release_date) return 0;
-
-return sortOrder === "asc"
-? a.release_date.localeCompare(b.release_date)
-: b.release_date.localeCompare(a.release_date);
-});
-Important details:
-
-Use the spread operator [...displayedMovies] to make a shallow copy before sorting. This prevents mutating the original array.
-
-Sorting is based on movie release_date strings.
-
-If sortOrder is "asc", sort oldest movies first.
-
-If "desc", newest movies first.
+- https://www.robinwieruch.de/react-router-private-routes/
+- https://stackoverflow.com/questions/68570014/react-router-redirect-state-is-undefined-when-used-in-protected-route
+- https://stackoverflow.com/questions/62384395/protected-route-with-react-router-v6
 
 =========== TO BE CONTINUED ==================
 

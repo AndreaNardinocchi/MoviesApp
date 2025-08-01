@@ -115,9 +115,26 @@ const LoginPage: React.FC = () => {
       authenticate(data);
     }
 
-    // navigate("/");
+    /**
+     *
+     * After a user logs in successfully, we want to redirect them back to the page
+     * they originally tried to visit (before being redirected to the login page).
+     * When a user hits a protected page without being authenticated, we store the intended
+     * destination inside `location.state.intent`. Once they log in, we extract that original
+     * route and redirect them to it.
+     * https://www.robinwieruch.de/react-router-authentication/?
+     * https://www.reddit.com/r/reactjs/comments/uwx8h0/need_help_how_to_access_user_requested_route/
+     */
+    const redirectPath =
+      location.state?.intent?.pathname || location.state?.intent || "/";
+    navigate(redirectPath, {
+      replace: true,
+      state: { path: location.pathname },
+    });
 
-    location;
+    // // navigate("/");
+
+    // location;
   };
 
   return (
