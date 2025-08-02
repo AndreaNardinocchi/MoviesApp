@@ -276,6 +276,7 @@ const ReviewForm: React.FC<BaseMovieProps> = (movie) => {
       <Button
         onClick={() => navigate("/movies/favourites")}
         sx={{
+          textTransform: "none",
           textDecoration: "none",
           color: "#8E4585",
           fontWeight: "bold",

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import FilterCard from "../filterMoviesCard";
 import Fab from "@mui/material/Fab";
 import Drawer from "@mui/material/Drawer";
-import { BaseMovieProps } from "../../types/interfaces";
+import { BaseMovieProps, FilterOption } from "../../types/interfaces";
 import { useTranslation } from "react-i18next";
 
 // eslint-disable-next-line react-refresh/only-export-components
@@ -84,7 +84,7 @@ const styles = {
 };
 
 interface MovieFilterUIProps {
-  onFilterValuesChange: (f: string, s: string) => void;
+  onFilterValuesChange: (f: FilterOption, s: string) => void;
   titleFilter: string;
   genreFilter: string;
   releaseFilter: number;

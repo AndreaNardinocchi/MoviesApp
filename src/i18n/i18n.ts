@@ -7,7 +7,7 @@ i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
-    // Set the initial language to English. 88 This has been removed to ensure that, upon
+    // Set the initial language to English. This has been removed to ensure that, upon
     // refreshing the browser, the session restores the suser 'selected' language
     // lng: "en-US",
     // Language to fallback to if translation is missing in the selected language

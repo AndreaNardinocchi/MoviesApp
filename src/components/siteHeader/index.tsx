@@ -212,6 +212,12 @@ const SiteHeader: React.FC = () => {
               flexGrow: 1,
               color: "white",
               marginRight: "2%",
+              fontSize: {
+                xs: "1.8rem", // small screens
+                sm: "2.3rem", // small to medium
+                md: "2.3rem", // medium screens
+                lg: "2.5rem", // large screens
+              },
             }}
           >
             MoviesApp

@@ -3557,6 +3557,110 @@ This keeps everything in sync with the user's selections.
 
 The above logic has been applied to all pages in which the site shows a filter.
 
+# Review Form
+
+The **reviewForm/index.tsx** was updated to ensure it could have dynamically translated content in the ratings drop-down, but we also wanted to store our review in the local storage and make it viewable on the review drawer.
+To that end, we had to create a new file named **useRatings.ts**, and ditch the **ratingCategories.ts**, which is a static one with hard-code labels, but our aim was to have translatable ones. As a matter of fact, since translations require access to the 't()' function from 'useTranslation()', and hooks like useTranslation() can only be called inside React function components or custom hooks, we had to create a hook to replace the plain static utility function.
+
+```
+import { useTranslation } from "react-i18next";
+
+const ratings = () => {
+  /**
+   * We are using the translation hook gets the t function and i18n instance inside our functional component.
+   * However, i18n is already embedded into the <LanguageSwitcher /> component
+   * https://react.i18next.com/latest/usetranslation-hook
+   */
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const { t } = useTranslation();
+
+  return [
+    { value: 5, label: t("excellent") },
+    { value: 4, label: t("good") },
+    { value: 3, label: t("average") },
+    { value: 2, label: t("poor") },
+    { value: 0, label: t("terrible") },
+  ];
+};
+export default ratings;
+
+/**
+ * useTranslation() cannot be usedoutside of a component, as it
+ * breaks the Hooks rule. Hence, we needed to create a component here
+ * inside the /hooks folder to properly use the useTranslations() function.
+ *
+ * */
+```
+
+The next step was to create the const 'ratings' and call in the 'useRatings()' hook, so that it could , then, be 'mapped' in the ratings drop-down:
+
+```
+ <TextField
+                {...field}
+                id="select-rating"
+                select
+                variant="outlined"
+                label={t("rating_select")}
+                value={rating}
+                onChange={handleRatingChange}
+                helperText={t("not_forget_rating")}
+              >
+                {ratings.map((option) => (
+                  <MenuItem key={option.value} value={option.value}>
+                    {option.label}
+                  </MenuItem>
+                ))}
+              </TextField>
+```
+
+Then, we used the 't' function and 'useTranslation() hook on the 'review form' file to get the rest of the content translated too.
+
+As far as the local storage integration for reviews, we created a 'reviewKey' const and 'set' it into the local storage.
+
+```
+const onSubmit: SubmitHandler<Review> = (review) => {
+    review.movieId = movie.id;
+    review.rating = rating;
+    context.addReview(movie, review);
+    // On submit, we also add a reviewKey to the localStorage to store our review
+    const reviewKey = `review_movie_${movie.id}`;
+    // Hence, below we set the key and we stringify its value which is the review object
+    // https://stackoverflow.com/questions/23728626/localstorage-and-json-stringify-json-parse#23728844
+    localStorage.setItem(reviewKey, JSON.stringify(review));
+    setOpen(true); // NEW
+    console.log(review);
+  };
+
+```
+
+Finally, amongst some minor styling , we also added a button to get the user back to the previous page.
+
+```
+ <Button
+        onClick={() => navigate("/movies/favourites")}
+        sx={{
+          textTransform: "none",
+          textDecoration: "none",
+          color: "#8E4585",
+          fontWeight: "bold",
+          textAlign: "right",
+          "&:hover": {
+            backgroundColor: "transparent",
+            textDecoration: "underline",
+          },
+        }}
+      >
+        ← {t("back")}
+      </Button>
+
+```
+
+### Source attribution
+
+- https://react.i18next.com/latest/usetranslation-hook
+- https://stackoverflow.com/questions/46160461/how-do-you-set-the-document-title-in-react
+- https://stackoverflow.com/questions/23728626/localstorage-and-json-stringify-json-parse#23728844
+
 ## Movie Reviews
 
 The **movieReview.tsx** component has been sligthly changed since we have added the dynamic translations logic to it by importing 'useTranslations' from 'react-i18next' and leveraged the **i18n.ts** file for translations:
@@ -3624,7 +3728,7 @@ useEffect(() => {
 
 ```
 
-What we do here is just to set a new key in the local storage when we add a new review via the **writeReview.tsx** file, create a const 'localReview' to 'get' it which will be retrieved in a readable format by 'parsing' it. Ultimately, the '...apiReviews' spread operator will ensure that the parsedLocalReview will be added to the old reviews creating a brand new object.
+What we do here is just create a new key 'reviewKey' in the local storage, matching the one previously created in the **reviewForm/index.tsx**, when we add a new review via the **writeReview.tsx** file, create a const 'localReview' to 'get' it which will be retrieved in a readable format by 'parsing' it. Ultimately, the '...apiReviews' spread operator will ensure that the parsedLocalReview will be added to the old reviews creating a brand new object.
 
 We could have certainly followed up on this section and gone to the next level by availing of the Supabase back end for persistency, but we desisted due to time management constraints.
 
@@ -3650,15 +3754,199 @@ const styles = {
 - https://stackoverflow.com/questions/68570014/react-router-redirect-state-is-undefined-when-used-in-protected-route
 - https://stackoverflow.com/questions/62384395/protected-route-with-react-router-v6
 
-=========== TO BE CONTINUED ==================
+## Movie Review page
+
+The only changes made in the **movieReviewPage.tsx** file were to add the translations functionality, and a sticky bar at the very bottom of the page to enable the user to navigate to the movie page.
+
+```
+ {/* Sticky Bar */}
+      {/* https://mui.com/system/react-box/ */}
+      <Box
+        sx={{
+          position: "sticky",
+          bottom: 0,
+          zIndex: 1000,
+          backgroundColor: "#ffffff",
+          boxShadow: "0px -2px 6px rgba(0, 0, 0, 0.06)",
+          display: "flex", // Use flexbox
+          justifyContent: "flex-start", // Push content to the left
+          alignItems: "center", // Vertically center the content
+          padding: {
+            xs: "3% 4%", // small devices
+            sm: "2% 1.8%", // tablets
+            md: "1.5% 1.0%", // medium screens
+            lg: "0.7% 0.8%", // large screens
+          },
+        }}
+      >
+        <Button
+          onClick={() => {
+            navigate(-1);
+          }}
+          style={{
+            textTransform: "none",
+            textDecoration: "none",
+            color: "#8E4585",
+            fontWeight: "bold",
+            textAlign: "right",
+          }}
+        >
+          ← {t("back")}
+        </Button>
+      </Box>
+
+```
+
+## Language switcher
+
+The **languageSwitcher/index.tsx** component allows users to change the app’s language via a dropdown menu.
+It initializes the language state using the current language from the i18n instance or defaults to English.
+
+```
+/**
+   * Set initial language from i18next, default to English ("en").
+   * https://www.i18next.com/overview/api#language
+   */
+  const [lang, setLang] = React.useState(i18n.language || "en-US");
+
+```
+
+When a new language is selected, it updates the state and calls i18n 'changeLanguage' method inside the 'handleChange' to update the app language globally.
+
+```
+ /**
+   * Handles language selection changes in the dropdown.
+   * Updates the component's state and instructs i18next to switch to the selected language.
+   * i18n.changeLanguage(newLang) tells the i18n instance to use the new language,
+   * triggering re-rendering of all text using the `t()` translation function.
+   * https://www.i18next.com/overview/api#changelanguage
+   * https://react.i18next.com/latest/usetranslation-hook#changing-language
+   */
+  const handleChange = (event: SelectChangeEvent) => {
+    const newLang = event.target.value;
+    setLang(newLang);
+    i18n.changeLanguage(newLang); // Tell i18next to change language
+  };
+```
+
+Finally, the dropdown offers language options like English, Spanish, Portuguese, and Italian with short labels to ensure its easy usability in mobile view too.
+Also, the language codes follow standard formatting to ensure compatibility.
+
+![alt text](image-89.png)
+
+### Source attribution
+
+- https://www.i18next.com/overview/api#language
+- https://www.i18next.com/overview/api#changelanguage
+- https://react.i18next.com/latest/usetranslation-hook#changing-language
+- https://mui.com/material-ui/api/form-control/
+- https://mui.com/customization/how-to-customize/#overriding-styles
+- https://stackoverflow.com/questions/67139471/how-can-i-change-the-focused-color-of-a-textfield?
+- https://mui.com/material-ui/api/outlined-input/#css
+- https://mui.com/system/the-sx-prop/#nesting-selectors
+- https://www.themoviedb.org/talk/5a5c4e709251413232005f25
+- https://developer.themoviedb.org/docs/languages?
+- https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+
+## i18n
+
+The code imports 'i18next', which is a core internationalization library for JavaScript, and 'initReactI18next' to integrate it with React applications. It also imports 'LanguageDetector', which is a plugin that automatically detects the user’s preferred language from their browser settings.
+The 'i18n' instance is configured to use both the language detector and React bindings by chaining .use() methods.
+
+![alt text](image-90.png)
+
+At this point, the .init() method is called to initialize the configuration options, which include setting fallback languages for cases where translations are missing. Multiple languages such as English, Spanish, Portuguese, and Italian are supported through the resources object, and translations are organized into a namespace called "myKeys" to keep keys structured, and avoid conflicts.
+Each language contains key/value pairs for translated strings, allowing the app to display content based on the detected or selected language.
+The initial language is not hardcoded to enable the language detector to restore the user's preference even after refreshing the browser.
+
+```
+// Set the initial language to English. This has been removed to ensure that, upon
+    // refreshing the browser, the session restores the suser 'selected' language
+    // lng: "en-US",
+
+```
+
+Finally, all translation data is included in the resources object inside the code for easy
+
+### Source attribution
+
+- https://www.i18next.com/principles/fallback
+- https://react.i18next.com/latest/using-with-hooks
+- https://dev.to/adrai/supercharge-your-typescript-app-mastering-i18next-for-type-safe-translations-2idp
+- https://react.i18next.com/latest/using-with-hooks#configure-i18next
+- https://www.i18next.com/overview/configuration-options
+- https://react.i18next.com/latest/usetranslation-hook
+
+## Footer component
+
+The **footer/footer.tsx** is just a component that has been used on other app projects we developed in other modules such as https://whether-weather-an.netlify.app/ or https://placemarkyourjourney.netlify.app/ and rebuilt with React and Material UI.
+
+### Source attribution
+
+- https://mui.com/material-ui/material-icons/?selected=VideoCameraFront
+- https://mui.com/material-ui/integrations/routing/#link
+- https://react.i18next.com/latest/usetranslation-hook
+- https://mui.com/material-ui/guides/routing/#link
+
+## index
+
+The **src/index.tsx** file sets up the main React app, configuring routing, context providers for movies and authentication, query caching, internationalization, and global layout components like header and footer to create a complete movie and TV series web application.
+What we changed in here was:
+
+- we added new pages and routes for TV series, actors, and various movie-related features such as actor bios, must watch list, and now playing movies
+- introduced authentication context (AuthContextProvider) and protected routes (ProtectedRoute) to restrict access to certain pages
+
+```
+...
+<BrowserRouter>
+          <AuthContextProvider>
+            <SiteHeader /> {/* New Header  */}
+            <MoviesContextProvider>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/tvseries" element={<TVSeriesPage />} />
+...
+
+```
+
+- integrated internationalization support using I18nextProvider.
+
+```
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
+    <I18nextProvider i18n={i18n}>
+      <App />
+    </I18nextProvider>
+  </React.StrictMode>
+);
+
+```
+
+- added a global CSS baseline and wrapped the app layout in a styled Box for consistent UI. This helps avoid unexpected spacing and style issues caused by different browser default CSS
+
+![alt text](image-91.png)
+
+and gives us a clean, consistent foundation to build our Material-UI design on
+
+- included a footer component rendered on all pages
+- switched some routes to use nested parameters (e.g., movieId, actorId) for better resource identification
+- added login and signup pages for user authentication
+
+### Source attribution
+
+https://mui.com/material-ui/react-css-baseline/
+https://react.i18next.com/latest/i18nextprovider
 
 ## Bugs and defects
 
-The Json stores kept showing errors for the 'model' test, and due to time constraints, and lest I would compromise the MongoDB successful tests (Mongo is the primary base that this app uses), I resolved to no longer maintain the Json tests.
+Some data linking is missing such as there is no linking from the 'Movie Details page' to get back to the movie list from which the user landed on. However, we find it particularly challenge to add a data linking system here that would have enabled the user to get back to the specific movie list they landed from.
+For instance, useLocation() would have been ideal if the user would want to navigate back to the movie list straight away once landed on the movie details page, but what if they decided to click on an actor bio page? The uselocation would have a new link memory in store which would differ from the movie list link originally stored in it.
+This issue remained unresolved, and the same applies for the TV series part.
+Some better styling could have been applied, and a search component on the homepage to retrieve a movie or TV series just by typing a title woud have been great. Alas, I still need to work on enancing my React abilities as I still find it very challenging as a JavaScript framework.
 
 # Deployment
 
-The app was deployed on https://dashboard.render.com/ and can be acceseed on https://placemark-v63d.onrender.com .
+The app was deployed on https://vercel.com/ and can be accessed on https://movies-app-vqbl.vercel.app/.
 
 # Who maintains and contributes to the project
 
@@ -3666,14 +3954,8 @@ This project will be maintained by myself only.
 
 # Acknowledgements
 
-My lecture Eamonn de Leastar provided all knowledge I needed to build and set up the app through the Full Stack WebDevelopment 1 module and tools such as HTML, Bulma CSS framework, Javascript, node.js, Hapi, Express/Handlebars, lowdb database, and so on.
-
-Special thanks to John Rellis too as he transferred plenty of the knowledge in the web development 2 needed for this project when working on the following assignment https://evanescent-mercury-naranja.glitch.me/ during summer 2024.
+My lecture Frank Walsh provided all knowledge I needed to build and set up the app through the Full Stack WebDevelopment 2 module and tools such as React, HTML, Material UI, CSS framework, JavaScript, TypeScript with Vite, and so on.
 
 And a big thank you to my fellow students for asking questions on our Slack channel from which I was able to capture useful bits for the project.
 
 Thank you all again!!!
-
-```
-
-```

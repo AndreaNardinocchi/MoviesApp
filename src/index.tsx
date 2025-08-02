@@ -146,6 +146,7 @@ const App = () => {
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
+    {/* https://react.i18next.com/latest/i18nextprovider */}
     <I18nextProvider i18n={i18n}>
       <App />
     </I18nextProvider>
